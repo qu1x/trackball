@@ -6,7 +6,7 @@ Virtual Trackball Orbiting via the Exponential Map
 [![Downloads][]](https://crates.io/crates/trackball)
 [![Rust][]](https://www.rust-lang.org)
 [![Version][]](https://crates.io/crates/trackball)
-[![Documentation][]](https://docs.rs/trackball)
+[![Documentation][]](https://doc.qu1x.dev/trackball)
 [![License][]](https://opensource.org/licenses/BSD-3-Clause)
 
 [Build Status]: https://travis-ci.org/qu1x/trackball.svg
