@@ -29,13 +29,13 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 
 ## Status
 
-Currently only [nalgebra] is supported as underlying linear algebra library but others will be
+Currently only [`nalgebra`] is supported as underlying linear algebra library but others will be
 supported behind feature gates so that only your library of choice becomes a dependency. The
 [`Orbit`] operation handler will be complemented with other handlers for common trackball camera
 mode operations like slide, scale, and focus. Projection view matrices will be computed as well
 with scale preserving transitions between orthographic and perspective projection mode.
 
-[nalgebra]: https://nalgebra.org
+[`nalgebra`]: https://doc.qu1x.dev/trackball/nalgebra/index.html
 
 ## Example
 

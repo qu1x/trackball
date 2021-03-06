@@ -13,13 +13,11 @@
 //!
 //! # Status
 //!
-//! Currently only [nalgebra] is supported as underlying linear algebra library but others will be
+//! Currently only [`nalgebra`] is supported as underlying linear algebra library but others will be
 //! supported behind feature gates so that only your library of choice becomes a dependency. The
 //! [`Orbit`] operation handler will be complemented with other handlers for common trackball camera
 //! mode operations like slide, scale, and focus. Projection view matrices will be computed as well
 //! with scale preserving transitions between orthographic and perspective projection mode.
-//!
-//! [nalgebra]: https://nalgebra.org
 //!
 //! # Example
 //!
