@@ -31,7 +31,7 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 
 Currently only [nalgebra] is supported as underlying linear algebra library but others will be
 supported behind feature gates so that only your library of choice becomes a dependency. The
-`Orbit` operation handler will be complemented with other handlers for common trackball camera
+[`Orbit`] operation handler will be complemented with other handlers for common trackball camera
 mode operations like slide, scale, and focus. Projection view matrices will be computed as well
 with scale preserving transitions between orthographic and perspective projection mode.
 
@@ -40,8 +40,10 @@ with scale preserving transitions between orthographic and perspective projectio
 ## Example
 
 A trackball camera mode implementation can be as easily as this by delegating events of your 3D
-graphics library of choice to the `Orbit` operation handler along with other handlers for
+graphics library of choice to the [`Orbit`] operation handler along with other handlers for
 common trackball camera mode operations like slide, scale, and focus.
+
+[`Orbit`]: https://doc.qu1x.dev/trackball/trackball/struct.Orbit.html
 
 ```rust
 use nalgebra::{Point2, RealField, UnitQuaternion, Vector3};
