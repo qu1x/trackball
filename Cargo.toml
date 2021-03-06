@@ -1,0 +1,33 @@
+[package]
+name = "trackball"
+version = "0.1.0"
+authors = ["Rouven Spreckels <rs@qu1x.dev>"]
+edition = "2018"
+description = "Virtual Trackball Orbiting via the Exponential Map"
+documentation = "https://docs.rs/trackball"
+repository = "https://github.com/qu1x/trackball"
+readme = "README.md"
+license = "BSD-3-Clause"
+keywords = [
+	"virtual-trackball",
+	"exponential-map",
+	"quaternion",
+	"arcball",
+	"camera",
+]
+categories = [
+	"graphics",
+]
+include = [
+	"src/**/*.rs",
+	"Cargo.toml",
+	"README.md",
+	"RELEASES.md",
+	"LICENSE.md",
+]
+
+[badges]
+travis-ci = { repository = "qu1x/trackball" }
+
+[dependencies]
+nalgebra = "0.25"

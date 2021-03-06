@@ -1,0 +1,9 @@
+language: rust
+env: FEATURES=""
+matrix:
+  include:
+    - rust: stable
+    - rust: beta
+    - rust: nightly
+script:
+  - cargo test --verbose --no-default-features --features "$FEATURES"
