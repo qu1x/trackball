@@ -35,7 +35,7 @@
 //! 	align: UnitQuaternion<N>,
 //! 	// Orbit operation handler along with other handlers for slide, scale, and focus operations.
 //! 	orbit: Orbit<N>,
-//! 	// Frame buffer size or maximum screen position as width and height.
+//! 	// Maximum cursor/finger position as screen's width and height.
 //! 	frame: Point2<N>,
 //! }
 //!
@@ -71,7 +71,7 @@ pub struct Orbit<N: RealField> {
 }
 
 impl<N: RealField> Orbit<N> {
-	/// Computes rotation axis and angle from current cursor/finger and maximum screen position.
+	/// Computes rotation from previous, current, and maximum cursor/finger position.
 	///
 	/// Screen coordinate system with origin in top left corner:
 	///
@@ -106,7 +106,7 @@ impl<N: RealField> Orbit<N> {
 		// Treat maximum of half the screen's width or height as trackball's radius.
 		let max = max.x.max(max.y);
 		// Map trackball's diameter onto half its circumference for start positions so that only
-		// screen corners are mapped to lower hemisphere which induces less intuitive rotations.
+		// screen's corners are mapped to lower hemisphere which induces less intuitive rotations.
 		let (sin, cos) = (off / max * N::frac_pi_2()).sin_cos();
 		// Exponential map of start position.
 		let exp = Vector3::new(sin * pos.x, sin * pos.y, cos);
