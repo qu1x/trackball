@@ -11,47 +11,56 @@
 #define PI_2_l 1.570796326794896619231321691639751442l
 /// \endcond
 
+/// Scalar.
+typedef float num_f;
+
+/// Scalar.
+typedef double num_d;
+
+/// Scalar.
+typedef long double num_l;
+
 /// Vector inclusive its length or quaternion.
 typedef struct {
 	/// x-component.
-	float x;
+	num_f x;
 	/// y-component.
-	float y;
+	num_f y;
 	/// z-component.
-	float z;
+	num_f z;
 	/// w-component of quaternion or length of vector.
-	float w;
+	num_f w;
 } vec_f;
 
 /// Vector inclusive its length or quaternion.
 typedef struct {
 	/// x-component.
-	double x;
+	num_d x;
 	/// y-component.
-	double y;
+	num_d y;
 	/// z-component.
-	double z;
+	num_d z;
 	/// w-component of quaternion or length of vector.
-	double w;
+	num_d w;
 } vec_d;
 
 /// Vector inclusive its length or quaternion.
 typedef struct {
 	/// x-component.
-	long double x;
+	num_l x;
 	/// y-component.
-	long double y;
+	num_l y;
 	/// z-component.
-	long double z;
+	num_l z;
 	/// w-component of quaternion or length of vector.
-	long double w;
+	num_l w;
 } vec_l;
 
 /// \cond
 // Ensures casting between structure and array of scalar.
-_Static_assert(sizeof (vec_f) == sizeof (float) * 4, "weird padding");
-_Static_assert(sizeof (vec_d) == sizeof (double) * 4, "weird padding");
-_Static_assert(sizeof (vec_l) == sizeof (long double) * 4, "weird padding");
+_Static_assert(sizeof (vec_f) == sizeof (num_f) * 4, "weird padding");
+_Static_assert(sizeof (vec_d) == sizeof (num_d) * 4, "weird padding");
+_Static_assert(sizeof (vec_l) == sizeof (num_l) * 4, "weird padding");
 /// \endcond
 
 /// Matrix of column vectors.
@@ -86,26 +95,26 @@ typedef struct {
 
 /// Clamps value between minimum and maximum.
 #define clamp(val, min, max) _Generic((val), \
-	float: clamp_f, \
-	double: clamp_d, \
-	long double: clamp_l \
+	num_f: clamp_f, \
+	num_d: clamp_d, \
+	num_l: clamp_l \
 )(val, min, max)
 
 /// Associated implementation of generic selection macro \ref clamp.
-static float
-clamp_f(float val, float min, float max) {
+static num_f
+clamp_f(num_f val, num_f min, num_f max) {
 	return val < min ? min : val > max ? max : val;
 }
 
 /// Associated implementation of generic selection macro \ref clamp.
-static double
-clamp_d(double val, double min, double max) {
+static num_d
+clamp_d(num_d val, num_d min, num_d max) {
 	return val < min ? min : val > max ? max : val;
 }
 
 /// Associated implementation of generic selection macro \ref clamp.
-static long double
-clamp_l(long double val, long double min, long double max) {
+static num_l
+clamp_l(num_l val, num_l min, num_l max) {
 	return val < min ? min : val > max ? max : val;
 }
 
@@ -117,7 +126,7 @@ clamp_l(long double val, long double min, long double max) {
 )(v)
 
 /// Associated implementation of generic selection macro \ref normalize.
-static float
+static num_f
 normalize_f(vec_f* v) {
 	v->w = sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
 	if (v->w) {
@@ -129,7 +138,7 @@ normalize_f(vec_f* v) {
 }
 
 /// Associated implementation of generic selection macro \ref normalize.
-static double
+static num_d
 normalize_d(vec_d* v) {
 	v->w = sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
 	if (v->w) {
@@ -141,7 +150,7 @@ normalize_d(vec_d* v) {
 }
 
 /// Associated implementation of generic selection macro \ref normalize.
-static long double
+static num_l
 normalize_l(vec_l* v) {
 	v->w = sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
 	if (v->w) {
@@ -266,10 +275,10 @@ tr_mul_l(mat_l m, vec_l v) {
 // Associated implementation of generic selection macro `trackball_orbit`.
 void
 trackball_orbit_f(
-	float xyzw[static restrict 4],
-	float xyzm[static restrict 4],
-	const float xy[static restrict 2],
-	const float wh[static restrict 2]
+	num_f xyzw[static restrict 4],
+	num_f xyzm[static restrict 4],
+	const num_f xy[static restrict 2],
+	const num_f wh[static restrict 2]
 ) {
 	// Identity quaternion with no previous position or zero displacement.
 	vec_f* rot = (vec_f*)xyzw;
@@ -282,8 +291,8 @@ trackball_orbit_f(
 	vec_f max = { .x = wh[0] * 0.5f, .y = wh[1] * 0.5f };
 	// Current centered position from left to right and bottom to top.
 	vec_f vec = (vec_f) {
-		.x = clamp(xy[0], 0.0, wh[0]) - max.x,
-		.y = max.y - clamp(xy[1], 0.0, wh[1]),
+		.x = clamp(xy[0], 0.0f, wh[0]) - max.x,
+		.y = max.y - clamp(xy[1], 0.0f, wh[1]),
 	};
 	// Distinguish no position from origin position by assigning z-axis.
 	if (!normalize(&vec))
@@ -306,7 +315,7 @@ trackball_orbit_f(
 	// so that only screen corners are mapped to lower hemisphere which induces
 	// less intuitive rotations.
 	pos.w = pos.w / max.w * PI_2_f;
-	float s = sin(pos.w), c = cos(pos.w);
+	num_f s = sin(pos.w), c = cos(pos.w);
 	// Exponential map of start position.
 	vec_f exp = { .x = s * pos.x, .y = s * pos.y, .z = c };
 	// Tangent unit vector of geodesic at exponential map.
@@ -326,17 +335,17 @@ trackball_orbit_f(
 	rot->w = vec.w / max.w;
 	// Convert axis-angle representation into unit quaternion.
 	rot->w *= 0.5f;
-	float im = sin(rot->w), re = cos(rot->w);
+	num_f im = sin(rot->w), re = cos(rot->w);
 	*rot = (vec_f) { rot->x * im, rot->y * im, rot->z * im, re };
 }
 
 // Associated implementation of generic selection macro `trackball_orbit`.
 void
 trackball_orbit_d(
-	double xyzw[static restrict 4],
-	double xyzm[static restrict 4],
-	const double xy[static restrict 2],
-	const double wh[static restrict 2]
+	num_d xyzw[static restrict 4],
+	num_d xyzm[static restrict 4],
+	const num_d xy[static restrict 2],
+	const num_d wh[static restrict 2]
 ) {
 	// Identity quaternion with no previous position or zero displacement.
 	vec_d* rot = (vec_d*)xyzw;
@@ -373,7 +382,7 @@ trackball_orbit_d(
 	// so that only screen corners are mapped to lower hemisphere which induces
 	// less intuitive rotations.
 	pos.w = pos.w / max.w * PI_2_d;
-	double s = sin(pos.w), c = cos(pos.w);
+	num_d s = sin(pos.w), c = cos(pos.w);
 	// Exponential map of start position.
 	vec_d exp = { .x = s * pos.x, .y = s * pos.y, .z = c };
 	// Tangent unit vector of geodesic at exponential map.
@@ -393,17 +402,17 @@ trackball_orbit_d(
 	rot->w = vec.w / max.w;
 	// Convert axis-angle representation into unit quaternion.
 	rot->w *= 0.5;
-	double im = sin(rot->w), re = cos(rot->w);
+	num_d im = sin(rot->w), re = cos(rot->w);
 	*rot = (vec_d) { rot->x * im, rot->y * im, rot->z * im, re };
 }
 
 // Associated implementation of generic selection macro `trackball_orbit`.
 void
 trackball_orbit_l(
-	long double xyzw[static restrict 4],
-	long double xyzm[static restrict 4],
-	const long double xy[static restrict 2],
-	const long double wh[static restrict 2]
+	num_l xyzw[static restrict 4],
+	num_l xyzm[static restrict 4],
+	const num_l xy[static restrict 2],
+	const num_l wh[static restrict 2]
 ) {
 	// Identity quaternion with no previous position or zero displacement.
 	vec_l* rot = (vec_l*)xyzw;
@@ -416,8 +425,8 @@ trackball_orbit_l(
 	vec_l max = { .x = wh[0] * 0.5l, .y = wh[1] * 0.5l };
 	// Current centered position from left to right and bottom to top.
 	vec_l vec = (vec_l) {
-		.x = clamp(xy[0], 0.0, wh[0]) - max.x,
-		.y = max.y - clamp(xy[1], 0.0, wh[1]),
+		.x = clamp(xy[0], 0.0l, wh[0]) - max.x,
+		.y = max.y - clamp(xy[1], 0.0l, wh[1]),
 	};
 	// Distinguish no position from origin position by assigning z-axis.
 	if (!normalize(&vec))
@@ -440,7 +449,7 @@ trackball_orbit_l(
 	// so that only screen corners are mapped to lower hemisphere which induces
 	// less intuitive rotations.
 	pos.w = pos.w / max.w * PI_2_l;
-	long double s = sin(pos.w), c = cos(pos.w);
+	num_l s = sin(pos.w), c = cos(pos.w);
 	// Exponential map of start position.
 	vec_l exp = { .x = s * pos.x, .y = s * pos.y, .z = c };
 	// Tangent unit vector of geodesic at exponential map.
@@ -460,6 +469,6 @@ trackball_orbit_l(
 	rot->w = vec.w / max.w;
 	// Convert axis-angle representation into unit quaternion.
 	rot->w *= 0.5l;
-	long double im = sin(rot->w), re = cos(rot->w);
+	num_l im = sin(rot->w), re = cos(rot->w);
 	*rot = (vec_l) { rot->x * im, rot->y * im, rot->z * im, re };
 }

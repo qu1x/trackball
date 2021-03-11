@@ -6,11 +6,10 @@ fn main() {
 		cc::Build::new()
 			.files(&[src.join("trackball.c")])
 			.include(src)
-			.flag("-std=c11")
-			.flag("-Wall")
-			.flag("-Wextra")
-			.flag("-Werror")
+			.flag("-lm")
 			.flag("-pedantic")
+			.flag("-std=c11")
+			.warnings_into_errors(true)
 			.compile("trackball");
 	}
 }

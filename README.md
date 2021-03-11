@@ -46,24 +46,25 @@ common trackball camera mode operations like slide, scale, and focus.
 [`Orbit`]: https://doc.qu1x.dev/trackball/trackball/struct.Orbit.html
 
 ```rust
-use nalgebra::{Point2, RealField, UnitQuaternion, Vector3};
+use nalgebra::{Point2, UnitQuaternion, Vector3};
+use std::f32::consts::PI;
 use trackball::Orbit;
 
 /// Trackball camera mode.
-pub struct Trackball<N: RealField> {
+pub struct Trackball {
 	// Camera eye alignment.
-	align: UnitQuaternion<N>,
+	align: UnitQuaternion<f32>,
 	// Orbit operation handler along with other handlers for slide, scale, and focus operations.
-	orbit: Orbit<N>,
-	// Frame buffer size or maximum screen position as width and height.
-	frame: Point2<N>,
+	orbit: Orbit<f32>,
+	// Maximum cursor/finger position as screen's width and height.
+	frame: Point2<f32>,
 }
 
-impl<N: RealField> Trackball<N> {
-	// This is usually a cursor position event with left mouse button being pressed.
-	fn handle_left_button_displacement(&mut self, pos: &Point2<N>) {
+impl Trackball {
+	// Usually, a cursor position event with left mouse button being pressed.
+	fn handle_left_button_displacement(&mut self, pos: &Point2<f32>) {
 		// Optionally, do a coordinate system transformation like flipping x-axis and z-axis.
-		let camera_space = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), N::pi());
+		let camera_space = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), PI);
 		// Or directly apply this induced rotation.
 		let rotation = self.orbit.compute(&pos, &self.frame).unwrap_or_default();
 		// Post-multiply rotation to total camera alignment.
