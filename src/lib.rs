@@ -26,24 +26,25 @@
 //! common trackball camera mode operations like slide, scale, and focus.
 //!
 //! ```
-//! use nalgebra::{Point2, RealField, UnitQuaternion, Vector3};
+//! use nalgebra::{Point2, UnitQuaternion, Vector3};
+//! use std::f32::consts::PI;
 //! use trackball::Orbit;
 //!
 //! /// Trackball camera mode.
-//! pub struct Trackball<N: RealField> {
+//! pub struct Trackball {
 //! 	// Camera eye alignment.
-//! 	align: UnitQuaternion<N>,
+//! 	align: UnitQuaternion<f32>,
 //! 	// Orbit operation handler along with other handlers for slide, scale, and focus operations.
-//! 	orbit: Orbit<N>,
+//! 	orbit: Orbit<f32>,
 //! 	// Maximum cursor/finger position as screen's width and height.
-//! 	frame: Point2<N>,
+//! 	frame: Point2<f32>,
 //! }
 //!
-//! impl<N: RealField> Trackball<N> {
+//! impl Trackball {
 //! 	// Usually, a cursor position event with left mouse button being pressed.
-//! 	fn handle_left_button_displacement(&mut self, pos: &Point2<N>) {
+//! 	fn handle_left_button_displacement(&mut self, pos: &Point2<f32>) {
 //! 		// Optionally, do a coordinate system transformation like flipping x-axis and z-axis.
-//! 		let camera_space = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), N::pi());
+//! 		let camera_space = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), PI);
 //! 		// Or directly apply this induced rotation.
 //! 		let rotation = self.orbit.compute(&pos, &self.frame).unwrap_or_default();
 //! 		// Post-multiply rotation to total camera alignment.
@@ -57,7 +58,7 @@
 //! }
 //! ```
 
-use nalgebra::{Matrix3, Point2, RealField, Unit, UnitQuaternion, Vector3};
+use nalgebra::{Point2, RealField, Unit, UnitQuaternion, Vector3};
 
 /// Orbit operation handler.
 ///
@@ -70,6 +71,10 @@ pub struct Orbit<N: RealField> {
 	pub vec: Option<(Unit<Vector3<N>>, N)>,
 }
 
+#[cfg(not(feature = "cc"))]
+use nalgebra::Matrix3;
+
+#[cfg(not(feature = "cc"))]
 impl<N: RealField> Orbit<N> {
 	/// Computes rotation from previous, current, and maximum cursor/finger position.
 	///
@@ -131,4 +136,99 @@ impl<N: RealField> Orbit<N> {
 	pub fn discard(&mut self) {
 		self.vec = None;
 	}
+}
+
+#[cfg(feature = "cc")]
+use nalgebra::{Quaternion, Vector4};
+
+#[cfg(feature = "cc")]
+impl Orbit<f32> {
+	/// Computes rotation from previous, current, and maximum cursor/finger position.
+	///
+	/// Screen coordinate system with origin in left top corner:
+	///
+	///   * x-axis from left to right,
+	///   * y-axis from top to bottom.
+	///
+	/// Trackball coordinate system with origin in trackball center:
+	///
+	///   * x-axis from left to right,
+	///   * y-axis from bottom to top,
+	///   * z-axis from far to near.
+	///
+	/// Returns `None`:
+	///
+	///   * on first invocation and after [`Self::discard()`] as there is no previous position yet,
+	///   * in the unlikely case that a position event fires twice resulting in zero displacements.
+	pub fn compute(&mut self, pos: &Point2<f32>, max: &Point2<f32>) -> Option<UnitQuaternion<f32>> {
+		let mut rot = Vector4::zeros();
+		let mut old = self
+			.vec
+			.map(|(ray, len)| ray.into_inner().push(len))
+			.unwrap_or_default();
+		unsafe {
+			trackball_orbit_f(
+				rot.as_mut_ptr(),
+				old.as_mut_ptr(),
+				pos.coords.as_ptr(),
+				max.coords.as_ptr(),
+			);
+		}
+		self.vec = Some((Unit::new_unchecked(old.xyz()), old.w));
+		Some(UnitQuaternion::new_unchecked(Quaternion::from(rot)))
+	}
+
+	/// Discards cached normalization of previous cursor/finger position on button/finger release.
+	pub fn discard(&mut self) {
+		self.vec = None;
+	}
+}
+
+#[cfg(feature = "cc")]
+impl Orbit<f64> {
+	/// Computes rotation from previous, current, and maximum cursor/finger position.
+	///
+	/// Screen coordinate system with origin in left top corner:
+	///
+	///   * x-axis from left to right,
+	///   * y-axis from top to bottom.
+	///
+	/// Trackball coordinate system with origin in trackball center:
+	///
+	///   * x-axis from left to right,
+	///   * y-axis from bottom to top,
+	///   * z-axis from far to near.
+	///
+	/// Returns `None`:
+	///
+	///   * on first invocation and after [`Self::discard()`] as there is no previous position yet,
+	///   * in the unlikely case that a position event fires twice resulting in zero displacements.
+	pub fn compute(&mut self, pos: &Point2<f64>, max: &Point2<f64>) -> Option<UnitQuaternion<f64>> {
+		let mut rot = Vector4::zeros();
+		let mut old = self
+			.vec
+			.map(|(ray, len)| ray.into_inner().push(len))
+			.unwrap_or_default();
+		unsafe {
+			trackball_orbit_d(
+				rot.as_mut_ptr(),
+				old.as_mut_ptr(),
+				pos.coords.as_ptr(),
+				max.coords.as_ptr(),
+			);
+		}
+		self.vec = Some((Unit::new_unchecked(old.xyz()), old.w));
+		Some(UnitQuaternion::new_unchecked(Quaternion::from(rot)))
+	}
+
+	/// Discards cached normalization of previous cursor/finger position on button/finger release.
+	pub fn discard(&mut self) {
+		self.vec = None;
+	}
+}
+
+#[cfg(feature = "cc")]
+extern "C" {
+	fn trackball_orbit_f(xyzw: *mut f32, xyzm: *mut f32, xy: *const f32, wh: *const f32);
+	fn trackball_orbit_d(xyzw: *mut f64, xyzm: *mut f64, xy: *const f64, wh: *const f64);
 }

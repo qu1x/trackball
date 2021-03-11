@@ -1,11 +1,12 @@
 [package]
 name = "trackball"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Rouven Spreckels <rs@qu1x.dev>"]
 edition = "2018"
 description = "Virtual Trackball Orbiting via the Exponential Map"
 documentation = "https://doc.qu1x.dev/trackball"
 repository = "https://github.com/qu1x/trackball"
+build = "build.rs"
 readme = "README.md"
 license = "BSD-3-Clause"
 keywords = [
@@ -20,6 +21,8 @@ categories = [
 ]
 include = [
 	"src/**/*.rs",
+	"c11/src/**/*.[hc]",
+	"build.rs",
 	"Cargo.toml",
 	"README.md",
 	"RELEASES.md",
@@ -31,3 +34,6 @@ travis-ci = { repository = "qu1x/trackball" }
 
 [dependencies]
 nalgebra = "0.25"
+
+[build-dependencies]
+cc = { version = "1", optional = true }

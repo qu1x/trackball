@@ -77,6 +77,15 @@ impl<N: RealField> Trackball<N> {
 }
 ```
 
+## C11 Implementation
+
+An identical [C11 implementation](c11) can be used instead by enabling the `cc` feature as in:
+
+```toml
+[dependencies]
+trackball = { version = "0.1", features = ["cc"] }
+```
+
 ## License
 
 [BSD-3-Clause](LICENSE.md)
