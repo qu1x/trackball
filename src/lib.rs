@@ -40,7 +40,7 @@
 //! }
 //!
 //! impl<N: RealField> Trackball<N> {
-//! 	// This is usually a cursor position event with left mouse button being pressed.
+//! 	// Usually, a cursor position event with left mouse button being pressed.
 //! 	fn handle_left_button_displacement(&mut self, pos: &Point2<N>) {
 //! 		// Optionally, do a coordinate system transformation like flipping x-axis and z-axis.
 //! 		let camera_space = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), N::pi());
@@ -73,7 +73,7 @@ pub struct Orbit<N: RealField> {
 impl<N: RealField> Orbit<N> {
 	/// Computes rotation from previous, current, and maximum cursor/finger position.
 	///
-	/// Screen coordinate system with origin in top left corner:
+	/// Screen coordinate system with origin in left top corner:
 	///
 	///   * x-axis from left to right,
 	///   * y-axis from top to bottom.
@@ -89,6 +89,8 @@ impl<N: RealField> Orbit<N> {
 	///   * on first invocation and after [`Self::discard()`] as there is no previous position yet,
 	///   * in the unlikely case that a position event fires twice resulting in zero displacements.
 	pub fn compute(&mut self, pos: &Point2<N>, max: &Point2<N>) -> Option<UnitQuaternion<N>> {
+		// Clamp position between screen's left top and right bottom corner.
+		let pos = Point2::new(pos.x.clamp(N::zero(), max.x), pos.y.clamp(N::zero(), max.y));
 		// Maximum centered cursor/finger position as half the screen's width and height.
 		let max = max / (N::one() + N::one());
 		// Current centered cursor/finger position from left to right and bottom to top.
