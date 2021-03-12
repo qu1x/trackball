@@ -1,9 +1,9 @@
 //! Virtual Trackball Orbiting via the Exponential Map
 //!
 //! This is an alternative trackball technique using exponential map and parallel transport to
-//! preserve distances and angles for coherent and intuitive trackball rotations. For instance,
-//! displacements on straight radial lines through the screen's center are carried to arcs of the
-//! same length on great circles of the trackball. This is in contrast to state-of-the-art
+//! preserve distances and angles for inducing coherent and intuitive trackball rotations. For
+//! instance, displacements on straight radial lines through the screen's center are carried to arcs
+//! of the same length on great circles of the trackball. This is in contrast to state-of-the-art
 //! techniques using orthogonal projection which distorts radial distances further away from the
 //! screen's center. This implementation strictly follows the recipe given in the paper of
 //! Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CID] [44199608].
@@ -34,7 +34,7 @@
 //! pub struct Trackball {
 //! 	// Camera eye alignment.
 //! 	align: UnitQuaternion<f32>,
-//! 	// Orbit operation handler along with other handlers for slide, scale, and focus operations.
+//! 	// Orbit operation handler along with slide, scale, and focus operation handlers.
 //! 	orbit: Orbit<f32>,
 //! 	// Maximum cursor/finger position as screen's width and height.
 //! 	frame: Point2<f32>,
@@ -43,7 +43,7 @@
 //! impl Trackball {
 //! 	// Usually, a cursor position event with left mouse button being pressed.
 //! 	fn handle_left_button_displacement(&mut self, pos: &Point2<f32>) {
-//! 		// Optionally, do a coordinate system transformation like flipping x-axis and z-axis.
+//! 		// Optionally, do a coordinate system transformation like flipping x-axis/z-axis.
 //! 		let camera_space = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), PI);
 //! 		// Or directly apply this induced rotation.
 //! 		let rotation = self.orbit.compute(&pos, &self.frame).unwrap_or_default();
@@ -76,14 +76,18 @@ use nalgebra::Matrix3;
 
 #[cfg(not(feature = "cc"))]
 impl<N: RealField> Orbit<N> {
-	/// Computes rotation from previous, current, and maximum cursor/finger position.
+	/// Computes rotation between previous and current cursor/finger position.
 	///
-	/// Screen coordinate system with origin in left top corner:
+	/// Normalization of previous position is cached and has to be discarded on button/finger
+	/// release via [`Self::discard()`]. Current position `pos` is clamped between origin and
+	/// maximum position `max` as screen's width and height.
+	///
+	/// Screen coordinate system with origin in top left corner:
 	///
 	///   * x-axis from left to right,
 	///   * y-axis from top to bottom.
 	///
-	/// Trackball coordinate system with origin in trackball center:
+	/// Trackball coordinate system with origin in trackball's center:
 	///
 	///   * x-axis from left to right,
 	///   * y-axis from bottom to top,
@@ -113,7 +117,7 @@ impl<N: RealField> Orbit<N> {
 		// Treat maximum of half the screen's width or height as trackball's radius.
 		let max = max.x.max(max.y);
 		// Map trackball's diameter onto half its circumference for start positions so that only
-		// screen's corners are mapped to lower hemisphere which induces less intuitive rotations.
+		// screen corners are mapped to lower hemisphere which induces less intuitive rotations.
 		let (sin, cos) = (off / max * N::frac_pi_2()).sin_cos();
 		// Exponential map of start position.
 		let exp = Vector3::new(sin * pos.x, sin * pos.y, cos);
@@ -143,14 +147,18 @@ use nalgebra::Quaternion;
 
 #[cfg(feature = "cc")]
 impl Orbit<f32> {
-	/// Computes rotation from previous, current, and maximum cursor/finger position.
+	/// Computes rotation between previous and current cursor/finger position.
 	///
-	/// Screen coordinate system with origin in left top corner:
+	/// Normalization of previous position is cached and has to be discarded on button/finger
+	/// release via [`Self::discard()`]. Current position `pos` is clamped between origin and
+	/// maximum position `max` as screen's width and height.
+	///
+	/// Screen coordinate system with origin in top left corner:
 	///
 	///   * x-axis from left to right,
 	///   * y-axis from top to bottom.
 	///
-	/// Trackball coordinate system with origin in trackball center:
+	/// Trackball coordinate system with origin in trackball's center:
 	///
 	///   * x-axis from left to right,
 	///   * y-axis from bottom to top,
@@ -186,14 +194,18 @@ impl Orbit<f32> {
 
 #[cfg(feature = "cc")]
 impl Orbit<f64> {
-	/// Computes rotation from previous, current, and maximum cursor/finger position.
+	/// Computes rotation between previous and current cursor/finger position.
 	///
-	/// Screen coordinate system with origin in left top corner:
+	/// Normalization of previous position is cached and has to be discarded on button/finger
+	/// release via [`Self::discard()`]. Current position `pos` is clamped between origin and
+	/// maximum position `max` as screen's width and height.
+	///
+	/// Screen coordinate system with origin in top left corner:
 	///
 	///   * x-axis from left to right,
 	///   * y-axis from top to bottom.
 	///
-	/// Trackball coordinate system with origin in trackball center:
+	/// Trackball coordinate system with origin in trackball's center:
 	///
 	///   * x-axis from left to right,
 	///   * y-axis from bottom to top,

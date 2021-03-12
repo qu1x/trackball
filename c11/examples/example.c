@@ -10,7 +10,7 @@ typedef struct {
 	double x, y, z, w;
 } vec4;
 
-// Caches normalization of previous cursor position.
+// Caches normalization of previous cursor/finger position.
 vec4 old = { .w = 0.0 };
 
 // Maximum cursor/finger position as screen's width and height.
