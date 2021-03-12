@@ -139,7 +139,7 @@ impl<N: RealField> Orbit<N> {
 }
 
 #[cfg(feature = "cc")]
-use nalgebra::{Quaternion, Vector4};
+use nalgebra::Quaternion;
 
 #[cfg(feature = "cc")]
 impl Orbit<f32> {
@@ -161,21 +161,21 @@ impl Orbit<f32> {
 	///   * on first invocation and after [`Self::discard()`] as there is no previous position yet,
 	///   * in the unlikely case that a position event fires twice resulting in zero displacements.
 	pub fn compute(&mut self, pos: &Point2<f32>, max: &Point2<f32>) -> Option<UnitQuaternion<f32>> {
-		let mut rot = Vector4::zeros();
+		let mut rot = Quaternion::identity();
 		let mut old = self
 			.vec
 			.map(|(ray, len)| ray.into_inner().push(len))
 			.unwrap_or_default();
 		unsafe {
 			trackball_orbit_f(
-				rot.as_mut_ptr(),
+				rot.as_vector_mut().as_mut_ptr(),
 				old.as_mut_ptr(),
 				pos.coords.as_ptr(),
 				max.coords.as_ptr(),
 			);
 		}
 		self.vec = Some((Unit::new_unchecked(old.xyz()), old.w));
-		Some(UnitQuaternion::new_unchecked(Quaternion::from(rot)))
+		(rot.w != 1.0).then(|| UnitQuaternion::new_unchecked(rot))
 	}
 
 	/// Discards cached normalization of previous cursor/finger position on button/finger release.
@@ -204,21 +204,21 @@ impl Orbit<f64> {
 	///   * on first invocation and after [`Self::discard()`] as there is no previous position yet,
 	///   * in the unlikely case that a position event fires twice resulting in zero displacements.
 	pub fn compute(&mut self, pos: &Point2<f64>, max: &Point2<f64>) -> Option<UnitQuaternion<f64>> {
-		let mut rot = Vector4::zeros();
+		let mut rot = Quaternion::identity();
 		let mut old = self
 			.vec
 			.map(|(ray, len)| ray.into_inner().push(len))
 			.unwrap_or_default();
 		unsafe {
 			trackball_orbit_d(
-				rot.as_mut_ptr(),
+				rot.as_vector_mut().as_mut_ptr(),
 				old.as_mut_ptr(),
 				pos.coords.as_ptr(),
 				max.coords.as_ptr(),
 			);
 		}
 		self.vec = Some((Unit::new_unchecked(old.xyz()), old.w));
-		Some(UnitQuaternion::new_unchecked(Quaternion::from(rot)))
+		(rot.w != 1.0).then(|| UnitQuaternion::new_unchecked(rot))
 	}
 
 	/// Discards cached normalization of previous cursor/finger position on button/finger release.

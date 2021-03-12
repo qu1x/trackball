@@ -2,6 +2,7 @@
 
   * Fix zero literal suffixes in [C11 implementation](c11).
   * Use `num_f`, `num_d`, and `num_l` type definitions.
+  * Use `None` for identity quaternion.
   * Update build script.
   * Update [README.md](README.md).
 
