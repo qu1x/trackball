@@ -244,3 +244,49 @@ extern "C" {
 	fn trackball_orbit_f(xyzw: *mut f32, xyzm: *mut f32, xy: *const f32, wh: *const f32);
 	fn trackball_orbit_d(xyzw: *mut f64, xyzm: *mut f64, xy: *const f64, wh: *const f64);
 }
+
+use nalgebra::{Matrix4, Orthographic3, Perspective3};
+
+/// Frame operation handler.
+///
+/// Implements [`Default`] and can be created with `Frame::default()`.
+#[derive(Debug, Clone)]
+pub struct Frame<N: RealField> {
+	/// Scale identical orthographic or perspective projection matrix.
+	pub mat: Matrix4<N>,
+	/// Maximum position on focus plane as frame's width and height.
+	pub max: Point2<N>,
+}
+
+impl<N: RealField> Default for Frame<N> {
+	fn default() -> Self {
+		Self {
+			mat: Matrix4::zeros(),
+			max: Point2::origin(),
+		}
+	}
+}
+
+impl<N: RealField> Frame<N> {
+	/// Computes projection matrix and maximum position on focus plane as frame's width and height.
+	///
+	/// Extended frustrum parameters are:
+	///
+	///   * `aspect`: screen's width divided by its height,
+	///   * `fovy`: field of view yaw axis (y/up-axis in camera space), usually `N::frac_pi_4()`,
+	///   * `znear`: distance of near clip plane from camera eye,
+	///   * `zat`: distance of focus plane from camera eye,
+	///   * `zfar`: distance of far clip plane from camera eye,
+	///   * `ortho`: scale preserving transition between orthographic and perspective projection.
+	pub fn compute(&mut self, aspect: N, fovy: N, znear: N, zat: N, zfar: N, ortho: bool) {
+		let two = N::one() + N::one();
+		let top = zat * (fovy / two).tan();
+		let right = aspect * top;
+		self.max = Point2::new(right, top) * two;
+		self.mat = if ortho {
+			Orthographic3::new(-right, right, -top, top, znear, zfar).into_inner()
+		} else {
+			Perspective3::new(aspect, fovy, znear, zfar).into_inner()
+		};
+	}
+}
