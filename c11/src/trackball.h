@@ -22,10 +22,10 @@
 ///
 /// # Example
 ///
-/// A trackball camera mode implementation can be as easily as this by
-/// delegating events of your 3D graphics library of choice to the \ref
-/// trackball_orbit operation implementation along with other implementations
-/// for common trackball camera mode operations like slide, scale, and focus.
+/// A trackball camera mode implementation can be as easy as this by delegating
+/// events of your 3D graphics library of choice to the \ref trackball_orbit
+/// operation implementation along with other implementations for common
+/// trackball camera mode operations like slide, scale, and focus.
 ///
 /// \include example.c
 

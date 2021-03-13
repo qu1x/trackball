@@ -21,7 +21,7 @@
 //!
 //! # Example
 //!
-//! A trackball camera mode implementation can be as easily as this by delegating events of your 3D
+//! A trackball camera mode implementation can be as easy as this by delegating events of your 3D
 //! graphics library of choice to the [`Orbit`] operation handler along with other handlers for
 //! common trackball camera mode operations like slide, scale, and focus.
 //!
