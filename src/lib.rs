@@ -135,7 +135,6 @@ impl<N: RealField> Orbit<N> {
 		// Angle of rotation is displacement length divided by radius.
 		Unit::try_new(vec, N::zero()).map(|ray| UnitQuaternion::from_axis_angle(&ray, len / max))
 	}
-
 	/// Discards cached normalization of previous cursor/finger position on button/finger release.
 	pub fn discard(&mut self) {
 		self.vec = None;
@@ -185,7 +184,6 @@ impl Orbit<f32> {
 		self.vec = Some((Unit::new_unchecked(old.xyz()), old.w));
 		(rot.w != 1.0).then(|| UnitQuaternion::new_unchecked(rot))
 	}
-
 	/// Discards cached normalization of previous cursor/finger position on button/finger release.
 	pub fn discard(&mut self) {
 		self.vec = None;
@@ -232,7 +230,6 @@ impl Orbit<f64> {
 		self.vec = Some((Unit::new_unchecked(old.xyz()), old.w));
 		(rot.w != 1.0).then(|| UnitQuaternion::new_unchecked(rot))
 	}
-
 	/// Discards cached normalization of previous cursor/finger position on button/finger release.
 	pub fn discard(&mut self) {
 		self.vec = None;
@@ -245,7 +242,37 @@ extern "C" {
 	fn trackball_orbit_d(xyzw: *mut f64, xyzm: *mut f64, xy: *const f64, wh: *const f64);
 }
 
-use nalgebra::{Matrix4, Orthographic3, Perspective3};
+/// Slide operation handler.
+///
+/// Implements [`Default`] and can be created with `Frame::default()`.
+#[derive(Debug, Clone, Default)]
+pub struct Slide<N: RealField> {
+	/// Previous cursor/finger position scaled to focus plane.
+	pub pos: Option<Point2<N>>,
+}
+
+impl<N: RealField> Slide<N> {
+	/// Computes slide on focus plane from previous to current cursor/finger position.
+	pub fn compute(&mut self, pos: &Point2<N>, sat: &Vector2<N>) -> Option<Vector3<N>> {
+		let new = Point2::from(pos.coords.component_mul(sat));
+		self.pos.replace(new).map(|old| (new - old).push(N::zero()))
+	}
+	/// Discards previous cursor/finger position scaled to focus plane on button/finger release.
+	pub fn discard(&mut self) {
+		self.pos = None;
+	}
+	/// Effective slide on focus plane to localize orbit operation.
+	pub fn orbit_at(rot: UnitQuaternion<N>, pos: &Point2<N>, sat: &Vector2<N>) -> Vector3<N> {
+		let pos = pos.coords.component_mul(sat).push(N::zero());
+		pos - rot.transform_vector(&pos)
+	}
+	/// Effective slide on focus plane to localize scale operation.
+	pub fn scale_at(rat: N, pos: &Point2<N>, sat: &Vector2<N>) -> Vector3<N> {
+		pos.coords.component_mul(sat).push(N::zero()) * (N::one() - rat)
+	}
+}
+
+use nalgebra::{Matrix4, Orthographic3, Perspective3, Vector2};
 
 /// Frame operation handler.
 ///
@@ -273,7 +300,7 @@ impl<N: RealField> Frame<N> {
 	/// Extended frustrum parameters are:
 	///
 	///   * `aspect`: screen's width divided by its height,
-	///   * `fovy`: field of view yaw axis (y/up-axis in camera space), usually `N::frac_pi_4()`,
+	///   * `fovy`: field of view yaw axis (y/up-axis), usually [`RealField::frac_pi_4()`],
 	///   * `znear`: distance of near clip plane from camera eye,
 	///   * `zat`: distance of focus plane from camera eye,
 	///   * `zfar`: distance of far clip plane from camera eye,
@@ -288,5 +315,49 @@ impl<N: RealField> Frame<N> {
 		} else {
 			Perspective3::new(aspect, fovy, znear, zfar).into_inner()
 		};
+	}
+	/// Screen to focus plane scale.
+	pub fn scale(&self, max: &Point2<N>) -> Vector2<N> {
+		self.max.coords.component_div(&max.coords)
+	}
+}
+
+use nalgebra::center;
+use std::collections::BTreeMap;
+
+/// Touch operation handler.
+///
+/// Implements [`Default`] and can be created with `Frame::default()`.
+#[derive(Debug, Clone, Default)]
+pub struct Touch<I: Ord, N: RealField> {
+	/// Position by finger ID.
+	pub pos: BTreeMap<I, Point2<N>>,
+	/// Cached normalization of previous two-finger vector.
+	pub vec: Option<(Unit<Vector3<N>>, N)>,
+}
+
+impl<I: Ord, N: RealField> Touch<I, N> {
+	/// Computes roll, zoom, and centroid of two fingers for orbit, scale, and slide operations.
+	pub fn compute(&mut self, id: I, pos: Point2<N>) -> Option<(UnitQuaternion<N>, N, Point2<N>)> {
+		// Insert or update finger position.
+		let _old_pos = self.pos.insert(id, pos);
+		// Wait for two fingers.
+		(self.pos.len() == 2).then(|| ())?;
+		// Position of first and second finger.
+		let pos_one = &self.pos[self.pos.keys().min().unwrap()];
+		let pos_two = &self.pos[self.pos.keys().max().unwrap()];
+		// Ray and its length pointing from first to second finger.
+		let (new_ray, new_len) = Unit::new_and_get((pos_two - pos_one).push(N::zero()));
+		// Get old and replace with new vector.
+		let (old_ray, old_len) = self.vec.replace((new_ray, new_len))?;
+		// Camera roll in opposite direction at centroid.
+		let roll = UnitQuaternion::rotation_between_axis(&new_ray, &old_ray).unwrap_or_default();
+		// Camera zoom at centroid.
+		Some((roll, old_len / new_len, center(pos_one, pos_two)))
+	}
+	/// Removes finger position and discards cached normalization of previous two-finger vector.
+	pub fn discard(&mut self, id: I) {
+		self.pos.remove(&id).expect("Unknown touch ID");
+		self.vec = None;
 	}
 }
