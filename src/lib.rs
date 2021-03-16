@@ -60,6 +60,276 @@
 
 use nalgebra::{Point2, RealField, Unit, UnitQuaternion, Vector3};
 
+use nalgebra::Point3;
+
+/// Camera eye and target alignment.
+#[derive(Debug, Clone, Copy)]
+pub struct Align<N: RealField> {
+	/// Target position in world space.
+	pub pos: Point3<N>,
+	/// Eye rotation at target from camera to world space.
+	pub rot: UnitQuaternion<N>,
+	/// Target distance from eye.
+	pub zat: N,
+}
+
+impl<N: RealField> Align<N> {
+	/// Sets eye inclusive its attitude and target point.
+	pub fn look_at(eye: &Point3<N>, at: &Point3<N>, up: &Vector3<N>) -> Self {
+		let dir = at - eye;
+		Self {
+			pos: at.clone(),
+			rot: UnitQuaternion::look_at_rh(&dir, up),
+			zat: dir.norm(),
+		}
+	}
+	/// Eye position in world space.
+	pub fn eye(&self) -> Point3<N> {
+		self.pos + self.rot * Vector3::z_axis().into_inner() * self.zat
+	}
+	/// Sets eye point inclusive its attitude.
+	///
+	/// Clamps eye point between [`Self::min_dist()`] and [`Self::max_dist()`].
+	pub fn set_eye(&mut self, eye: &Point3<N>, up: &Vector3<N>) {
+		*self = Self::look_at(eye, &self.pos, up);
+	}
+	/// Target position in world space.
+	pub fn at(&self) -> Point3<N> {
+		self.pos
+	}
+	/// Sets target position in world space.
+	pub fn set_at(&mut self, at: &Point3<N>) {
+		self.pos = at.clone();
+	}
+	/// Slides camera eye and target by vector in world space.
+	///
+	/// Use following axes to slide in camera space:
+	///
+	///   * [`Self::roll_axis()`]
+	///   * [`Self::pitch_axis()`]
+	///   * [`Self::yaw_axis()`]
+	pub fn slide(&mut self, vec: &Vector3<N>) {
+		self.pos += vec;
+	}
+	/// Orbit eye at target by `rot` in world space.
+	///
+	/// Use following axes to orbit in camera space:
+	///
+	///   * [`Self::roll_axis()`]
+	///   * [`Self::pitch_axis()`]
+	///   * [`Self::yaw_axis()`]
+	pub fn orbit(&mut self, rot: &UnitQuaternion<N>) {
+		self.rot = rot * self.rot;
+	}
+	/// Orbits eye by `rot` at `pos` in world space, see [`Self::orbit()`].
+	pub fn orbit_at(&mut self, rot: &UnitQuaternion<N>, pos: &Point3<N>) {
+		self.orbit(rot);
+		self.slide(&(pos - rot * pos));
+	}
+	/// Scales target distance from eye by `rat`.
+	pub fn scale(&mut self, rat: N) {
+		self.zat *= rat;
+	}
+	/// Scales target distance from eye by `rat` at `pos` in world space, see [`Self::scale()`].
+	pub fn scale_at(&mut self, rat: N, pos: &Point3<N>) {
+		self.scale(rat);
+		self.slide(&(pos - pos * rat));
+	}
+	/// Negative z-axis in camera space pointing from front to back.
+	pub fn roll_axis(&self) -> Unit<Vector3<N>> {
+		self.rot * -Vector3::z_axis()
+	}
+	/// Positive x-axis in camera space pointing from left to right.
+	pub fn pitch_axis(&self) -> Unit<Vector3<N>> {
+		self.rot * Vector3::x_axis()
+	}
+	/// Negative y-axis in camera space pointing from top to bottom.
+	pub fn yaw_axis(&self) -> Unit<Vector3<N>> {
+		self.rot * -Vector3::y_axis()
+	}
+	/// Eye attitude via intrinsic roll, pitch, and yaw angles applied in the order mentioned.
+	///
+	/// Angles ranges are `(±PI, ±FRAC_PI_2, ±PI)` with `(0.0, 0.0, 0.0)` pointing along negative
+	/// z-axis from front to back.
+	pub fn angles(&self) -> (N, N, N) {
+		self.rot.euler_angles()
+	}
+	/// Sets eye attitude via intrinsic roll, pitch, and yaw angles applied in the order mentioned.
+	pub fn set_angles(&mut self, roll: N, pitch: N, yaw: N) {
+		self.rot = UnitQuaternion::from_euler_angles(roll, pitch, yaw);
+	}
+	/// View transformation from world to camera space.
+	pub fn view(&self) -> Isometry3<N> {
+		// Eye rotation at target from world to camera space.
+		let rot = self.rot.inverse();
+		// Eye position in camera space with origin in world space.
+		let eye = rot * self.pos + Vector3::z_axis().into_inner() * self.zat;
+		// Translate in such a way that the eye position with origin in world coordinates vanishes.
+		Isometry3::from_parts(eye.coords.neg().into(), rot)
+	}
+}
+
+/// Camera projection.
+///
+/// Implements [`Default`] and can be created with `Frame::default()`.
+#[derive(Debug, Clone, Copy)]
+pub struct Frame<N: RealField> {
+	/// Field of view y-axis in radians.
+	///
+	/// Angle in yz-plane. Default is [`RealField::frac_pi_4()`].
+	pub fov: N,
+	/// Clip plane distances.
+	///
+	/// Near and far clip plane distances from either target or eye whether [`Self::oim`]. Defaults
+	/// to `(1e-1, 1e+6)` measured from eye.
+	pub zcp: (N, N),
+	/// Object inspection mode.
+	///
+	/// Scales clip plane distances by measuring from target instead of eye. Default is `false`.
+	pub oim: bool,
+	/// Orthographic projection mode.
+	///
+	/// Computes scale-identical orthographic instead of perspective projection. Default is `false`.
+	pub opm: bool,
+}
+
+impl<N: RealField> Default for Frame<N> {
+	fn default() -> Self {
+		Self {
+			fov: N::frac_pi_4(),
+			zcp: (convert(1e-1), convert(1e+6)),
+			oim: false,
+			opm: false,
+		}
+	}
+}
+
+use nalgebra::Vector2;
+
+use nalgebra::{Matrix4, Orthographic3, Perspective3};
+
+#[derive(Debug, Clone, Copy)]
+pub struct Image<N: RealField> {
+	/// Current position in screen space of hovering input or pointing device.
+	pub pos: Point2<N>,
+	/// Maximum position in screen space as screen's width and height.
+	pub max: Point2<N>,
+	/// Unit per pixel on focus plane to scale slide operations and localize orbit/scale operations.
+	pub upp: N,
+	/// Cached view isometry from world to camera space coinciding with right-handed look-at space.
+	pub view_iso: Isometry3<N>,
+	/// Cached homogeneous view matrix computed from view isometry.
+	pub view_mat: Matrix4<N>,
+	/// Cached scale-identical orthographic or perspective projection matrix.
+	pub proj_mat: Matrix4<N>,
+	/// Cached transformation applying view and projection matrix.
+	pub proj_view_mat: Matrix4<N>,
+	/// Cached inverse of transformation for ray-tracing screen positions onto world objects.
+	pub proj_view_inv: Matrix4<N>,
+}
+
+use nalgebra::{convert, zero, Isometry3};
+use std::ops::Neg;
+
+impl<N: RealField> Image<N> {
+	pub fn new(align: &Align<N>, frame: &Frame<N>, max: Point2<N>) -> Self {
+		let mut image = Self {
+			pos: Point2::origin(),
+			max,
+			upp: zero(),
+			view_iso: Isometry3::identity(),
+			view_mat: zero(),
+			proj_mat: zero(),
+			proj_view_mat: zero(),
+			proj_view_inv: zero(),
+		};
+		image.view(align);
+		image.projection(align, frame);
+		image.transformation();
+		let _is_ok = image.inverse_transformation();
+		image
+	}
+	/// Computes view matrix from camera eye and target alignment.
+	///
+	/// Camera eye and target alignment is defined with:
+	///
+	///   * `pos` as target position in world space,
+	///   * `rot` as eye rotation at target from camera to world space,
+	///   * `zat` as target distance from eye.
+	pub fn view(&mut self, align: &Align<N>) {
+		self.view_iso = align.view();
+		self.view_mat = self.view_iso.to_homogeneous();
+	}
+	/// Computes projection matrix and unit per pixel on focus plane.
+	///
+	/// Extended frustum parameters are:
+	///
+	///   * `wh`: screen's width and height,
+	///   * `fovy`: field of view yaw axis (y/up-axis), usually [`RealField::frac_pi_4()`],
+	///   * `znear`: distance of near clip plane from camera eye,
+	///   * `zat`: distance of focus plane from camera eye,
+	///   * `zfar`: distance of far clip plane from camera eye,
+	///   * `ortho`: scale preserving transition between orthographic and perspective projection.
+	pub fn projection(&mut self, align: &Align<N>, frame: &Frame<N>) {
+		let &Align { zat, .. } = align;
+		let &Frame { fov, zcp, oim, opm } = frame;
+		let (znear, zfar) = if oim {
+			let (znear, zfar) = zcp;
+			(zat - znear, zat + zfar)
+		} else {
+			zcp
+		};
+		let aspect = self.max.x / self.max.y;
+		let two = N::one() + N::one();
+		let top = zat * (fov / two).tan();
+		let right = aspect * top;
+		self.upp = right * two / self.max.x;
+		self.proj_mat = if opm {
+			Orthographic3::new(-right, right, -top, top, znear, zfar).into_inner()
+		} else {
+			Perspective3::new(aspect, fov, znear, zfar).into_inner()
+		};
+	}
+	/// Computes transformation applying view and projection matrix.
+	pub fn transformation(&mut self) {
+		self.proj_view_mat = self.proj_mat * self.view_mat
+	}
+	/// Computes inverse of transformation for ray-tracing screen positions onto world objects.
+	#[must_use = "return value is `true` on success"]
+	pub fn inverse_transformation(&mut self) -> bool {
+		self.proj_view_mat.try_inverse_mut()
+	}
+	/// Clamps position in screen space with respect to its maximum in screen space.
+	pub fn clamp_pos_wrt_max(pos: &Point2<N>, max: &Point2<N>) -> Point2<N> {
+		Point2::new(pos.x.clamp(N::zero(), max.x), pos.y.clamp(N::zero(), max.y))
+	}
+	/// Clamps position in screen space.
+	pub fn clamp_pos(&self, pos: &Point2<N>) -> Point2<N> {
+		Self::clamp_pos_wrt_max(pos, &self.max)
+	}
+	/// Transforms position from screen to camera space with respect to its maximum in screen space.
+	pub fn transform_pos_wrt_max(pos: &Point2<N>, max: &Point2<N>) -> (Point2<N>, Point2<N>) {
+		let max = max * convert(0.5);
+		(Point2::new(pos.x - max.x, max.y - pos.y), max)
+	}
+	/// Transforms position from screen to camera space.
+	pub fn transform_pos(&self, pos: &Point2<N>) -> Point2<N> {
+		Self::transform_pos_wrt_max(pos, &self.max).0
+	}
+	/// Transforms vector from screen to camera space.
+	pub fn transform_vec(pos: &Vector2<N>) -> Vector2<N> {
+		Vector2::new(pos.x, -pos.y)
+	}
+	/// Transforms position from screen to camera space and projects it onto focus plane.
+	pub fn project_pos(&self, pos: &Point2<N>) -> Point3<N> {
+		self.transform_pos(pos).coords.scale(self.upp).push(N::zero()).into()
+	}
+	/// Transforms vector from screen to camera space and projects it onto focus plane.
+	pub fn project_vec(&self, vec: &Vector2<N>) -> Vector3<N> {
+		Self::transform_vec(vec).scale(self.upp).push(N::zero())
+	}
+}
+
 /// Orbit operation handler.
 ///
 /// Implements [`Default`] and can be created with `Orbit::default()`.
@@ -98,14 +368,10 @@ impl<N: RealField> Orbit<N> {
 	///   * on first invocation and after [`Self::discard()`] as there is no previous position yet,
 	///   * in the unlikely case that a position event fires twice resulting in zero displacements.
 	pub fn compute(&mut self, pos: &Point2<N>, max: &Point2<N>) -> Option<UnitQuaternion<N>> {
-		// Clamp position between screen's left top and right bottom corner.
-		let pos = Point2::new(pos.x.clamp(N::zero(), max.x), pos.y.clamp(N::zero(), max.y));
-		// Maximum centered cursor/finger position as half the screen's width and height.
-		let max = max / (N::one() + N::one());
-		// Current centered cursor/finger position from left to right and bottom to top.
-		let pos = Vector3::new(pos.x - max.x, max.y - pos.y, N::zero());
+		// Clamped cursor/finger position and its maximum from left to right and bottom to top.
+		let (pos, max) = Image::transform_pos_wrt_max(&Image::clamp_pos_wrt_max(pos, &max), &max);
 		// Positive z-axis pointing from far to near.
-		let pza = Vector3::z_axis();
+		let (pos, pza) = (pos.coords.push(N::zero()), Vector3::z_axis());
 		// New position as ray and length on xy-plane or z-axis of zero length for origin position.
 		let (ray, len) = Unit::try_new_and_get(pos, N::zero()).unwrap_or((pza, N::zero()));
 		// Get old ray and length as start position and offset and replace with new ray and length.
@@ -242,122 +508,148 @@ extern "C" {
 	fn trackball_orbit_d(xyzw: *mut f64, xyzm: *mut f64, xy: *const f64, wh: *const f64);
 }
 
-/// Slide operation handler.
+/// Scale operation handler.
 ///
-/// Implements [`Default`] and can be created with `Frame::default()`.
-#[derive(Debug, Clone, Default)]
-pub struct Slide<N: RealField> {
-	/// Previous cursor/finger position scaled to focus plane.
-	pub pos: Option<Point2<N>>,
-}
-
-impl<N: RealField> Slide<N> {
-	/// Computes slide on focus plane from previous to current cursor/finger position.
-	pub fn compute(&mut self, pos: &Point2<N>, sat: &Vector2<N>) -> Option<Vector3<N>> {
-		let new = Point2::from(pos.coords.component_mul(sat));
-		self.pos.replace(new).map(|old| (new - old).push(N::zero()))
-	}
-	/// Discards previous cursor/finger position scaled to focus plane on button/finger release.
-	pub fn discard(&mut self) {
-		self.pos = None;
-	}
-	/// Effective slide on focus plane to localize orbit operation.
-	pub fn orbit_at(rot: UnitQuaternion<N>, pos: &Point2<N>, sat: &Vector2<N>) -> Vector3<N> {
-		let pos = pos.coords.component_mul(sat).push(N::zero());
-		pos - rot.transform_vector(&pos)
-	}
-	/// Effective slide on focus plane to localize scale operation.
-	pub fn scale_at(rat: N, pos: &Point2<N>, sat: &Vector2<N>) -> Vector3<N> {
-		pos.coords.component_mul(sat).push(N::zero()) * (N::one() - rat)
-	}
-}
-
-use nalgebra::{Matrix4, Orthographic3, Perspective3, Vector2};
-
-/// Frame operation handler.
-///
-/// Implements [`Default`] and can be created with `Frame::default()`.
+/// Implements [`Default`] and can be created with `Orbit::default()`.
 #[derive(Debug, Clone)]
-pub struct Frame<N: RealField> {
-	/// Scale identical orthographic or perspective projection matrix.
-	pub mat: Matrix4<N>,
-	/// Maximum position on focus plane as frame's width and height.
-	pub max: Point2<N>,
+pub struct Scale<N: RealField> {
+	/// Caches previous cursor/finger position.
+	pub scu: N,
 }
 
-impl<N: RealField> Default for Frame<N> {
+impl<N: RealField> Default for Scale<N> {
 	fn default() -> Self {
 		Self {
-			mat: Matrix4::zeros(),
-			max: Point2::origin(),
+			scu: convert(120.0),
 		}
 	}
 }
 
-impl<N: RealField> Frame<N> {
-	/// Computes projection matrix and maximum position on focus plane as frame's width and height.
-	///
-	/// Extended frustrum parameters are:
-	///
-	///   * `aspect`: screen's width divided by its height,
-	///   * `fovy`: field of view yaw axis (y/up-axis), usually [`RealField::frac_pi_4()`],
-	///   * `znear`: distance of near clip plane from camera eye,
-	///   * `zat`: distance of focus plane from camera eye,
-	///   * `zfar`: distance of far clip plane from camera eye,
-	///   * `ortho`: scale preserving transition between orthographic and perspective projection.
-	pub fn compute(&mut self, aspect: N, fovy: N, znear: N, zat: N, zfar: N, ortho: bool) {
-		let two = N::one() + N::one();
-		let top = zat * (fovy / two).tan();
-		let right = aspect * top;
-		self.max = Point2::new(right, top) * two;
-		self.mat = if ortho {
-			Orthographic3::new(-right, right, -top, top, znear, zfar).into_inner()
-		} else {
-			Perspective3::new(aspect, fovy, znear, zfar).into_inner()
-		};
-	}
-	/// Screen to focus plane scale.
-	pub fn scale(&self, max: &Point2<N>) -> Vector2<N> {
-		self.max.coords.component_div(&max.coords)
+impl<N: RealField> Scale<N> {
+	pub fn compute(&self, delta: N) -> N {
+		N::one() - delta / self.scu
 	}
 }
 
-use nalgebra::center;
+/// Slide operation handler.
+///
+/// Implements [`Default`] and can be created with `Orbit::default()`.
+///
+/// Both its methods must be invoked on matching events fired by your 3D graphics library of choice.
+#[derive(Debug, Clone, Default)]
+pub struct Slide<N: RealField> {
+	/// Caches previous cursor/finger position.
+	pub vec: Option<Point2<N>>,
+}
+
+impl<N: RealField> Slide<N> {
+	/// Computes slide between previous and current cursor/finger position in screen space.
+	pub fn compute(&mut self, pos: &Point2<N>) -> Option<Vector2<N>> {
+		self.vec.replace(pos.clone()).map(|old| old - pos)
+	}
+	/// Discards cached previous cursor/finger position on button/finger release.
+	pub fn discard(&mut self) {
+		self.vec = None;
+	}
+}
+
 use std::collections::BTreeMap;
 
 /// Touch operation handler.
 ///
 /// Implements [`Default`] and can be created with `Frame::default()`.
 #[derive(Debug, Clone, Default)]
-pub struct Touch<I: Ord, N: RealField> {
-	/// Position by finger ID.
-	pub pos: BTreeMap<I, Point2<N>>,
-	/// Cached normalization of previous two-finger vector.
-	pub vec: Option<(Unit<Vector3<N>>, N)>,
+pub struct Touch<F: Ord, N: RealField> {
+	/// Finger positions ordered by finger IDs.
+	pub pos: BTreeMap<F, Point2<N>>,
+	/// Centroid position and cached normalization of previous two-finger vector.
+	pub vec: Option<(Unit<Vector2<N>>, N)>,
+	/// Centroid position of potential finger tap gesture.
+	pub tap: Option<(usize, Point2<N>)>,
+	/// Number of total finger moves per potential finger tap gesture.
+	pub mvs: usize,
 }
 
-impl<I: Ord, N: RealField> Touch<I, N> {
-	/// Computes roll, zoom, and centroid of two fingers for orbit, scale, and slide operations.
-	pub fn compute(&mut self, id: I, pos: Point2<N>) -> Option<(UnitQuaternion<N>, N, Point2<N>)> {
+impl<F: Ord, N: RealField> Touch<F, N> {
+	/// Computes centroid position, roll angle, and scale ratio from finger gestures.
+	pub fn compute(
+		&mut self,
+		fid: F,
+		pos: Point2<N>,
+		mvs: usize,
+	) -> Option<(usize, Point2<N>, N, N)> {
 		// Insert or update finger position.
-		let _old_pos = self.pos.insert(id, pos);
-		// Wait for two fingers.
-		(self.pos.len() == 2).then(|| ())?;
-		// Position of first and second finger.
-		let pos_one = &self.pos[self.pos.keys().min().unwrap()];
-		let pos_two = &self.pos[self.pos.keys().max().unwrap()];
-		// Ray and its length pointing from first to second finger.
-		let (new_ray, new_len) = Unit::new_and_get((pos_two - pos_one).push(N::zero()));
-		// Get old and replace with new vector.
-		let (old_ray, old_len) = self.vec.replace((new_ray, new_len))?;
-		// Camera roll in opposite direction at centroid.
-		let roll = UnitQuaternion::rotation_between_axis(&new_ray, &old_ray).unwrap_or_default();
-		// Camera zoom at centroid.
-		Some((roll, old_len / new_len, center(pos_one, pos_two)))
+		let _old_pos = self.pos.insert(fid, pos);
+		// Current number of fingers.
+		let num = self.pos.len();
+		// Maximum number of fingers seen per potential tap.
+		let max = self.tap.map_or(1, |(tap, _pos)| tap).max(num);
+		// Centroid position.
+		let pos = self
+			.pos
+			.values()
+			.map(|pos| pos.coords)
+			.sum::<Vector2<N>>()
+			// TODO Is this still a generic integer to float cast? Way to avoid concrete type?
+			.unscale(convert(num as f64))
+			.into();
+		// Cancel potential tap if more moves than number of finger starts plus optional number of
+		// moves per finger for debouncing tap gesture. Debouncing would delay non-tap gestures.
+		if self.mvs >= max + mvs * max {
+			// Make sure to not resume cancelled tap when fingers are discarded.
+			self.mvs = std::usize::MAX;
+			// Cancel potential tap.
+			self.tap = None;
+		} else {
+			// Count total moves per potential tap.
+			self.mvs += 1;
+			// Insert or update potential tap as long as fingers are not discarded.
+			if num >= max {
+				self.tap = Some((num, pos));
+			}
+		}
+		// Inhibit finger gestures for given number of moves per finger. No delay with zero `mvs`.
+		if self.mvs >= mvs * max {
+			// Identity roll angle and scale ratio.
+			let (rot, rat) = (N::zero(), N::one());
+			// Roll and scale only with two-finger gesture, otherwise orbit or slide via centroid.
+			if num == 2 {
+				// Position of first and second finger.
+				let mut val = self.pos.values();
+				let one_pos = val.next().unwrap();
+				let two_pos = val.next().unwrap();
+				// Ray and its length pointing from first to second finger.
+				let (new_ray, new_len) = Unit::new_and_get(two_pos - one_pos);
+				// Get old and replace with new vector.
+				if let Some((old_ray, old_len)) = self.vec.replace((new_ray, new_len)) {
+					// Roll angle in opposite direction at centroid.
+					let rot = new_ray.perp(&old_ray).atan2(new_ray.dot(&old_ray));
+					// Scale ratio at centroid.
+					let rat = old_len / new_len;
+					// Induced two-finger slide, roll, and scale.
+					Some((num, pos, rot, rat))
+				} else {
+					// Start position of slide.
+					Some((num, pos, rot, rat))
+				}
+			} else {
+				// Induced one-finger or more than two-finger orbit or slide.
+				Some((num, pos, rot, rat))
+			}
+		} else {
+			// Gesture inhibited.
+			None
+		}
 	}
-	/// Removes finger position and discards cached normalization of previous two-finger vector.
-	pub fn discard(&mut self, id: I) {
-		self.pos.remove(&id).expect("Unknown touch ID");
+	/// Removes finger position and returns centroid position of finger tap gesture.
+	pub fn discard(&mut self, fid: F) -> Option<(usize, Point2<N>)> {
+		self.pos.remove(&fid).expect("Unknown touch ID");
 		self.vec = None;
+		if self.pos.is_empty() {
+			self.mvs = 0;
+			self.tap.take()
+		} else {
+			None
+		}
 	}
 }
