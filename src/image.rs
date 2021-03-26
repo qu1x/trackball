@@ -1,6 +1,5 @@
 use crate::{Frame, Scene};
-use nalgebra::{convert, zero, Point2, Point3, RealField, Vector2, Vector3};
-use nalgebra::{Isometry3, Matrix4, Orthographic3, Perspective3};
+use nalgebra::{convert, zero, Isometry3, Matrix4, Point2, Point3, RealField, Vector2, Vector3};
 
 /// Image as projection of [`Scene`] wrt [`Frame`].
 #[derive(Debug, Clone, Copy)]
@@ -49,17 +48,9 @@ impl<N: RealField> Image<N> {
 	}
 	/// Computes projection matrix and unit per pixel on focus plane.
 	pub fn projection(&mut self, frame: &Frame<N>, scene: &Scene<N>) {
-		let (znear, zfar) = scene.clip_planes(frame.distance());
-		let aspect = self.max.x / self.max.y;
-		let two = N::one() + N::one();
-		let top = frame.distance() * (scene.fov() / two).tan();
-		let right = aspect * top;
-		self.upp = right * two / self.max.x;
-		self.proj_mat = if scene.ortho() {
-			Orthographic3::new(-right, right, -top, top, znear, zfar).into_inner()
-		} else {
-			Perspective3::new(aspect, scene.fov(), znear, zfar).into_inner()
-		};
+		let (mat, upp) = scene.projection(frame.distance(), &self.max);
+		self.upp = upp;
+		self.proj_mat = mat;
 	}
 	/// Computes projection view matrix.
 	pub fn transformation(&mut self) {

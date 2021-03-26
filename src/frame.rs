@@ -100,7 +100,7 @@ impl<N: RealField> Frame<N> {
 	pub fn local_yaw_axis(&self) -> Unit<Vector3<N>> {
 		-Vector3::y_axis()
 	}
-	/// Positive z-axis in camera space pointing from front to back.
+	/// Negative z-axis in camera space pointing from front to back.
 	pub fn roll_axis(&self) -> Unit<Vector3<N>> {
 		self.rot * self.local_roll_axis()
 	}

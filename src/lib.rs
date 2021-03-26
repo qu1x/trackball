@@ -17,9 +17,9 @@
 //!   * Coherent and intuitive orbiting via the exponential map, see [`Orbit`] operation handler.
 //!   * Identical C11 implementation for [`Orbit`] operation handler behind `cc` feature gate.
 //!     Used for testing the C11 implementation with Rust 3D graphics libraries.
-//!   * Observer frame with [`Frame::look_at()`], [`Frame::scale_at()`], [`Frame::slide()`],
-//!     [`Frame::orbit_at()`] operations.
-//!   * Object inspection mode scaling clip planes by measuring them from target instead of eye.
+//!   * Observer frame with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`] operations in
+//!     world space and their local complements in camera space.
+//!   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
 //!   * Scale preserving transitioning between orthographic and perspective projection mode.
 //!   * Timing-free touch gesture recognition for slide, orbit, scale, and focus operations.
 //!

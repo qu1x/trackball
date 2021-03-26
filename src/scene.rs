@@ -1,4 +1,4 @@
-use nalgebra::{convert, RealField};
+use nalgebra::{convert, Matrix4, Orthographic3, Perspective3, Point2, RealField};
 
 /// Scene wrt enclosing viewing frustum.
 ///
@@ -88,5 +88,20 @@ impl<N: RealField> Scene<N> {
 	/// Computes scale-identical orthographic instead of perspective projection. Default is `false`.
 	pub fn set_ortho(&mut self, opm: bool) {
 		self.opm = opm
+	}
+	/// Projection transformation and unit per pixel on focus plane.
+	pub fn projection(&self, zat: N, max: &Point2<N>) -> (Matrix4<N>, N) {
+		let (znear, zfar) = self.clip_planes(zat);
+		let aspect = max.x / max.y;
+		let two = N::one() + N::one();
+		let top = zat * (self.fov / two).tan();
+		let right = aspect * top;
+		let upp = right * two / max.x;
+		let mat = if self.opm {
+			Orthographic3::new(-right, right, -top, top, znear, zfar).into_inner()
+		} else {
+			Perspective3::new(aspect, self.fov, znear, zfar).into_inner()
+		};
+		(mat, upp)
 	}
 }

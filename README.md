@@ -32,16 +32,15 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
   * Common trackball operations split into several operation handlers.
   * Coherent and intuitive orbiting via the exponential map, see [`Orbit`] operation handler.
   * Identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` feature gate.
-  * Observer frame with [`Frame::look_at()`], [`Frame::scale_at()`], [`Frame::slide()`],
-    [`Frame::orbit_at()`] operations.
-  * Object inspection mode scaling clip planes by measuring them from target instead of eye.
+  * Observer frame with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`] operations in
+    world space and their local complements in camera space.
+  * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
   * Scale preserving transitioning between orthographic and perspective projection mode.
   * Timing-free touch gesture recognition for slide, orbit, scale, and focus operations.
 
-[`Frame::look_at()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.look_at
-[`Frame::scale_at()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.scale_at
 [`Frame::slide()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.slide
-[`Frame::orbit_at()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.orbit_at
+[`Frame::orbit()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.orbit
+[`Frame::scale()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.scale
 
 ## Example
 
