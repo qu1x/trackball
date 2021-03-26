@@ -1,3 +1,7 @@
+# Version 0.2.0 (2021-03-26)
+
+  * Add several operation handlers.
+
 # Version 0.1.2 (2021-03-12)
 
   * Fix zero literal suffixes in [C11 implementation](c11).

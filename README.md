@@ -27,48 +27,51 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 [S2CID]: https://en.wikipedia.org/wiki/S2CID_(identifier)
 [44199608]: https://api.semanticscholar.org/CorpusID:44199608
 
-## Status
+## Features
 
-Currently only [`nalgebra`] is supported as underlying linear algebra library but others will be
-supported behind feature gates so that only your library of choice becomes a dependency. The
-[`Orbit`] operation handler will be complemented with other handlers for common trackball camera
-mode operations like slide, scale, and focus. Projection view matrices will be computed as well
-with scale preserving transitions between orthographic and perspective projection mode.
+  * Common trackball operations split into several operation handlers.
+  * Coherent and intuitive orbiting via the exponential map, see [`Orbit`] operation handler.
+  * Identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` feature gate.
+  * Observer frame with [`Frame::look_at()`], [`Frame::scale_at()`], [`Frame::slide()`],
+    [`Frame::orbit_at()`] operations.
+  * Object inspection mode scaling clip planes by measuring them from target instead of eye.
+  * Scale preserving transitioning between orthographic and perspective projection mode.
+  * Timing-free touch gesture recognition for slide, orbit, scale, and focus operations.
 
-[`nalgebra`]: https://doc.qu1x.dev/trackball/nalgebra/index.html
+[`Frame::look_at()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.look_at
+[`Frame::scale_at()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.scale_at
+[`Frame::slide()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.slide
+[`Frame::orbit_at()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.orbit_at
 
 ## Example
 
 A trackball camera mode implementation can be as easy as this by delegating events of your 3D
-graphics library of choice to the [`Orbit`] operation handler along with other handlers for
-common trackball camera mode operations like slide, scale, and focus.
-
-[`Orbit`]: https://doc.qu1x.dev/trackball/trackball/struct.Orbit.html
+graphics library of choice to the [`Orbit`] operation handler along with other handlers.
 
 ```rust
 use nalgebra::{Point2, UnitQuaternion, Vector3};
 use std::f32::consts::PI;
-use trackball::Orbit;
+use trackball::{Frame, Image, Orbit};
 
 /// Trackball camera mode.
 pub struct Trackball {
-	// Camera eye alignment.
-	align: UnitQuaternion<f32>,
-	// Orbit operation handler along with slide, scale, and focus operation handlers.
+	// Frame wrt camera eye and target.
+	frame: Frame<f32>,
+	// Image as projection of `Scene` wrt `Frame`.
+	image: Image<f32>,
+	// Orbit induced by displacement on screen.
 	orbit: Orbit<f32>,
-	// Maximum cursor/finger position as screen's width and height.
-	frame: Point2<f32>,
 }
 
 impl Trackball {
 	// Usually, a cursor position event with left mouse button being pressed.
 	fn handle_left_button_displacement(&mut self, pos: &Point2<f32>) {
-		// Optionally, do a coordinate system transformation like flipping x-axis/z-axis.
-		let camera_space = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), PI);
-		// Or directly apply this induced rotation.
-		let rotation = self.orbit.compute(&pos, &self.frame).unwrap_or_default();
-		// Post-multiply rotation to total camera alignment.
-		self.align *= camera_space * rotation * camera_space.inverse();
+		// Maximum position as screen's width and height.
+		let max = self.image.max;
+		// Induced rotation in camera space.
+		let rot = self.orbit.compute(&pos, &max).unwrap_or_default();
+		// Apply induced rotation to local observer frame.
+		self.frame.local_orbit(&rot);
 	}
 	// Event when left mouse button is released again.
 	fn handle_left_button_release(&mut self) {
@@ -80,12 +83,14 @@ impl Trackball {
 
 ## C11 Implementation
 
-An identical [C11 implementation](c11) can be used instead by enabling the `cc` feature as in:
+Identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` feature gate:
 
 ```toml
 [dependencies]
 trackball = { version = "0.1", features = ["cc"] }
 ```
+
+[`Orbit`]: https://doc.qu1x.dev/trackball/trackball/struct.Orbit.html
 
 ## License
 

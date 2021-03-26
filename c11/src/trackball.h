@@ -16,7 +16,7 @@
 /// [S2CID]: https://en.wikipedia.org/wiki/S2CID_(identifier)
 /// [44199608]: https://api.semanticscholar.org/CorpusID:44199608
 ///
-/// \version v0.1.2
+/// \version v0.2.0
 /// \author Rouven Spreckels <rs@qu1x.dev>
 /// \copyright BSD-3-Clause
 ///
@@ -38,12 +38,12 @@
 /// button/finger release by resetting it to zero. Current position is clamped
 /// between origin and maximum position as screen's width and height.
 ///
-/// Screen coordinate system with origin in top left corner:
+/// Screen space with origin in top left corner:
 ///
 ///   * x-axis from left to right,
 ///   * y-axis from top to bottom.
 ///
-/// Trackball coordinate system with origin in trackball's center:
+/// Camera space with origin at its target, the trackball's center:
 ///
 ///   * x-axis from left to right,
 ///   * y-axis from bottom to top,
