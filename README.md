@@ -35,8 +35,8 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
   * Observer frame with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`] operations in
     world space and their local complements in camera space.
   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
-  * Scale preserving transitioning between orthographic and perspective projection mode.
-  * Timing-free touch gesture recognition for slide, orbit, scale, and focus operations.
+  * Scale-preserving transitioning between orthographic and perspective projection mode.
+  * Time-free touch gesture recognition for slide, orbit, scale, and focus operations.
 
 [`Frame::slide()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.slide
 [`Frame::orbit()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.orbit

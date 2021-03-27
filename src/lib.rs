@@ -16,12 +16,11 @@
 //!   * Common trackball operations split into several operation handlers.
 //!   * Coherent and intuitive orbiting via the exponential map, see [`Orbit`] operation handler.
 //!   * Identical C11 implementation for [`Orbit`] operation handler behind `cc` feature gate.
-//!     Used for testing the C11 implementation with Rust 3D graphics libraries.
 //!   * Observer frame with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`] operations in
 //!     world space and their local complements in camera space.
 //!   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
-//!   * Scale preserving transitioning between orthographic and perspective projection mode.
-//!   * Timing-free touch gesture recognition for slide, orbit, scale, and focus operations.
+//!   * Scale-preserving transitioning between orthographic and perspective projection mode.
+//!   * Time-free touch gesture recognition for slide, orbit, scale, and focus operations.
 //!
 //! # Future Features
 //!
