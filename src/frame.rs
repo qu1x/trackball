@@ -31,8 +31,8 @@ impl<N: RealField> Frame<N> {
 		*self = Self::look_at(eye, &self.pos, up);
 	}
 	/// Target position in world space.
-	pub fn target(&self) -> Point3<N> {
-		self.pos
+	pub fn target(&self) -> &Point3<N> {
+		&self.pos
 	}
 	/// Sets target position in world space preserving eye position inclusive its roll attitude.
 	pub fn set_target(&mut self, at: &Point3<N>) {

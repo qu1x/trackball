@@ -11,7 +11,7 @@ use crate::Image;
 #[derive(Debug, Clone, Default)]
 pub struct Orbit<N: RealField> {
 	/// Caches normalization of previous cursor/finger position.
-	pub vec: Option<(Unit<Vector3<N>>, N)>,
+	vec: Option<(Unit<Vector3<N>>, N)>,
 }
 
 #[cfg(not(feature = "cc"))]

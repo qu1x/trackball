@@ -4,20 +4,34 @@ use std::collections::BTreeMap;
 /// Touch gestures inducing slide, orbit, scale, and focus.
 ///
 /// Implements [`Default`] and can be created with `Scene::default()`.
+///
+/// Both its methods must be invoked on matching events fired by your 3D graphics library of choice.
 #[derive(Debug, Clone, Default)]
 pub struct Touch<F: Ord, N: RealField> {
 	/// Finger positions ordered by finger IDs.
-	pub pos: BTreeMap<F, Point2<N>>,
+	pos: BTreeMap<F, Point2<N>>,
 	/// Centroid position and cached normalization of previous two-finger vector.
-	pub vec: Option<(Unit<Vector2<N>>, N)>,
+	vec: Option<(Unit<Vector2<N>>, N)>,
 	/// Centroid position of potential finger tap gesture.
-	pub tap: Option<(usize, Point2<N>)>,
+	tap: Option<(usize, Point2<N>)>,
 	/// Number of total finger moves per potential finger tap gesture.
-	pub mvs: usize,
+	mvs: usize,
 }
 
 impl<F: Ord, N: RealField> Touch<F, N> {
 	/// Computes centroid position, roll angle, and scale ratio from finger gestures.
+	///
+	/// Parameters are:
+	///
+	///   * `fid` as generic finger ID like `Some(id)` for touch and `None` for mouse events,
+	///   * `pos` as current cursor/finger position in screen space,
+	///   * `mvs` as number of finger moves for debouncing potential finger tap gesture with zero
+	///     resulting in no delay of non-tap gestures while tap gesture can still be recognized. Use
+	///     zero unless tap gestures are hardly recognized.
+	///
+	/// Returns number of fingers, centroid position, roll angle, and scale ratio in screen space in
+	/// the order mentioned or `None` when debouncing tap gesture with non-vanishing `mvs`. See
+	/// `Self::discard()` for tap gesture result.
 	pub fn compute(
 		&mut self,
 		fid: F,
@@ -87,7 +101,10 @@ impl<F: Ord, N: RealField> Touch<F, N> {
 			None
 		}
 	}
-	/// Removes finger position and returns centroid position of finger tap gesture.
+	/// Removes finger position and returns number of fingers and centroid position of tap gesture.
+	///
+	/// Returns `None` as long as there are still finger positions or no tap gesture has been
+	/// recognized. Panics if generic finger ID `fid` is unknown.
 	pub fn discard(&mut self, fid: F) -> Option<(usize, Point2<N>)> {
 		self.pos.remove(&fid).expect("Unknown touch ID");
 		self.vec = None;

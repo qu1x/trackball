@@ -8,7 +8,7 @@ use nalgebra::{Point2, RealField, Vector2};
 #[derive(Debug, Clone, Default)]
 pub struct Slide<N: RealField> {
 	/// Caches previous cursor/finger position.
-	pub vec: Option<Point2<N>>,
+	vec: Option<Point2<N>>,
 }
 
 impl<N: RealField> Slide<N> {

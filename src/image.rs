@@ -5,21 +5,21 @@ use nalgebra::{convert, zero, Isometry3, Matrix4, Point2, Point3, RealField, Vec
 #[derive(Debug, Clone, Copy)]
 pub struct Image<N: RealField> {
 	/// Current position in screen space of hovering input or pointing device.
-	pub pos: Point2<N>,
+	pos: Point2<N>,
 	/// Maximum position in screen space as screen's width and height.
-	pub max: Point2<N>,
-	/// Unit per pixel on focus plane to scale slide operations and localize orbit/scale operations.
-	pub upp: N,
+	max: Point2<N>,
+	/// Cached unit per pixel on focus plane to scale/project positions/vectors onto focus plane.
+	upp: N,
 	/// Cached view isometry from world to camera space coinciding with right-handed look-at space.
-	pub view_iso: Isometry3<N>,
+	view_iso: Isometry3<N>,
 	/// Cached homogeneous view matrix computed from view isometry.
-	pub view_mat: Matrix4<N>,
+	view_mat: Matrix4<N>,
 	/// Cached scale-identical orthographic or perspective projection matrix.
-	pub proj_mat: Matrix4<N>,
+	proj_mat: Matrix4<N>,
 	/// Cached transformation.
-	pub proj_view_mat: Matrix4<N>,
+	proj_view_mat: Matrix4<N>,
 	/// Cached inverse of transformation.
-	pub proj_view_inv: Matrix4<N>,
+	proj_view_inv: Matrix4<N>,
 }
 
 impl<N: RealField> Image<N> {
@@ -35,30 +35,70 @@ impl<N: RealField> Image<N> {
 			proj_view_mat: zero(),
 			proj_view_inv: zero(),
 		};
-		image.view(frame);
-		image.projection(frame, scene);
-		image.transformation();
-		let _is_ok = image.inverse_transformation();
+		image.compute_view(frame);
+		image.compute_projection(frame, scene);
+		image.compute_transformation();
+		let _is_ok = image.compute_inverse_transformation();
 		image
 	}
-	/// Computes view matrix from frame wrt camera eye and target.
-	pub fn view(&mut self, frame: &Frame<N>) {
+	/// Current position in screen space of hovering input or pointing device.
+	pub fn pos(&self) -> &Point2<N> {
+		&self.pos
+	}
+	/// Sets current position in screen space of hovering input or pointing device.
+	pub fn set_pos(&mut self, pos: &Point2<N>) {
+		self.pos = pos.clone();
+	}
+	/// Maximum position in screen space as screen's width and height.
+	pub fn max(&self) -> &Point2<N> {
+		&self.max
+	}
+	/// Sets maximum position in screen space as screen's width and height.
+	pub fn set_max(&mut self, max: &Point2<N>) {
+		self.max = max.clone();
+	}
+	/// Cached unit per pixel on focus plane to scale/project positions/vectors onto focus plane.
+	pub fn upp(&self) -> N {
+		self.upp
+	}
+	/// Cached view isometry.
+	pub fn view_isometry(&self) -> &Isometry3<N> {
+		&self.view_iso
+	}
+	/// Cached view matrix.
+	pub fn view(&self) -> &Matrix4<N> {
+		&self.view_mat
+	}
+	/// Computes view isometry and matrix from frame wrt camera eye and target.
+	pub fn compute_view(&mut self, frame: &Frame<N>) {
 		self.view_iso = frame.view();
 		self.view_mat = self.view_iso.to_homogeneous();
 	}
+	/// Cached projection matrix.
+	pub fn projection(&self) -> &Matrix4<N> {
+		&self.proj_mat
+	}
 	/// Computes projection matrix and unit per pixel on focus plane.
-	pub fn projection(&mut self, frame: &Frame<N>, scene: &Scene<N>) {
+	pub fn compute_projection(&mut self, frame: &Frame<N>, scene: &Scene<N>) {
 		let (mat, upp) = scene.projection(frame.distance(), &self.max);
 		self.upp = upp;
 		self.proj_mat = mat;
 	}
+	/// Cached projection view matrix.
+	pub fn transformation(&self) -> &Matrix4<N> {
+		&self.proj_view_mat
+	}
 	/// Computes projection view matrix.
-	pub fn transformation(&mut self) {
+	pub fn compute_transformation(&mut self) {
 		self.proj_view_mat = self.proj_mat * self.view_mat
+	}
+	/// Cached inverse projection view matrix.
+	pub fn inverse_transformation(&self) -> &Matrix4<N> {
+		&self.proj_view_inv
 	}
 	/// Computes inverse of projection view matrix.
 	#[must_use = "return value is `true` on success"]
-	pub fn inverse_transformation(&mut self) -> bool {
+	pub fn compute_inverse_transformation(&mut self) -> bool {
 		self.proj_view_mat.try_inverse_mut()
 	}
 	/// Clamps position in screen space wrt its maximum in screen space.
