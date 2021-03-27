@@ -11,7 +11,7 @@
 //! [S2CID]: https://en.wikipedia.org/wiki/S2CID_(identifier)
 //! [44199608]: https://api.semanticscholar.org/CorpusID:44199608
 //!
-//! # Features
+//! # Preset Features
 //!
 //!   * Common trackball operations split into several operation handlers.
 //!   * Coherent and intuitive orbiting via the exponential map, see [`Orbit`] operation handler.
@@ -22,6 +22,11 @@
 //!   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
 //!   * Scale preserving transitioning between orthographic and perspective projection mode.
 //!   * Timing-free touch gesture recognition for slide, orbit, scale, and focus operations.
+//!
+//! # Future Features
+//!
+//!   * Add `Clamp` operation handler ensuring user boundary conditions of [`Frame`] and [`Scene`].
+//!   * Compute boundary box of scene graph and track total slide to prevent clip plane collission.
 //!
 //! # Example
 //!

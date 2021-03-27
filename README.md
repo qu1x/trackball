@@ -27,7 +27,7 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 [S2CID]: https://en.wikipedia.org/wiki/S2CID_(identifier)
 [44199608]: https://api.semanticscholar.org/CorpusID:44199608
 
-## Features
+## Present Features
 
   * Common trackball operations split into several operation handlers.
   * Coherent and intuitive orbiting via the exponential map, see [`Orbit`] operation handler.
@@ -41,6 +41,14 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 [`Frame::slide()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.slide
 [`Frame::orbit()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.orbit
 [`Frame::scale()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.scale
+
+## Future Features
+
+   * Add `Clamp` operation handler ensuring user boundary conditions of [`Frame`] and [`Scene`].
+   * Compute boundary box of scene graph and track total slide to prevent clip plane collission.
+
+[`Frame`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html
+[`Scene`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html
 
 ## Example
 
