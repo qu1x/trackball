@@ -45,7 +45,7 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 ## Future Features
 
    * Add `Clamp` operation handler ensuring user boundary conditions of [`Frame`] and [`Scene`].
-   * Compute boundary box of scene graph and track total slide to prevent clip plane collission.
+   * Compute boundary box of scene graph and track total slide to prevent clip plane collisions.
 
 [`Frame`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html
 [`Scene`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html
