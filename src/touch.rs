@@ -31,7 +31,7 @@ impl<F: Ord, N: RealField> Touch<F, N> {
 	///
 	/// Returns number of fingers, centroid position, roll angle, and scale ratio in screen space in
 	/// the order mentioned or `None` when debouncing tap gesture with non-vanishing `mvs`. See
-	/// `Self::discard()` for tap gesture result.
+	/// [`Self::discard()`] for tap gesture result.
 	pub fn compute(
 		&mut self,
 		fid: F,
@@ -103,8 +103,9 @@ impl<F: Ord, N: RealField> Touch<F, N> {
 	}
 	/// Removes finger position and returns number of fingers and centroid position of tap gesture.
 	///
-	/// Returns `None` as long as there are still finger positions or no tap gesture has been
-	/// recognized. Panics if generic finger ID `fid` is unknown.
+	/// Returns `None` as long as there are finger positions or no tap gesture has been recognized.
+	///
+	/// Panics if generic finger ID `fid` is unknown.
 	pub fn discard(&mut self, fid: F) -> Option<(usize, Point2<N>)> {
 		self.pos.remove(&fid).expect("Unknown touch ID");
 		self.vec = None;
