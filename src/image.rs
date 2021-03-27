@@ -53,7 +53,7 @@ impl<N: RealField> Image<N> {
 		image.compute_inverse_transformation();
 		image
 	}
-	/// Recomputes only cached matrices whose parameters have changed, see `Self::set_compute()`.
+	/// Recomputes only cached matrices whose parameters have changed, see [`Self::set_compute()`].
 	///
 	/// Returns `Some(true)` on success, `Some(false)` on failure, and `None` with no changes.
 	pub fn compute(&mut self, frame: &Frame<N>, scene: &Scene<N>) -> Option<bool> {
@@ -79,7 +79,7 @@ impl<N: RealField> Image<N> {
 			}
 		})
 	}
-	/// Sets whether to compute transformation and inverse transformation with `Self::compute()`.
+	/// Sets whether to compute transformation and inverse transformation with [`Self::compute()`].
 	///
 	/// Default is `(true, true)`.
 	pub fn set_compute(&mut self, compute_mat: bool, compute_inv: bool) {
