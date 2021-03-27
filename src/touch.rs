@@ -83,7 +83,7 @@ impl<F: Ord, N: RealField> Touch<F, N> {
 				// Get old and replace with new vector.
 				if let Some((old_ray, old_len)) = self.vec.replace((new_ray, new_len)) {
 					// Roll angle in opposite direction at centroid.
-					let rot = new_ray.perp(&old_ray).atan2(new_ray.dot(&old_ray));
+					let rot = old_ray.perp(&new_ray).atan2(old_ray.dot(&new_ray));
 					// Scale ratio at centroid.
 					let rat = old_len / new_len;
 					// Induced two-finger slide, roll, and scale.

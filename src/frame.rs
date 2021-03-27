@@ -88,35 +88,41 @@ impl<N: RealField> Frame<N> {
 		self.orbit(rot);
 		self.slide(&(pos - rot * pos));
 	}
-	/// Negative z-axis in camera space pointing from front to back.
-	pub fn local_roll_axis(&self) -> Unit<Vector3<N>> {
-		-Vector3::z_axis()
-	}
 	/// Positive x-axis in camera space pointing from left to right.
 	pub fn local_pitch_axis(&self) -> Unit<Vector3<N>> {
 		Vector3::x_axis()
 	}
-	/// Negative y-axis in camera space pointing from top to bottom.
+	/// Positive y-axis in camera space pointing from bottom to top.
 	pub fn local_yaw_axis(&self) -> Unit<Vector3<N>> {
-		-Vector3::y_axis()
+		Vector3::y_axis()
 	}
-	/// Negative z-axis in camera space pointing from front to back.
-	pub fn roll_axis(&self) -> Unit<Vector3<N>> {
-		self.rot * self.local_roll_axis()
+	/// Positive z-axis in camera space pointing from back to front.
+	pub fn local_roll_axis(&self) -> Unit<Vector3<N>> {
+		Vector3::z_axis()
 	}
-	/// Positive x-axis in camera space pointing from left to right.
+	/// Positive x-axis in world space pointing from left to right.
 	pub fn pitch_axis(&self) -> Unit<Vector3<N>> {
 		self.rot * self.local_pitch_axis()
 	}
-	/// Negative y-axis in camera space pointing from top to bottom.
+	/// Positive y-axis in world space pointing from bottom to top.
 	pub fn yaw_axis(&self) -> Unit<Vector3<N>> {
 		self.rot * self.local_yaw_axis()
 	}
-	/// Eye attitude via intrinsic roll, pitch, and yaw angles applied in the order mentioned.
+	/// Positive z-axis in world space pointing from back to front.
+	pub fn roll_axis(&self) -> Unit<Vector3<N>> {
+		self.rot * self.local_roll_axis()
+	}
+	/// Eye attitude via intrinsic `(pitch, yaw, roll)` angles, see [`Self::set_angles()`].
 	pub fn angles(&self) -> (N, N, N) {
 		self.rot.euler_angles()
 	}
-	/// Sets eye attitude via intrinsic roll, pitch, and yaw angles applied in the order mentioned.
+	/// Sets eye attitude via intrinsic `(pitch, yaw, roll)` angles.
+	///
+	/// Eye rotation occurs in the sense prescribed by the right-hand rule in the following order:
+	///
+	///  1. roll about [`Self::roll_axis()`] within ±π,
+	///  2. pitch about rolled [`Self::pitch_axis()`] within ±π,
+	///  3. yaw about rolled and pitched [`Self::yaw_axis()`] within ±π/2.
 	pub fn set_angles(&mut self, roll: N, pitch: N, yaw: N) {
 		self.rot = UnitQuaternion::from_euler_angles(roll, pitch, yaw);
 	}
