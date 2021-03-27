@@ -11,7 +11,7 @@
 //! [S2CID]: https://en.wikipedia.org/wiki/S2CID_(identifier)
 //! [44199608]: https://api.semanticscholar.org/CorpusID:44199608
 //!
-//! # Preset Features
+//! # Present Features
 //!
 //!   * Common trackball operations split into several operation handlers.
 //!   * Coherent and intuitive orbiting via the exponential map, see [`Orbit`] operation handler.
