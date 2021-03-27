@@ -26,7 +26,7 @@
 //! # Future Features
 //!
 //!   * Add `Clamp` operation handler ensuring user boundary conditions of [`Frame`] and [`Scene`].
-//!   * Compute boundary box of scene graph and track total slide to prevent clip plane collisions.
+//!   * Compute bounding box of scene graph and track total slide to prevent clip plane collisions.
 //!
 //! # Example
 //!
