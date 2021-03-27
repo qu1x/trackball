@@ -2,7 +2,7 @@ use nalgebra::{Isometry3, Point3, RealField, Unit, UnitQuaternion, Vector3};
 use std::ops::Neg;
 
 /// Frame wrt camera eye and target.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Frame<N: RealField> {
 	/// Target position in world space.
 	pos: Point3<N>,

@@ -2,7 +2,7 @@ use crate::{Frame, Scene};
 use nalgebra::{convert, zero, Isometry3, Matrix4, Point2, Point3, RealField, Vector2, Vector3};
 
 /// Image as projection of [`Scene`] wrt [`Frame`].
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct Image<N: RealField> {
 	/// Current position in screen space of hovering input or pointing device.
 	pos: Point2<N>,
@@ -10,6 +10,10 @@ pub struct Image<N: RealField> {
 	max: Point2<N>,
 	/// Cached unit per pixel on focus plane to scale/project positions/vectors onto focus plane.
 	upp: N,
+	/// Cached previous frame.
+	frame: Frame<N>,
+	/// Cached previous scene.
+	scene: Scene<N>,
 	/// Cached view isometry from world to camera space coinciding with right-handed look-at space.
 	view_iso: Isometry3<N>,
 	/// Cached homogeneous view matrix computed from view isometry.
@@ -20,6 +24,10 @@ pub struct Image<N: RealField> {
 	proj_view_mat: Matrix4<N>,
 	/// Cached inverse of transformation.
 	proj_view_inv: Matrix4<N>,
+	/// Whether to compute transformation. Default is `true`.
+	compute_mat: bool,
+	/// Whether to compute inverse transformation. Default is `true`.
+	compute_inv: bool,
 }
 
 impl<N: RealField> Image<N> {
@@ -29,17 +37,54 @@ impl<N: RealField> Image<N> {
 			pos: Point2::origin(),
 			max: max.clone(),
 			upp: zero(),
+			frame: frame.clone(),
+			scene: scene.clone(),
 			view_iso: Isometry3::identity(),
 			view_mat: zero(),
 			proj_mat: zero(),
 			proj_view_mat: zero(),
 			proj_view_inv: zero(),
+			compute_mat: true,
+			compute_inv: true,
 		};
-		image.compute_view(frame);
-		image.compute_projection(frame, scene);
+		image.compute_view(&frame);
+		image.compute_projection(frame.distance(), &scene);
 		image.compute_transformation();
-		let _is_ok = image.compute_inverse_transformation();
+		image.compute_inverse_transformation();
 		image
+	}
+	/// Recomputes only cached matrices whose parameters have changed, see `Self::set_compute()`.
+	///
+	/// Returns `Some(true)` on success, `Some(false)` on failure, and `None` with no changes.
+	pub fn compute(&mut self, frame: &Frame<N>, scene: &Scene<N>) -> Option<bool> {
+		let mut compute = false;
+		if &self.frame != frame {
+			self.compute_view(&frame);
+			compute = true;
+		}
+		if self.frame.distance() != frame.distance() || &self.scene != scene {
+			self.compute_projection(frame.distance(), &scene);
+			compute = true;
+		}
+		self.frame = frame.clone();
+		self.scene = scene.clone();
+		compute.then(|| {
+			if self.compute_mat || self.compute_inv {
+				self.compute_transformation();
+			}
+			if self.compute_inv {
+				self.compute_inverse_transformation()
+			} else {
+				true
+			}
+		})
+	}
+	/// Sets whether to compute transformation and inverse transformation with `Self::compute()`.
+	///
+	/// Default is `(true, true)`.
+	pub fn set_compute(&mut self, compute_mat: bool, compute_inv: bool) {
+		self.compute_mat = compute_mat;
+		self.compute_inv = compute_inv;
 	}
 	/// Current position in screen space of hovering input or pointing device.
 	pub fn pos(&self) -> &Point2<N> {
@@ -79,8 +124,8 @@ impl<N: RealField> Image<N> {
 		&self.proj_mat
 	}
 	/// Computes projection matrix and unit per pixel on focus plane.
-	pub fn compute_projection(&mut self, frame: &Frame<N>, scene: &Scene<N>) {
-		let (mat, upp) = scene.projection(frame.distance(), &self.max);
+	pub fn compute_projection(&mut self, zat: N, scene: &Scene<N>) {
+		let (mat, upp) = scene.projection(zat, &self.max);
 		self.upp = upp;
 		self.proj_mat = mat;
 	}
@@ -97,7 +142,8 @@ impl<N: RealField> Image<N> {
 		&self.proj_view_inv
 	}
 	/// Computes inverse of projection view matrix.
-	#[must_use = "return value is `true` on success"]
+	///
+	/// Returns `true` on success.
 	pub fn compute_inverse_transformation(&mut self) -> bool {
 		self.proj_view_mat.try_inverse_mut()
 	}

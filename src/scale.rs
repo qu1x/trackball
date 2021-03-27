@@ -3,7 +3,7 @@ use nalgebra::{convert, RealField};
 /// Scale induced by relative input.
 ///
 /// Implements [`Default`] and can be created with `Scale::default()`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Scale<N: RealField> {
 	/// Denominator. Default is scroll unit of `120.0`.
 	den: N,

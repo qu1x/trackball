@@ -3,7 +3,7 @@ use nalgebra::{convert, Matrix4, Orthographic3, Perspective3, Point2, RealField}
 /// Scene wrt enclosing viewing frustum.
 ///
 /// Implements [`Default`] and can be created with `Scene::default()`.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Scene<N: RealField> {
 	/// Field of view y-axis.
 	///
