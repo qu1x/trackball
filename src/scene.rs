@@ -1,4 +1,4 @@
-use nalgebra::{convert, Matrix4, Orthographic3, Perspective3, Point2, RealField};
+use nalgebra::{convert, Matrix4, Point2, RealField};
 
 /// Scene wrt enclosing viewing frustum.
 ///
@@ -98,9 +98,9 @@ impl<N: RealField> Scene<N> {
 		let right = aspect * top;
 		let upp = right * two / max.x;
 		let mat = if self.opm {
-			Orthographic3::new(-right, right, -top, top, znear, zfar).into_inner()
+			Matrix4::new_orthographic(-right, right, -top, top, znear, zfar)
 		} else {
-			Perspective3::new(aspect, self.fov, znear, zfar).into_inner()
+			Matrix4::new_perspective(aspect, self.fov, znear, zfar)
 		};
 		(mat, upp)
 	}
