@@ -10,9 +10,9 @@ use std::collections::BTreeMap;
 pub struct Touch<F: Ord, N: RealField> {
 	/// Finger positions ordered by finger IDs.
 	pos: BTreeMap<F, Point2<N>>,
-	/// Centroid position and cached normalization of previous two-finger vector.
+	/// Cached normalization of previous two-finger vector.
 	vec: Option<(Unit<Vector2<N>>, N)>,
-	/// Centroid position of potential finger tap gesture.
+	/// Number of fingers and centroid position of potential finger tap gesture.
 	tap: Option<(usize, Point2<N>)>,
 	/// Number of total finger moves per potential finger tap gesture.
 	mvs: usize,

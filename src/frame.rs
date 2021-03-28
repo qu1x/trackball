@@ -62,7 +62,7 @@ impl<N: RealField> Frame<N> {
 		self.scale(rat);
 		self.slide(&(pos - pos * rat));
 	}
-	/// Slides camera eye and target by vector in world space.
+	/// Slides camera eye and target by vector in camera space.
 	pub fn local_slide(&mut self, vec: &Vector3<N>) {
 		self.pos += self.rot * vec;
 	}
