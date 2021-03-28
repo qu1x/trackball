@@ -1,3 +1,8 @@
+# Version 0.2.1 (2021-03-28)
+
+  * Fix image distortion when resizing.
+  * Fix documentation.
+
 # Version 0.2.0 (2021-03-27)
 
   * Add several operation handlers.
