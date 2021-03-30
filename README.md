@@ -44,8 +44,8 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 
 ## Future Features
 
-   * Add `Clamp` operation handler ensuring user boundary conditions of [`Frame`] and [`Scene`].
-   * Compute bounding box of scene graph and track total slide to prevent clip plane collisions.
+  * Add `Clamp` operation handler ensuring user boundary conditions of [`Frame`] and [`Scene`].
+  * Compute bounding box of scene graph and track total slide to prevent clip plane collisions.
 
 [`Frame`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html
 [`Scene`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html
@@ -74,9 +74,9 @@ impl Trackball {
 	// Usually, a cursor position event with left mouse button being pressed.
 	fn handle_left_button_displacement(&mut self, pos: &Point2<f32>) {
 		// Maximum position as screen's width and height.
-		let max = self.image.max;
+		let max = self.image.max();
 		// Induced rotation in camera space.
-		let rot = self.orbit.compute(&pos, &max).unwrap_or_default();
+		let rot = self.orbit.compute(&pos, max).unwrap_or_default();
 		// Apply induced rotation to local observer frame.
 		self.frame.local_orbit(&rot);
 	}
