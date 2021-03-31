@@ -7,7 +7,7 @@ use std::mem::replace;
 /// Implements [`Default`] and can be created with `Clamp::default()`.
 #[derive(Clone)]
 pub struct Clamp<N: RealField> {
-	/// Ensures user boundary conditions.
+	/// Ensures user boundary conditions. Default is [`Self::zcp_collision()`].
 	ubc: fn(frame: &Frame<N>, scene: &Scene<N>) -> Frame<N>,
 }
 
@@ -31,7 +31,7 @@ impl<N: RealField> Clamp<N> {
 	) -> fn(frame: &Frame<N>, scene: &Scene<N>) -> Frame<N> {
 		replace(&mut self.ubc, ubc)
 	}
-	/// Boundary conditions preventing clip plane collisions.
+	/// Default boundary conditions preventing clip plane collisions.
 	pub fn zcp_collision(frame: &Frame<N>, scene: &Scene<N>) -> Frame<N> {
 		let mut frame = frame.clone();
 		if scene.scale() {
