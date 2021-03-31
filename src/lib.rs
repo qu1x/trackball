@@ -11,21 +11,17 @@
 //! [S2CID]: https://en.wikipedia.org/wiki/S2CID_(identifier)
 //! [44199608]: https://api.semanticscholar.org/CorpusID:44199608
 //!
-//! # Present Features
+//! # Features
 //!
 //!   * Common trackball operations split into several operation handlers.
 //!   * Coherent and intuitive orbiting via the exponential map, see [`Orbit`] operation handler.
 //!   * Identical C11 implementation for [`Orbit`] operation handler behind `cc` feature gate.
-//!   * Observer frame with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`] operations in
-//!     world space and their local complements in camera space.
+//!   * Observer [`Frame`] with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`]
+//!     operations in world space and their local complements in camera space.
 //!   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
+//!   * [`Clamp`] operation handler ensuring user boundary conditions of observer [`Frame`].
 //!   * Scale-preserving transitioning between orthographic and perspective projection mode.
 //!   * Time-free touch gesture recognition for slide, orbit, scale, and focus operations.
-//!
-//! # Future Features
-//!
-//!   * Add `Clamp` operation handler ensuring user boundary conditions of [`Frame`] and [`Scene`].
-//!   * Compute bounding box of scene graph and track total slide to prevent clip plane collisions.
 //!
 //! # Example
 //!
@@ -67,6 +63,7 @@
 
 #![forbid(missing_docs)]
 
+mod clamp;
 mod frame;
 mod image;
 mod orbit;
@@ -75,6 +72,7 @@ mod scene;
 mod slide;
 mod touch;
 
+pub use clamp::*;
 pub use frame::*;
 pub use image::*;
 pub use orbit::*;

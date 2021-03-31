@@ -1,3 +1,7 @@
+# Version 0.2.2 (2021-03-31)
+
+  * Add clamp operation handler.
+
 # Version 0.2.1 (2021-03-28)
 
   * Fix image distortion when resizing.

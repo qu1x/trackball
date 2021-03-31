@@ -27,14 +27,15 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 [S2CID]: https://en.wikipedia.org/wiki/S2CID_(identifier)
 [44199608]: https://api.semanticscholar.org/CorpusID:44199608
 
-## Present Features
+## Features
 
   * Common trackball operations split into several operation handlers.
   * Coherent and intuitive orbiting via the exponential map, see [`Orbit`] operation handler.
   * Identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` feature gate.
-  * Observer frame with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`] operations in
-    world space and their local complements in camera space.
+  * Observer [`Frame`] with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`]
+    operations in world space and their local complements in camera space.
   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
+  * [`Clamp`] operation handler ensuring user boundary conditions of observer [`Frame`].
   * Scale-preserving transitioning between orthographic and perspective projection mode.
   * Time-free touch gesture recognition for slide, orbit, scale, and focus operations.
 
@@ -42,11 +43,7 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 [`Frame::orbit()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.orbit
 [`Frame::scale()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.scale
 
-## Future Features
-
-  * Add `Clamp` operation handler ensuring user boundary conditions of [`Frame`] and [`Scene`].
-  * Compute bounding box of scene graph and track total slide to prevent clip plane collisions.
-
+[`Clamp`]: https://doc.qu1x.dev/trackball/trackball/struct.Clamp.html
 [`Frame`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html
 [`Scene`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html
 
