@@ -7,14 +7,16 @@ name = meson.project_name()
 root = 'src'
 
 c = meson.get_compiler('c')
+c_args = ['-Wall', '-Wextra', '-Werror', '-pedantic']
+
 m = c.find_library('m',
 	required : true)
 
 install_headers(join_paths(root, name + '.h'))
 trackball = library(name, join_paths(root, name + '.c'),
 	dependencies : m,
-	c_args : ['-Wall', '-Wextra', '-Werror', '-pedantic'],
-	install : true)
+	install : true,
+	c_args : c_args)
 
 pkg = import('pkgconfig')
 pkg.generate(
@@ -24,5 +26,6 @@ pkg.generate(
 
 example = executable('example', join_paths('examples', 'example.c'),
 	include_directories : root,
-	link_with : trackball)
+	link_with : trackball,
+	c_args : c_args)
 test('Example', example)
