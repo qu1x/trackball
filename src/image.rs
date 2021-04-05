@@ -100,9 +100,11 @@ impl<N: RealField> Image<N> {
 	}
 	/// Sets maximum position in screen space as screen's width and height.
 	pub fn set_max(&mut self, max: &Point2<N>) {
-		self.max = max.clone();
 		// Let `Self::compute()` recompute projection matrix by invalidating cached previous scene.
-		self.scene.set_fov(N::zero());
+		if &self.max != max {
+			self.scene.set_fov(N::zero());
+		}
+		self.max = max.clone();
 	}
 	/// Cached unit per pixel on focus plane to scale/project positions/vectors onto focus plane.
 	pub fn upp(&self) -> N {
