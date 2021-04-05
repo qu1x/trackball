@@ -6,7 +6,7 @@ use std::ops::Neg;
 pub struct Frame<N: RealField> {
 	/// Target position in world space.
 	pos: Point3<N>,
-	/// Eye rotation at target from camera to world space.
+	/// Eye rotation from camera to world space at target.
 	rot: UnitQuaternion<N>,
 	/// Target distance from eye.
 	zat: N,
@@ -40,24 +40,24 @@ impl<N: RealField> Frame<N> {
 		self.pos = at.clone();
 		self.zat = (self.pos - eye).norm();
 	}
-	/// Target distance from eye.
+	/// Distance between eye and target.
 	pub fn distance(&self) -> N {
 		self.zat
 	}
-	/// Sets target distance from eye preserving target position.
+	/// Sets distance between eye and target preserving target position.
 	pub fn set_distance(&mut self, zat: N) {
 		self.zat = zat;
 	}
-	/// Scales target distance from eye by `rat`.
+	/// Scales distance between eye and target by ratio preserving target position.
 	pub fn scale(&mut self, rat: N) {
 		self.zat *= rat;
 	}
-	/// Scales target distance from eye by `rat` at `pos` in camera space.
+	/// Scales distance between eye and point in camera space by ratio preserving target position.
 	pub fn local_scale_at(&mut self, rat: N, pos: &Point3<N>) {
 		self.scale(rat);
 		self.local_slide(&(pos - pos * rat));
 	}
-	/// Scales target distance from eye by `rat` at `pos` in world space.
+	/// Scales distance between eye and point in world space by ratio preserving target position.
 	pub fn scale_at(&mut self, rat: N, pos: &Point3<N>) {
 		self.scale(rat);
 		self.slide(&(pos - pos * rat));
@@ -70,20 +70,20 @@ impl<N: RealField> Frame<N> {
 	pub fn slide(&mut self, vec: &Vector3<N>) {
 		self.pos += vec;
 	}
-	/// Orbit eye at target by `rot` in camera space.
+	/// Orbits eye by rotation in camera space at target.
 	pub fn local_orbit(&mut self, rot: &UnitQuaternion<N>) {
 		self.rot *= rot;
 	}
-	/// Orbits eye by `rot` at `pos` in camera space.
+	/// Orbits eye by rotation in camera space at point in camera space.
 	pub fn local_orbit_at(&mut self, rot: &UnitQuaternion<N>, pos: &Point3<N>) {
 		self.local_orbit(rot);
 		self.local_slide(&(pos - rot * pos));
 	}
-	/// Orbit eye at target by `rot` in world space.
+	/// Orbits eye by rotation in world space at target.
 	pub fn orbit(&mut self, rot: &UnitQuaternion<N>) {
 		self.rot = rot * self.rot;
 	}
-	/// Orbits eye by `rot` at `pos` in world space.
+	/// Orbits eye by rotation in world space at point in world space.
 	pub fn orbit_at(&mut self, rot: &UnitQuaternion<N>, pos: &Point3<N>) {
 		self.orbit(rot);
 		self.slide(&(pos - rot * pos));
