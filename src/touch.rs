@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 
 /// Touch gestures inducing slide, orbit, scale, and focus.
 ///
-/// Implements [`Default`] and can be created with `Scene::default()`.
+/// Implements [`Default`] and can be created with `Touch::default()`.
 ///
 /// Both its methods must be invoked on matching events fired by your 3D graphics library of choice.
 #[derive(Debug, Clone, Default)]
