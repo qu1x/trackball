@@ -1,3 +1,5 @@
+// Copyright © 2021 Rouven Spreckels <rs@qu1x.dev>
+// SPDX-License-Identifier: BSD-2-Clause-Patent
 /// \file
 /// \brief API source file.
 

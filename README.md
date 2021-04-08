@@ -4,13 +4,15 @@ Virtual Trackball Orbiting via the Exponential Map
 
 [![Build Status][]](https://travis-ci.org/qu1x/trackball)
 [![Downloads][]](https://crates.io/crates/trackball)
+[![Recent Downloads][]](https://crates.io/crates/trackball)
 [![Rust][]](https://www.rust-lang.org)
 [![Version][]](https://crates.io/crates/trackball)
 [![Documentation][]](https://doc.qu1x.dev/trackball)
-[![License][]](https://opensource.org/licenses/BSD-3-Clause)
+[![License][]](https://spdx.org/licenses/BSD-2-Clause-Patent.html)
 
 [Build Status]: https://travis-ci.org/qu1x/trackball.svg
 [Downloads]: https://img.shields.io/crates/d/trackball.svg
+[Recent Downloads]: https://img.shields.io/crates/dr/trackball.svg
 [Rust]: https://img.shields.io/badge/rust-stable-brightgreen.svg
 [Version]: https://img.shields.io/crates/v/trackball.svg
 [Documentation]: https://docs.rs/trackball/badge.svg
@@ -46,6 +48,8 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 [`Clamp`]: https://doc.qu1x.dev/trackball/trackball/struct.Clamp.html
 [`Frame`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html
 [`Scene`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html
+
+See the [release history](RELEASES.md) to keep track of the development.
 
 ## Example
 
@@ -98,7 +102,16 @@ trackball = { version = "0.2", features = ["cc"] }
 
 ## License
 
-[BSD-3-Clause](LICENSE.md)
+The works are [licensed](LICENSES/BSD-2-Clause-Patent.md) under the [`BSD-2-Clause-Patent`].
+
+This license is designed to provide:
+
+  * a simple permissive license,
+  * that is compatible with the [`GPL-2.0-or-later`], and
+  * which also has an express patent grant included.
+
+[`BSD-2-Clause-Patent`]: https://spdx.org/licenses/BSD-2-Clause-Patent.html
+[`GPL-2.0-or-later`]: https://spdx.org/licenses/GPL-2.0-or-later.html
 
 ## Contribution
 

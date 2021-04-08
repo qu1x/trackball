@@ -1,6 +1,6 @@
 project('trackball', 'c',
-	version : '0.2.2',
-	license : 'BSD-3-Clause',
+	version : '0.2.3',
+	license : 'BSD-2-Clause-Patent',
 	default_options : ['c_std=c11'])
 
 name = meson.project_name()

@@ -1,3 +1,9 @@
+# Version 0.2.3 (2021-04-08)
+
+  * Switch to [BSD-2-Clause-Patent](LICENSES/BSD-2-Clause-Patent.md).
+  * Ignore resize events with unchanged screen size.
+  * Rephrase `Frame` documentation.
+
 # Version 0.2.2 (2021-03-31)
 
   * Add clamp operation handler.

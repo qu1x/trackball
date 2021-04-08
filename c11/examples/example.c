@@ -1,3 +1,6 @@
+// Copyright © 2021 Rouven Spreckels <rs@qu1x.dev>
+// SPDX-License-Identifier: BSD-2-Clause-Patent
+
 #include "trackball.h"
 
 // 2D vector of your linear algebra library of choice.

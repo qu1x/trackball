@@ -1,6 +1,8 @@
+// Copyright © 2021 Rouven Spreckels <rs@qu1x.dev>
+// SPDX-License-Identifier: BSD-2-Clause-Patent
 /// \file
 /// \brief API header file.
-
+///
 /// \mainpage Virtual Trackball Orbiting via the Exponential Map
 ///
 /// This is an alternative trackball technique using exponential map and
@@ -16,9 +18,9 @@
 /// [S2CID]: https://en.wikipedia.org/wiki/S2CID_(identifier)
 /// [44199608]: https://api.semanticscholar.org/CorpusID:44199608
 ///
-/// \version v0.2.2
+/// \version v0.2.3
 /// \author Rouven Spreckels <rs@qu1x.dev>
-/// \copyright BSD-3-Clause
+/// \copyright BSD-2-Clause-Patent
 ///
 /// # Example
 ///
