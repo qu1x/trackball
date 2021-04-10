@@ -49,8 +49,8 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 [`Clamp`]: https://doc.qu1x.dev/trackball/trackball/struct.Clamp.html
 [`Frame`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html
 [`Scene`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html
-[`Fixed`]: https://doc.qu1x.dev/trackball/trackball/struct.Fixed.html
 
+[`Fixed`]: https://doc.qu1x.dev/trackball/trackball/enum.Fixed.html
 [`Scene::set_fov()`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html#method.set_fov
 
 See the [release history](RELEASES.md) to keep track of the development.
