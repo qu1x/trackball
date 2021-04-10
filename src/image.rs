@@ -48,7 +48,7 @@ impl<N: RealField> Image<N> {
 			compute_inv: true,
 		};
 		image.compute_view(&frame);
-		image.compute_projection(frame.distance(), &scene);
+		image.compute_projection_and_upp(frame.distance(), &scene);
 		image.compute_transformation();
 		image.compute_inverse_transformation();
 		image
@@ -63,7 +63,7 @@ impl<N: RealField> Image<N> {
 			compute = true;
 		}
 		if self.frame.distance() != frame.distance() || &self.scene != scene {
-			self.compute_projection(frame.distance(), &scene);
+			self.compute_projection_and_upp(frame.distance(), &scene);
 			compute = true;
 		}
 		self.frame = frame.clone();
@@ -128,8 +128,8 @@ impl<N: RealField> Image<N> {
 		&self.proj_mat
 	}
 	/// Computes projection matrix and unit per pixel on focus plane.
-	pub fn compute_projection(&mut self, zat: N, scene: &Scene<N>) {
-		let (mat, upp) = scene.projection(zat, &self.max);
+	pub fn compute_projection_and_upp(&mut self, zat: N, scene: &Scene<N>) {
+		let (mat, upp) = scene.projection_and_upp(zat, &self.max);
 		self.upp = upp;
 		self.proj_mat = mat;
 	}
@@ -159,14 +159,17 @@ impl<N: RealField> Image<N> {
 	pub fn clamp_pos(&self, pos: &Point2<N>) -> Point2<N> {
 		Self::clamp_pos_wrt_max(pos, &self.max)
 	}
-	/// Transforms position from screen to camera space wrt its maximum in screen space.
-	pub fn transform_pos_wrt_max(pos: &Point2<N>, max: &Point2<N>) -> (Point2<N>, Point2<N>) {
+	/// Transforms position and its maximum from screen to camera space wrt its maximum.
+	pub fn transform_pos_and_max_wrt_max(
+		pos: &Point2<N>,
+		max: &Point2<N>,
+	) -> (Point2<N>, Point2<N>) {
 		let max = max * convert(0.5);
 		(Point2::new(pos.x - max.x, max.y - pos.y), max)
 	}
 	/// Transforms position from screen to camera space.
 	pub fn transform_pos(&self, pos: &Point2<N>) -> Point2<N> {
-		Self::transform_pos_wrt_max(pos, &self.max).0
+		Self::transform_pos_and_max_wrt_max(pos, &self.max).0
 	}
 	/// Transforms vector from screen to camera space.
 	pub fn transform_vec(pos: &Vector2<N>) -> Vector2<N> {

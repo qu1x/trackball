@@ -39,6 +39,7 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
   * [`Clamp`] operation handler ensuring user boundary conditions of observer [`Frame`].
   * Scale-preserving transitioning between orthographic and perspective projection mode.
+  * Converting between [`Fixed`] quantities wrt to field of view, see [`Scene::set_fov()`].
   * Time-free touch gesture recognition for slide, orbit, scale, and focus operations.
 
 [`Frame::slide()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.slide
@@ -48,6 +49,9 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 [`Clamp`]: https://doc.qu1x.dev/trackball/trackball/struct.Clamp.html
 [`Frame`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html
 [`Scene`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html
+[`Fixed`]: https://doc.qu1x.dev/trackball/trackball/struct.Fixed.html
+
+[`Scene::set_fov()`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html#method.set_fov
 
 See the [release history](RELEASES.md) to keep track of the development.
 
