@@ -5,9 +5,9 @@ use nalgebra::{convert, Matrix4, Point2, RealField};
 /// Implements [`Default`] and can be created with `Scene::default()`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Scene<N: RealField> {
-	/// Field of view y-axis.
+	/// Fixed quantity wrt field of view.
 	///
-	/// Angle in yz-plane. Default is [`RealField::frac_pi_4()`].
+	/// Default is fixed vertical field of view of π/4.
 	fov: Fixed<N>,
 	/// Clip plane distances.
 	///
