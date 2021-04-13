@@ -1,6 +1,6 @@
 [package]
 name = "trackball"
-version = "0.2.3"
+version = "0.3.0"
 authors = ["Rouven Spreckels <rs@qu1x.dev>"]
 edition = "2018"
 description = "Virtual Trackball Orbiting via the Exponential Map"

@@ -1,3 +1,8 @@
+# Version 0.3.0 (2021-04-13)
+
+  * Add `Fixed` quantity wrt field of view.
+  * Update dependencies.
+
 # Version 0.2.3 (2021-04-08)
 
   * Switch to [BSD-2-Clause-Patent](LICENSES/BSD-2-Clause-Patent.md).
