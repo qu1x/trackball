@@ -36,19 +36,20 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
   * Identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` feature gate.
   * Observer [`Frame`] with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`]
     operations in world space and their local complements in camera space.
-  * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
   * [`Clamp`] operation handler ensuring user boundary conditions of observer [`Frame`].
+  * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
   * Scale-preserving transitioning between orthographic and perspective projection mode.
   * Converting between [`Fixed`] quantities wrt to field of view, see [`Scene::set_fov()`].
-  * Time-free touch gesture recognition for slide, orbit, scale, and focus operations.
+  * Time-free [`Touch`] gesture recognition for slide, orbit, scale, and focus operations.
 
 [`Frame::slide()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.slide
 [`Frame::orbit()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.orbit
 [`Frame::scale()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.scale
 
-[`Clamp`]: https://doc.qu1x.dev/trackball/trackball/struct.Clamp.html
 [`Frame`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html
+[`Clamp`]: https://doc.qu1x.dev/trackball/trackball/struct.Clamp.html
 [`Scene`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html
+[`Touch`]: https://doc.qu1x.dev/trackball/trackball/struct.Touch.html
 
 [`Fixed`]: https://doc.qu1x.dev/trackball/trackball/enum.Fixed.html
 [`Scene::set_fov()`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html#method.set_fov

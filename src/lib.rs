@@ -18,11 +18,11 @@
 //!   * Identical C11 implementation for [`Orbit`] operation handler behind `cc` feature gate.
 //!   * Observer [`Frame`] with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`]
 //!     operations in world space and their local complements in camera space.
-//!   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
 //!   * [`Clamp`] operation handler ensuring user boundary conditions of observer [`Frame`].
+//!   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
 //!   * Scale-preserving transitioning between orthographic and perspective projection mode.
 //!   * Converting between [`Fixed`] quantities wrt to field of view, see [`Scene::set_fov()`].
-//!   * Time-free touch gesture recognition for slide, orbit, scale, and focus operations.
+//!   * Time-free [`Touch`] gesture recognition for slide, orbit, scale, and focus operations.
 //!
 //! # Example
 //!
