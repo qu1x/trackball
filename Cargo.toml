@@ -33,7 +33,7 @@ include = [
 travis-ci = { repository = "qu1x/trackball" }
 
 [dependencies]
-nalgebra = "0.25"
+nalgebra = "0.26"
 
 [build-dependencies]
 cc = { version = "1", optional = true }
