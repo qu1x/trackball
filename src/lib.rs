@@ -18,7 +18,8 @@
 //!   * Identical C11 implementation for [`Orbit`] operation handler behind `cc` feature gate.
 //!   * Coherent [`First`] person view aka free look or mouse look wrt [`Orbit`] operation handler.
 //!   * Observer [`Frame`] with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`]
-//!     operations in world space and their local complements in camera space.
+//!     operations in world space and their local complements in camera space and with orbit and
+//!     slide operations around arbitrary points in either world or camera space.
 //!   * [`Clamp`] operation handler ensuring user boundary conditions of observer [`Frame`].
 //!   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
 //!   * Scale-preserving transitioning between orthographic and perspective projection mode.
