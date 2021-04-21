@@ -53,12 +53,12 @@ impl<N: RealField> Frame<N> {
 		self.zat *= rat;
 	}
 	/// Scales distance between eye and point in camera space by ratio preserving target position.
-	pub fn local_scale_at(&mut self, rat: N, pos: &Point3<N>) {
+	pub fn local_scale_around(&mut self, rat: N, pos: &Point3<N>) {
 		self.local_slide(&(pos - pos * rat));
 		self.scale(rat);
 	}
 	/// Scales distance between eye and point in world space by ratio preserving target position.
-	pub fn scale_at(&mut self, rat: N, pos: &Point3<N>) {
+	pub fn scale_around(&mut self, rat: N, pos: &Point3<N>) {
 		let pos = pos - self.pos.coords;
 		self.slide(&(pos - pos * rat));
 		self.scale(rat);
@@ -71,21 +71,21 @@ impl<N: RealField> Frame<N> {
 	pub fn slide(&mut self, vec: &Vector3<N>) {
 		self.pos += vec;
 	}
-	/// Orbits eye by rotation in camera space at target.
+	/// Orbits eye by rotation in camera space around target.
 	pub fn local_orbit(&mut self, rot: &UnitQuaternion<N>) {
 		self.rot *= rot;
 	}
-	/// Orbits eye by rotation in camera space at point in camera space.
-	pub fn local_orbit_at(&mut self, rot: &UnitQuaternion<N>, pos: &Point3<N>) {
+	/// Orbits eye by rotation in camera space around point in camera space.
+	pub fn local_orbit_around(&mut self, rot: &UnitQuaternion<N>, pos: &Point3<N>) {
 		self.local_slide(&(pos - rot * pos));
 		self.local_orbit(rot);
 	}
-	/// Orbits eye by rotation in world space at target.
+	/// Orbits eye by rotation in world space around target.
 	pub fn orbit(&mut self, rot: &UnitQuaternion<N>) {
 		self.rot = rot * self.rot;
 	}
-	/// Orbits eye by rotation in world space at point in world space.
-	pub fn orbit_at(&mut self, rot: &UnitQuaternion<N>, pos: &Point3<N>) {
+	/// Orbits eye by rotation in world space around point in world space.
+	pub fn orbit_around(&mut self, rot: &UnitQuaternion<N>, pos: &Point3<N>) {
 		let pos = pos - self.pos.coords;
 		self.slide(&(pos - rot * pos));
 		self.orbit(rot);
@@ -96,8 +96,8 @@ impl<N: RealField> Frame<N> {
 	pub fn look_around(&mut self, pitch: N, yaw: N, yaw_axis: &Unit<Vector3<N>>) {
 		let pitch = UnitQuaternion::from_axis_angle(&self.local_pitch_axis(), pitch);
 		let yaw = UnitQuaternion::from_axis_angle(yaw_axis, yaw);
-		self.local_orbit_at(&pitch, &Point3::new(N::zero(), N::zero(), self.zat));
-		self.orbit_at(&yaw, &self.eye());
+		self.local_orbit_around(&pitch, &Point3::new(N::zero(), N::zero(), self.zat));
+		self.orbit_around(&yaw, &self.eye());
 	}
 	/// Positive x-axis in camera space pointing from left to right.
 	pub fn local_pitch_axis(&self) -> Unit<Vector3<N>> {
