@@ -1,3 +1,8 @@
+# Version 0.3.1 (2021-04-21)
+
+  * Add `First` person view.
+  * Fix `Frame::local_orbit_at()` and `Frame::orbit_at()`.
+
 # Version 0.3.0 (2021-04-13)
 
   * Add `Fixed` quantity wrt field of view.

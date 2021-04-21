@@ -16,6 +16,7 @@
 //!   * Common trackball operations split into several operation handlers.
 //!   * Coherent and intuitive orbiting via the exponential map, see [`Orbit`] operation handler.
 //!   * Identical C11 implementation for [`Orbit`] operation handler behind `cc` feature gate.
+//!   * Coherent [`First`] person view aka free look or mouse look wrt [`Orbit`] operation handler.
 //!   * Observer [`Frame`] with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`]
 //!     operations in world space and their local complements in camera space.
 //!   * [`Clamp`] operation handler ensuring user boundary conditions of observer [`Frame`].
@@ -65,6 +66,7 @@
 #![forbid(missing_docs)]
 
 mod clamp;
+mod first;
 mod frame;
 mod image;
 mod orbit;
@@ -74,6 +76,7 @@ mod slide;
 mod touch;
 
 pub use clamp::*;
+pub use first::*;
 pub use frame::*;
 pub use image::*;
 pub use orbit::*;

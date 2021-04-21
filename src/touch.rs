@@ -5,7 +5,8 @@ use std::collections::BTreeMap;
 ///
 /// Implements [`Default`] and can be created with `Touch::default()`.
 ///
-/// Both its methods must be invoked on matching events fired by your 3D graphics library of choice.
+/// All methods except [`Self::fingers()`] must be invoked on matching events fired by your 3D
+/// graphics library of choice.
 #[derive(Debug, Clone, Default)]
 pub struct Touch<F: Ord, N: RealField> {
 	/// Finger positions ordered by finger IDs.
@@ -115,5 +116,9 @@ impl<F: Ord, N: RealField> Touch<F, N> {
 		} else {
 			None
 		}
+	}
+	/// Number of fingers.
+	pub fn fingers(&self) -> usize {
+		self.pos.len()
 	}
 }

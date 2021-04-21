@@ -34,6 +34,7 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
   * Common trackball operations split into several operation handlers.
   * Coherent and intuitive orbiting via the exponential map, see [`Orbit`] operation handler.
   * Identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` feature gate.
+  * Coherent [`First`] person view aka free look or mouse look wrt [`Orbit`] operation handler.
   * Observer [`Frame`] with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`]
     operations in world space and their local complements in camera space.
   * [`Clamp`] operation handler ensuring user boundary conditions of observer [`Frame`].
@@ -46,6 +47,7 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 [`Frame::orbit()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.orbit
 [`Frame::scale()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.scale
 
+[`First`]: https://doc.qu1x.dev/trackball/trackball/struct.First.html
 [`Frame`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html
 [`Clamp`]: https://doc.qu1x.dev/trackball/trackball/struct.Clamp.html
 [`Scene`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html
@@ -113,10 +115,12 @@ This license is designed to provide:
 
   * a simple permissive license,
   * that is compatible with the [`GPL-2.0-or-later`], and
-  * which also has an express patent grant included.
+  * which also has an express patent grant included, but
+  * unlike the [`Apache-2.0`] without patent retaliation.
 
 [`BSD-2-Clause-Patent`]: https://spdx.org/licenses/BSD-2-Clause-Patent.html
 [`GPL-2.0-or-later`]: https://spdx.org/licenses/GPL-2.0-or-later.html
+[`Apache-2.0`]: https://spdx.org/licenses/Apache-2.0.html
 
 ## Contribution
 
