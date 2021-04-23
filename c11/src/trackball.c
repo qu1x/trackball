@@ -136,7 +136,7 @@ normalize_f(vec_f* v) {
 		v->y /= v->w;
 		v->z /= v->w;
 	}
-	return (v->w);
+	return v->w;
 }
 
 /// Associated implementation of generic selection macro \ref normalize.
@@ -148,7 +148,7 @@ normalize_d(vec_d* v) {
 		v->y /= v->w;
 		v->z /= v->w;
 	}
-	return (v->w);
+	return v->w;
 }
 
 /// Associated implementation of generic selection macro \ref normalize.
@@ -160,7 +160,7 @@ normalize_l(vec_l* v) {
 		v->y /= v->w;
 		v->z /= v->w;
 	}
-	return (v->w);
+	return v->w;
 }
 
 /// Computes cross product.

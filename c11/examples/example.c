@@ -28,7 +28,7 @@ handle_left_button_displacement(int x, int y) {
 	trackball_orbit(
 		(double*)&rot,
 		(double*)&old,
-		(double*)&((vec2) { x, y }), // Parenthesis required as this is a macro.
+		(double*)&((vec2) { x, y }), // Parentheses required as this is a macro.
 		(double*)&max
 	);
 	// Post-multiply rotation to total camera alignment.
