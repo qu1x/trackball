@@ -14,10 +14,10 @@ pub struct Frame<N: RealField> {
 
 impl<N: RealField> Frame<N> {
 	/// Sets eye position inclusive its roll attitude and target position in world space.
-	pub fn look_at(eye: &Point3<N>, at: &Point3<N>, up: &Vector3<N>) -> Self {
-		let dir = at - eye;
+	pub fn look_at(target: Point3<N>, eye: &Point3<N>, up: &Vector3<N>) -> Self {
+		let dir = target - eye;
 		Self {
-			pos: at.clone(),
+			pos: target,
 			rot: UnitQuaternion::face_towards(&-dir, up),
 			zat: dir.norm(),
 		}
@@ -28,16 +28,16 @@ impl<N: RealField> Frame<N> {
 	}
 	/// Sets eye position inclusive its roll attitude in world space preserving target position.
 	pub fn set_eye(&mut self, eye: &Point3<N>, up: &Vector3<N>) {
-		*self = Self::look_at(eye, &self.pos, up);
+		*self = Self::look_at(self.pos, eye, up);
 	}
 	/// Target position in world space.
 	pub fn target(&self) -> &Point3<N> {
 		&self.pos
 	}
 	/// Sets target position in world space preserving eye position inclusive its roll attitude.
-	pub fn set_target(&mut self, at: &Point3<N>) {
+	pub fn set_target(&mut self, target: Point3<N>) {
 		let eye = self.eye();
-		self.pos = at.clone();
+		self.pos = target;
 		self.zat = (self.pos - eye).norm();
 	}
 	/// Distance between eye and target.

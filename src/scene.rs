@@ -48,7 +48,7 @@ impl<N: RealField> Scene<N> {
 	/// use nalgebra::Point2;
 	/// use trackball::Scene;
 	///
-	/// // Default screen size.
+	/// // Current screen size.
 	/// let max = Point2::new(800, 600);
 	/// // Default scene with fixed vertical field of view of π/4:
 	/// //
@@ -153,49 +153,49 @@ impl<N: RealField> From<N> for Fixed<N> {
 
 impl<N: RealField> Fixed<N> {
 	/// Converts to fixed horizontal field of view wrt maximum position in screen space.
-	pub fn to_hor(&self, max: &Point2<N>) -> Self {
+	pub fn to_hor(self, max: &Point2<N>) -> Self {
 		let two = N::one() + N::one();
 		Self::Hor(match self {
-			&Self::Hor(fov) => fov,
-			&Self::Ver(fov) => (max.x / max.y * (fov / two).tan()).atan() * two,
-			&Self::Upp(upp) => (max.x / two * upp).atan() * two,
+			Self::Hor(fov) => fov,
+			Self::Ver(fov) => (max.x / max.y * (fov / two).tan()).atan() * two,
+			Self::Upp(upp) => (max.x / two * upp).atan() * two,
 		})
 	}
 	/// Converts to fixed vertical field of view wrt maximum position in screen space.
-	pub fn to_ver(&self, max: &Point2<N>) -> Self {
+	pub fn to_ver(self, max: &Point2<N>) -> Self {
 		let two = N::one() + N::one();
 		Self::Ver(match self {
-			&Self::Hor(fov) => (max.y / max.x * (fov / two).tan()).atan() * two,
-			&Self::Ver(fov) => fov,
-			&Self::Upp(upp) => (max.y / two * upp).atan() * two,
+			Self::Hor(fov) => (max.y / max.x * (fov / two).tan()).atan() * two,
+			Self::Ver(fov) => fov,
+			Self::Upp(upp) => (max.y / two * upp).atan() * two,
 		})
 	}
 	/// Converts to fixed unit per pixel on focus plane at distance from eye of one wrt maximum
 	/// position in screen space.
-	pub fn to_upp(&self, max: &Point2<N>) -> Self {
+	pub fn to_upp(self, max: &Point2<N>) -> Self {
 		let two = N::one() + N::one();
 		Self::Upp(match self {
-			&Self::Hor(fov) => (fov / two).tan() * two / max.x,
-			&Self::Ver(fov) => (fov / two).tan() * two / max.y,
-			&Self::Upp(upp) => upp,
+			Self::Hor(fov) => (fov / two).tan() * two / max.x,
+			Self::Ver(fov) => (fov / two).tan() * two / max.y,
+			Self::Upp(upp) => upp,
 		})
 	}
 	/// Maximum position in camera space and unit per pixel on focus plane wrt distance between
 	/// eye and target and maximum position in screen space.
 	pub fn max_and_upp(&self, zat: N, max: &Point2<N>) -> (Point2<N>, N) {
 		let two = N::one() + N::one();
-		match self {
-			&Self::Hor(fov) => {
+		match *self {
+			Self::Hor(fov) => {
 				let x = zat * (fov / two).tan();
 				let y = max.y / max.x * x;
 				(Point2::new(x, y), x * two / max.x)
 			}
-			&Self::Ver(fov) => {
+			Self::Ver(fov) => {
 				let y = zat * (fov / two).tan();
 				let x = max.x / max.y * y;
 				(Point2::new(x, y), y * two / max.y)
 			}
-			&Self::Upp(upp) => {
+			Self::Upp(upp) => {
 				let upp = upp * zat;
 				(max / two * upp, upp)
 			}

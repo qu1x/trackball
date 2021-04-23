@@ -36,11 +36,11 @@ impl<F: Ord, N: RealField> Touch<F, N> {
 	pub fn compute(
 		&mut self,
 		fid: F,
-		pos: &Point2<N>,
+		pos: Point2<N>,
 		mvs: usize,
 	) -> Option<(usize, Point2<N>, N, N)> {
 		// Insert or update finger position.
-		let _old_pos = self.pos.insert(fid, pos.clone());
+		let _old_pos = self.pos.insert(fid, pos);
 		// Current number of fingers.
 		let num = self.pos.len();
 		// Maximum number of fingers seen per potential tap.

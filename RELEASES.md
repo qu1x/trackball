@@ -1,3 +1,9 @@
+# Version 0.5.0 (2021-04-26)
+
+  * Adhere to lints except preferring hard tabs.
+  * Use move semantics whenever otherwise cloning borrowed method arguments.
+  * Reorder arguments of `Frame::look_at()` matching `Frame::set_eye()`.
+
 # Version 0.4.0 (2021-04-23)
 
   * Add `First` person view.

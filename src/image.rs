@@ -32,10 +32,10 @@ pub struct Image<N: RealField> {
 
 impl<N: RealField> Image<N> {
 	/// Computes initial transformations from frame, scene, and screen's width and height.
-	pub fn new(frame: &Frame<N>, scene: &Scene<N>, max: &Point2<N>) -> Self {
+	pub fn new(frame: &Frame<N>, scene: &Scene<N>, max: Point2<N>) -> Self {
 		let mut image = Self {
 			pos: Point2::origin(),
-			max: max.clone(),
+			max,
 			upp: zero(),
 			frame: frame.clone(),
 			scene: scene.clone(),
@@ -56,18 +56,18 @@ impl<N: RealField> Image<N> {
 	/// Recomputes only cached matrices whose parameters have changed, see [`Self::set_compute()`].
 	///
 	/// Returns `Some(true)` on success, `Some(false)` on failure, and `None` with no changes.
-	pub fn compute(&mut self, frame: &Frame<N>, scene: &Scene<N>) -> Option<bool> {
+	pub fn compute(&mut self, frame: Frame<N>, scene: Scene<N>) -> Option<bool> {
 		let mut compute = false;
-		if &self.frame != frame {
+		if self.frame != frame {
 			self.compute_view(&frame);
 			compute = true;
 		}
-		if self.frame.distance() != frame.distance() || &self.scene != scene {
+		if self.frame.distance() != frame.distance() || self.scene != scene {
 			self.compute_projection_and_upp(frame.distance(), &scene);
 			compute = true;
 		}
-		self.frame = frame.clone();
-		self.scene = scene.clone();
+		self.frame = frame;
+		self.scene = scene;
 		compute.then(|| {
 			if self.compute_mat || self.compute_inv {
 				self.compute_transformation();
@@ -91,20 +91,20 @@ impl<N: RealField> Image<N> {
 		&self.pos
 	}
 	/// Sets current position in screen space of hovering input or pointing device.
-	pub fn set_pos(&mut self, pos: &Point2<N>) {
-		self.pos = pos.clone();
+	pub fn set_pos(&mut self, pos: Point2<N>) {
+		self.pos = pos;
 	}
 	/// Maximum position in screen space as screen's width and height.
 	pub fn max(&self) -> &Point2<N> {
 		&self.max
 	}
 	/// Sets maximum position in screen space as screen's width and height.
-	pub fn set_max(&mut self, max: &Point2<N>) {
+	pub fn set_max(&mut self, max: Point2<N>) {
 		// Let `Self::compute()` recompute projection matrix by invalidating cached previous scene.
-		if &self.max != max {
+		if self.max != max {
 			self.scene.set_fov(N::zero());
 		}
-		self.max = max.clone();
+		self.max = max;
 	}
 	/// Cached unit per pixel on focus plane to scale/project positions/vectors onto focus plane.
 	pub fn upp(&self) -> N {

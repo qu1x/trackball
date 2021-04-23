@@ -26,8 +26,8 @@ impl<N: RealField> First<N> {
 		&mut self,
 		vec: &Vector2<N>,
 		max: &Point2<N>,
-	) -> Option<(N, N, Unit<Vector3<N>>)> {
-		self.ray.map(|ray| {
+	) -> Option<(N, N, &Unit<Vector3<N>>)> {
+		self.ray.as_ref().map(|ray| {
 			let max = max.x.max(max.y) * convert(0.5);
 			(vec.y / max, vec.x / max, ray)
 		})

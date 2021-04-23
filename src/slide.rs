@@ -13,8 +13,8 @@ pub struct Slide<N: RealField> {
 
 impl<N: RealField> Slide<N> {
 	/// Computes slide between previous and current cursor/finger position in screen space.
-	pub fn compute(&mut self, pos: &Point2<N>) -> Option<Vector2<N>> {
-		self.pos.replace(pos.clone()).map(|old| old - pos)
+	pub fn compute(&mut self, pos: Point2<N>) -> Option<Vector2<N>> {
+		self.pos.replace(pos).map(|old| old - pos)
 	}
 	/// Discards cached previous cursor/finger position on button/finger release.
 	pub fn discard(&mut self) {
