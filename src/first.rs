@@ -5,7 +5,7 @@ use nalgebra::{convert, Point2, RealField, Unit, Vector2, Vector3};
 /// Implements [`Default`] and can be created with `First::default()`.
 ///
 /// All methods except [`Self::enabled()`] must be invoked on matching events fired by your 3D
-/// graphics library of choice:
+/// graphics library of choice.
 #[derive(Debug, Clone, Default)]
 pub struct First<N: RealField> {
 	/// Caches captured yaw axis.

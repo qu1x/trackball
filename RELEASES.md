@@ -1,7 +1,8 @@
-# Version 0.3.1 (2021-04-21)
+# Version 0.4.0 (2021-04-23)
 
   * Add `First` person view.
   * Fix `Frame::local_orbit_at()` and `Frame::orbit_at()`.
+  * Use `around` over `at` for scale/orbit operation.
 
 # Version 0.3.0 (2021-04-13)
 

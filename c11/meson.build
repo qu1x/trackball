@@ -1,5 +1,5 @@
 project('trackball', 'c',
-	version : '0.3.1',
+	version : '0.4.0',
 	license : 'BSD-2-Clause-Patent',
 	default_options : ['c_std=c11'])
 
