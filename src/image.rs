@@ -47,8 +47,8 @@ impl<N: RealField> Image<N> {
 			compute_mat: true,
 			compute_inv: true,
 		};
-		image.compute_view(&frame);
-		image.compute_projection_and_upp(frame.distance(), &scene);
+		image.compute_view(frame);
+		image.compute_projection_and_upp(frame.distance(), scene);
 		image.compute_transformation();
 		image.compute_inverse_transformation();
 		image

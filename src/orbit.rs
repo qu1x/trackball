@@ -42,9 +42,9 @@ impl<N: RealField> Orbit<N> {
 	///   * in the unlikely case that a position event fires twice resulting in zero displacements.
 	pub fn compute(&mut self, pos: &Point2<N>, max: &Point2<N>) -> Option<UnitQuaternion<N>> {
 		// Clamped cursor/finger position from left to right and top to bottom.
-		let pos = Image::clamp_pos_wrt_max(pos, &max);
+		let pos = Image::clamp_pos_wrt_max(pos, max);
 		// Centered cursor/finger position and its maximum from left to right and bottom to top.
-		let (pos, max) = Image::transform_pos_and_max_wrt_max(&pos, &max);
+		let (pos, max) = Image::transform_pos_and_max_wrt_max(&pos, max);
 		// Positive z-axis pointing from far to near.
 		let (pos, pza) = (pos.coords.push(N::zero()), Vector3::z_axis());
 		// New position as ray and length on xy-plane or z-axis of zero length for origin position.
