@@ -149,7 +149,11 @@ impl<N: RealField> Image<N> {
 	///
 	/// Returns `true` on success.
 	pub fn compute_inverse_transformation(&mut self) -> bool {
-		self.proj_view_mat.try_inverse_mut()
+		let inv = self.proj_view_mat.try_inverse();
+		if let Some(mat) = inv {
+			self.proj_view_inv = mat;
+		}
+		inv.is_some()
 	}
 	/// Clamps position in screen space wrt its maximum in screen space.
 	pub fn clamp_pos_wrt_max(pos: &Point2<N>, max: &Point2<N>) -> Point2<N> {
