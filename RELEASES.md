@@ -1,3 +1,7 @@
+# Version 0.5.1 (2021-05-09)
+
+  * Fix `Image::compute_inverse_transformation()`. By [@Graph-Donte-Crypto].
+
 # Version 0.5.0 (2021-04-26)
 
   * Adhere to lints except preferring hard tabs.
@@ -51,3 +55,5 @@
 # Version 0.1.0 (2021-03-06)
 
   * Add orbit operation handler.
+
+[@Graph-Donte-Crypto]: https://github.com/Graph-Donte-Crypto
