@@ -65,8 +65,7 @@ A trackball camera mode implementation can be as easy as this by delegating even
 graphics library of choice to the [`Orbit`] operation handler along with other handlers.
 
 ```rust
-use nalgebra::{Point2, UnitQuaternion, Vector3};
-use std::f32::consts::PI;
+use nalgebra::{Point2, Vector3};
 use trackball::{Frame, Image, Orbit};
 
 /// Trackball camera mode.
