@@ -1,6 +1,6 @@
 use crate::{Frame, Scene};
+use core::mem::replace;
 use nalgebra::RealField;
-use std::mem::replace;
 
 /// Clamp as user boundary conditions of [`Frame`].
 ///

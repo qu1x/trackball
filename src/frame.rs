@@ -1,12 +1,11 @@
 use nalgebra::{Isometry3, Point3, RealField, Unit, UnitQuaternion, Vector3};
-use std::ops::Neg;
 
 /// Frame wrt camera eye and target.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Frame<N: RealField> {
 	/// Target position in world space.
 	pos: Point3<N>,
-	/// Eye rotation from camera to world space at target.
+	/// Eye rotation from camera to world space around target.
 	rot: UnitQuaternion<N>,
 	/// Target distance from eye.
 	zat: N,
@@ -139,11 +138,11 @@ impl<N: RealField> Frame<N> {
 	}
 	/// View transformation from world to camera space.
 	pub fn view(&self) -> Isometry3<N> {
-		// Eye rotation at target from world to camera space.
+		// Eye rotation from world to camera space around target.
 		let rot = self.rot.inverse();
 		// Eye position in camera space with origin in world space.
 		let eye = rot * self.pos + Vector3::z_axis().into_inner() * self.zat;
 		// Translate in such a way that the eye position with origin in world space vanishes.
-		Isometry3::from_parts(eye.coords.neg().into(), rot)
+		Isometry3::from_parts((-eye.coords).into(), rot)
 	}
 }
