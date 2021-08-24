@@ -2,7 +2,6 @@
 
 Virtual Trackball Orbiting via the Exponential Map
 
-[![Matrix][]](https://matrix.to/#/!aKshXqmXyJHMgglnJd:qu1x.one?via=qu1x.one)
 [![Build Status][]](https://travis-ci.org/qu1x/trackball)
 [![Downloads][]](https://crates.io/crates/trackball)
 [![Rust][]](https://www.rust-lang.org)
@@ -10,7 +9,6 @@ Virtual Trackball Orbiting via the Exponential Map
 [![Documentation][]](https://doc.qu1x.dev/trackball)
 [![License][]](https://spdx.org/licenses/BSD-2-Clause-Patent.html)
 
-[Matrix]: https://img.shields.io/matrix/trackball:qu1x.one?server_fqdn=matrix.qu1x.one
 [Build Status]: https://travis-ci.org/qu1x/trackball.svg
 [Downloads]: https://img.shields.io/crates/d/trackball.svg
 [Rust]: https://img.shields.io/badge/rust-stable-brightgreen.svg
