@@ -6,12 +6,12 @@ use nalgebra::{Point2, RealField, Vector2};
 ///
 /// Both its methods must be invoked on matching events fired by your 3D graphics library of choice.
 #[derive(Debug, Clone, Default)]
-pub struct Slide<N: RealField> {
+pub struct Slide<N: Copy + RealField> {
 	/// Caches previous cursor/finger position.
 	pos: Option<Point2<N>>,
 }
 
-impl<N: RealField> Slide<N> {
+impl<N: Copy + RealField> Slide<N> {
 	/// Computes slide between previous and current cursor/finger position in screen space.
 	pub fn compute(&mut self, pos: Point2<N>) -> Option<Vector2<N>> {
 		self.pos.replace(pos).map(|old| old - pos)

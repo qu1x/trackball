@@ -7,12 +7,12 @@ use nalgebra::{convert, Point2, RealField, Unit, Vector2, Vector3};
 /// All methods except [`Self::enabled()`] must be invoked on matching events fired by your 3D
 /// graphics library of choice.
 #[derive(Debug, Clone, Default)]
-pub struct First<N: RealField> {
+pub struct First<N: Copy + RealField> {
 	/// Caches captured yaw axis.
 	ray: Option<Unit<Vector3<N>>>,
 }
 
-impl<N: RealField> First<N> {
+impl<N: Copy + RealField> First<N> {
 	/// Captures current yaw axis when entering first person view.
 	pub fn capture(&mut self, yaw_axis: Unit<Vector3<N>>) {
 		self.ray = Some(yaw_axis);

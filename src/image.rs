@@ -3,7 +3,7 @@ use nalgebra::{convert, zero, Isometry3, Matrix4, Point2, Point3, RealField, Vec
 
 /// Image as projection of [`Scene`] wrt [`Frame`].
 #[derive(Debug, Clone)]
-pub struct Image<N: RealField> {
+pub struct Image<N: Copy + RealField> {
 	/// Current position in screen space of hovering input or pointing device.
 	pos: Point2<N>,
 	/// Maximum position in screen space as screen's width and height.
@@ -30,7 +30,7 @@ pub struct Image<N: RealField> {
 	compute_inv: bool,
 }
 
-impl<N: RealField> Image<N> {
+impl<N: Copy + RealField> Image<N> {
 	/// Computes initial transformations from frame, scene, and screen's width and height.
 	pub fn new(frame: &Frame<N>, scene: &Scene<N>, max: Point2<N>) -> Self {
 		let mut image = Self {

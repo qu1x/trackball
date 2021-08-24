@@ -4,12 +4,12 @@ use nalgebra::{convert, RealField};
 ///
 /// Implements [`Default`] and can be created with `Scale::default()`.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Scale<N: RealField> {
+pub struct Scale<N: Copy + RealField> {
 	/// Denominator. Default is scroll unit of `120.0`.
 	den: N,
 }
 
-impl<N: RealField> Default for Scale<N> {
+impl<N: Copy + RealField> Default for Scale<N> {
 	fn default() -> Self {
 		Self {
 			den: convert(120.0),
@@ -17,7 +17,7 @@ impl<N: RealField> Default for Scale<N> {
 	}
 }
 
-impl<N: RealField> Scale<N> {
+impl<N: Copy + RealField> Scale<N> {
 	/// Computes scale ratio from relative value.
 	pub fn compute(&self, num: N) -> N {
 		N::one() - num / self.den

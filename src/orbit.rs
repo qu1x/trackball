@@ -9,7 +9,7 @@ use crate::Image;
 ///
 /// Both its methods must be invoked on matching events fired by your 3D graphics library of choice.
 #[derive(Debug, Clone, Default)]
-pub struct Orbit<N: RealField> {
+pub struct Orbit<N: Copy + RealField> {
 	/// Caches normalization of previous cursor/finger position.
 	vec: Option<(Unit<Vector3<N>>, N)>,
 }
@@ -18,7 +18,7 @@ pub struct Orbit<N: RealField> {
 use nalgebra::Matrix3;
 
 #[cfg(not(feature = "cc"))]
-impl<N: RealField> Orbit<N> {
+impl<N: Copy + RealField> Orbit<N> {
 	/// Computes rotation between previous and current cursor/finger position.
 	///
 	/// Normalization of previous position is cached and has to be discarded on button/finger

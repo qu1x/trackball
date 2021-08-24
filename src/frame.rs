@@ -2,7 +2,7 @@ use nalgebra::{Isometry3, Point3, RealField, Unit, UnitQuaternion, Vector3};
 
 /// Frame wrt camera eye and target.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Frame<N: RealField> {
+pub struct Frame<N: Copy + RealField> {
 	/// Target position in world space.
 	pos: Point3<N>,
 	/// Eye rotation from camera to world space around target.
@@ -11,7 +11,7 @@ pub struct Frame<N: RealField> {
 	zat: N,
 }
 
-impl<N: RealField> Frame<N> {
+impl<N: Copy + RealField> Frame<N> {
 	/// Sets eye position inclusive its roll attitude and target position in world space.
 	pub fn look_at(target: Point3<N>, eye: &Point3<N>, up: &Vector3<N>) -> Self {
 		let dir = target - eye;

@@ -6,12 +6,12 @@ use nalgebra::RealField;
 ///
 /// Implements [`Default`] and can be created with `Clamp::default()`.
 #[derive(Clone)]
-pub struct Clamp<N: RealField> {
+pub struct Clamp<N: Copy + RealField> {
 	/// Ensures user boundary conditions. Default is [`Self::zcp_collision()`].
 	ubc: fn(frame: Frame<N>, scene: &Scene<N>) -> Frame<N>,
 }
 
-impl<N: RealField> Default for Clamp<N> {
+impl<N: Copy + RealField> Default for Clamp<N> {
 	fn default() -> Self {
 		Self {
 			ubc: Self::zcp_collision,
@@ -19,7 +19,7 @@ impl<N: RealField> Default for Clamp<N> {
 	}
 }
 
-impl<N: RealField> Clamp<N> {
+impl<N: Copy + RealField> Clamp<N> {
 	/// Computes clamped [`Frame`] wrt to user boundary conditions.
 	pub fn compute(&mut self, frame: Frame<N>, scene: &Scene<N>) -> Frame<N> {
 		(self.ubc)(frame, scene)

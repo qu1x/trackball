@@ -9,7 +9,7 @@ use nalgebra::{convert, Point2, RealField, Unit, Vector2};
 /// All methods except [`Self::fingers()`] must be invoked on matching events fired by your 3D
 /// graphics library of choice.
 #[derive(Debug, Clone, Default)]
-pub struct Touch<F: Debug + Eq, N: RealField> {
+pub struct Touch<F: Debug + Eq, N: Copy + RealField> {
 	/// Finger positions in insertion order.
 	pos: LinearMap<F, Point2<N>, 10>,
 	/// Cached normalization of previous two-finger vector.
@@ -20,7 +20,7 @@ pub struct Touch<F: Debug + Eq, N: RealField> {
 	mvs: usize,
 }
 
-impl<F: Debug + Eq, N: RealField> Touch<F, N> {
+impl<F: Debug + Eq, N: Copy + RealField> Touch<F, N> {
 	/// Computes centroid position, roll angle, and scale ratio from finger gestures.
 	///
 	/// Parameters are:

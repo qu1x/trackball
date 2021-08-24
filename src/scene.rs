@@ -4,7 +4,7 @@ use nalgebra::{convert, Matrix4, Point2, RealField};
 ///
 /// Implements [`Default`] and can be created with `Scene::default()`.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Scene<N: RealField> {
+pub struct Scene<N: Copy + RealField> {
 	/// Fixed quantity wrt field of view.
 	///
 	/// Default is fixed vertical field of view of π/4.
@@ -24,7 +24,7 @@ pub struct Scene<N: RealField> {
 	opm: bool,
 }
 
-impl<N: RealField> Default for Scene<N> {
+impl<N: Copy + RealField> Default for Scene<N> {
 	fn default() -> Self {
 		Self {
 			fov: Fixed::default(),
@@ -35,7 +35,7 @@ impl<N: RealField> Default for Scene<N> {
 	}
 }
 
-impl<N: RealField> Scene<N> {
+impl<N: Copy + RealField> Scene<N> {
 	/// Fixed quantity wrt field of view, see [`Self::set_fov()`].
 	pub fn fov(&self) -> Fixed<N> {
 		self.fov
@@ -130,7 +130,7 @@ impl<N: RealField> Scene<N> {
 ///     `Fixed::Ver(N::frac_pi_4())`.
 ///   * Implements `From<N>` and can be created with `N::into()` returning `Fixed::Ver()`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum Fixed<N: RealField> {
+pub enum Fixed<N: Copy + RealField> {
 	/// Fixed horizontal field of view aka Vert- scaling.
 	Hor(N),
 	/// Fixed vertical field of view aka Hor+ scaling.
@@ -139,19 +139,19 @@ pub enum Fixed<N: RealField> {
 	Upp(N),
 }
 
-impl<N: RealField> Default for Fixed<N> {
+impl<N: Copy + RealField> Default for Fixed<N> {
 	fn default() -> Self {
 		N::frac_pi_4().into()
 	}
 }
 
-impl<N: RealField> From<N> for Fixed<N> {
+impl<N: Copy + RealField> From<N> for Fixed<N> {
 	fn from(fov: N) -> Self {
 		Self::Ver(fov)
 	}
 }
 
-impl<N: RealField> Fixed<N> {
+impl<N: Copy + RealField> Fixed<N> {
 	/// Converts to fixed horizontal field of view wrt maximum position in screen space.
 	pub fn to_hor(self, max: &Point2<N>) -> Self {
 		let two = N::one() + N::one();
