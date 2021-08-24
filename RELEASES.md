@@ -1,3 +1,8 @@
+# Version 0.6.0 (2021-08-24)
+
+  * Prepare for latest `nalgebra`.
+  * Make crate `no_std` by limiting `Touch` to ten fingers.
+
 # Version 0.5.1 (2021-05-09)
 
   * Fix `Image::compute_inverse_transformation()`. By [@Graph-Donte-Crypto].
