@@ -1,5 +1,6 @@
+use core::fmt::Debug;
+use heapless::LinearMap;
 use nalgebra::{convert, Point2, RealField, Unit, Vector2};
-use std::collections::BTreeMap;
 
 /// Touch gestures inducing slide, orbit, scale, and focus.
 ///
@@ -8,9 +9,9 @@ use std::collections::BTreeMap;
 /// All methods except [`Self::fingers()`] must be invoked on matching events fired by your 3D
 /// graphics library of choice.
 #[derive(Debug, Clone, Default)]
-pub struct Touch<F: Ord, N: RealField> {
-	/// Finger positions ordered by finger IDs.
-	pos: BTreeMap<F, Point2<N>>,
+pub struct Touch<F: Debug + Eq, N: RealField> {
+	/// Finger positions in insertion order.
+	pos: LinearMap<F, Point2<N>, 10>,
 	/// Cached normalization of previous two-finger vector.
 	vec: Option<(Unit<Vector2<N>>, N)>,
 	/// Number of fingers and centroid position of potential finger tap gesture.
@@ -19,7 +20,7 @@ pub struct Touch<F: Ord, N: RealField> {
 	mvs: usize,
 }
 
-impl<F: Ord, N: RealField> Touch<F, N> {
+impl<F: Debug + Eq, N: RealField> Touch<F, N> {
 	/// Computes centroid position, roll angle, and scale ratio from finger gestures.
 	///
 	/// Parameters are:
@@ -33,6 +34,8 @@ impl<F: Ord, N: RealField> Touch<F, N> {
 	/// Returns number of fingers, centroid position, roll angle, and scale ratio in screen space in
 	/// the order mentioned or `None` when debouncing tap gesture with non-vanishing `mvs`. See
 	/// [`Self::discard()`] for tap gesture result.
+	///
+	/// Panics with more than ten fingers.
 	pub fn compute(
 		&mut self,
 		fid: F,
@@ -40,7 +43,7 @@ impl<F: Ord, N: RealField> Touch<F, N> {
 		mvs: usize,
 	) -> Option<(usize, Point2<N>, N, N)> {
 		// Insert or update finger position.
-		let _old_pos = self.pos.insert(fid, pos);
+		let _old_pos = self.pos.insert(fid, pos).expect("Too many fingers");
 		// Current number of fingers.
 		let num = self.pos.len();
 		// Maximum number of fingers seen per potential tap.
@@ -51,14 +54,13 @@ impl<F: Ord, N: RealField> Touch<F, N> {
 			.values()
 			.map(|pos| pos.coords)
 			.sum::<Vector2<N>>()
-			// TODO Is this still a generic integer-to-float cast? Way to avoid concrete type?
 			.unscale(convert(num as f64))
 			.into();
 		// Cancel potential tap if more moves than number of finger starts plus optional number of
 		// moves per finger for debouncing tap gesture. Debouncing would delay non-tap gestures.
 		if self.mvs >= max + mvs * max {
 			// Make sure to not resume cancelled tap when fingers are discarded.
-			self.mvs = std::usize::MAX;
+			self.mvs = usize::MAX;
 			// Cancel potential tap.
 			self.tap = None;
 		} else {
