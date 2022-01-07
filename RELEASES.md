@@ -1,3 +1,7 @@
+# Version 0.8.0 (2022-01-07)
+
+  * Bump `nalgebra` to latest version.
+
 # Version 0.7.0 (2021-11-12)
 
   * Bump `nalgebra` to latest version.
