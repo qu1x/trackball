@@ -99,14 +99,17 @@ impl<N: Copy + RealField> Frame<N> {
 		self.orbit_around(&yaw, &self.eye());
 	}
 	/// Positive x-axis in camera space pointing from left to right.
+	#[allow(clippy::unused_self)]
 	pub fn local_pitch_axis(&self) -> Unit<Vector3<N>> {
 		Vector3::x_axis()
 	}
 	/// Positive y-axis in camera space pointing from bottom to top.
+	#[allow(clippy::unused_self)]
 	pub fn local_yaw_axis(&self) -> Unit<Vector3<N>> {
 		Vector3::y_axis()
 	}
 	/// Positive z-axis in camera space pointing from back to front.
+	#[allow(clippy::unused_self)]
 	pub fn local_roll_axis(&self) -> Unit<Vector3<N>> {
 		Vector3::z_axis()
 	}

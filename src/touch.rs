@@ -20,7 +20,7 @@ pub struct Touch<F: Debug + Eq, N: Copy + RealField> {
 	mvs: usize,
 }
 
-impl<F: Debug + Eq, N: Copy + RealField> Touch<F, N> {
+impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
 	/// Computes centroid position, roll angle, and scale ratio from finger gestures.
 	///
 	/// Parameters are:
@@ -34,6 +34,8 @@ impl<F: Debug + Eq, N: Copy + RealField> Touch<F, N> {
 	/// Returns number of fingers, centroid position, roll angle, and scale ratio in screen space in
 	/// the order mentioned or `None` when debouncing tap gesture with non-vanishing `mvs`. See
 	/// [`Self::discard()`] for tap gesture result.
+	///
+	/// # Panics
 	///
 	/// Panics with more than ten fingers.
 	pub fn compute(
@@ -49,6 +51,7 @@ impl<F: Debug + Eq, N: Copy + RealField> Touch<F, N> {
 		// Maximum number of fingers seen per potential tap.
 		let max = self.tap.map_or(1, |(tap, _pos)| tap).max(num);
 		// Centroid position.
+		#[allow(clippy::cast_precision_loss)]
 		let pos = self
 			.pos
 			.values()
@@ -107,6 +110,8 @@ impl<F: Debug + Eq, N: Copy + RealField> Touch<F, N> {
 	/// Removes finger position and returns number of fingers and centroid position of tap gesture.
 	///
 	/// Returns `None` as long as there are finger positions or no tap gesture has been recognized.
+	///
+	/// # Panics
 	///
 	/// Panics if generic finger ID `fid` is unknown.
 	pub fn discard(&mut self, fid: F) -> Option<(usize, Point2<N>)> {

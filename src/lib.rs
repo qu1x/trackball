@@ -65,6 +65,7 @@
 
 #![forbid(missing_docs)]
 #![allow(clippy::tabs_in_doc_comments)]
+#![allow(clippy::similar_names)]
 #![no_std]
 
 mod clamp;

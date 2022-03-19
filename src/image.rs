@@ -139,7 +139,7 @@ impl<N: Copy + RealField> Image<N> {
 	}
 	/// Computes projection view matrix.
 	pub fn compute_transformation(&mut self) {
-		self.proj_view_mat = self.proj_mat * self.view_mat
+		self.proj_view_mat = self.proj_mat * self.view_mat;
 	}
 	/// Cached inverse projection view matrix.
 	pub fn inverse_transformation(&self) -> &Matrix4<N> {

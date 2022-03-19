@@ -93,7 +93,7 @@ impl<N: Copy + RealField> Scene<N> {
 	///
 	/// Scales clip plane distances by measuring from target instead of eye. Default is `false`.
 	pub fn set_scale(&mut self, oim: bool) {
-		self.oim = oim
+		self.oim = oim;
 	}
 	/// Orthographic projection mode.
 	///
@@ -105,7 +105,7 @@ impl<N: Copy + RealField> Scene<N> {
 	///
 	/// Computes scale-identical orthographic instead of perspective projection. Default is `false`.
 	pub fn set_ortho(&mut self, opm: bool) {
-		self.opm = opm
+		self.opm = opm;
 	}
 	/// Projection transformation and unit per pixel on focus plane wrt distance between eye and
 	/// target and maximum position in screen space.
@@ -153,6 +153,7 @@ impl<N: Copy + RealField> From<N> for Fixed<N> {
 
 impl<N: Copy + RealField> Fixed<N> {
 	/// Converts to fixed horizontal field of view wrt maximum position in screen space.
+	#[must_use]
 	pub fn to_hor(self, max: &Point2<N>) -> Self {
 		let two = N::one() + N::one();
 		Self::Hor(match self {
@@ -162,6 +163,7 @@ impl<N: Copy + RealField> Fixed<N> {
 		})
 	}
 	/// Converts to fixed vertical field of view wrt maximum position in screen space.
+	#[must_use]
 	pub fn to_ver(self, max: &Point2<N>) -> Self {
 		let two = N::one() + N::one();
 		Self::Ver(match self {
@@ -172,6 +174,7 @@ impl<N: Copy + RealField> Fixed<N> {
 	}
 	/// Converts to fixed unit per pixel on focus plane at distance from eye of one wrt maximum
 	/// position in screen space.
+	#[must_use]
 	pub fn to_upp(self, max: &Point2<N>) -> Self {
 		let two = N::one() + N::one();
 		Self::Upp(match self {
@@ -182,6 +185,7 @@ impl<N: Copy + RealField> Fixed<N> {
 	}
 	/// Maximum position in camera space and unit per pixel on focus plane wrt distance between
 	/// eye and target and maximum position in screen space.
+	#[must_use]
 	pub fn max_and_upp(&self, zat: N, max: &Point2<N>) -> (Point2<N>, N) {
 		let two = N::one() + N::one();
 		match *self {
@@ -204,8 +208,7 @@ impl<N: Copy + RealField> Fixed<N> {
 	/// Underlying quantity.
 	pub fn into_inner(self) -> N {
 		match self {
-			Self::Hor(fov) => fov,
-			Self::Ver(fov) => fov,
+			Self::Hor(fov) | Self::Ver(fov) => fov,
 			Self::Upp(upp) => upp,
 		}
 	}
