@@ -3,7 +3,7 @@
 Virtual Trackball Orbiting via the Exponential Map
 
 [![Build][]](https://github.com/qu1x/trackball/actions/workflows/build.yml)
-[![Documentation][]](https://doc.qu1x.dev/trackball)
+[![Documentation][]](https://docs.rs/trackball)
 [![Downloads][]](https://crates.io/crates/trackball)
 [![Version][]](https://crates.io/crates/trackball)
 [![Rust][]](https://www.rust-lang.org)
