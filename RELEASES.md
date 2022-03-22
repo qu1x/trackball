@@ -1,3 +1,7 @@
+# Version 0.8.1 (2022-03-22)
+
+  * Re-export `nalgebra`.
+
 # Version 0.8.0 (2022-01-07)
 
   * Bump `nalgebra` to latest version.
