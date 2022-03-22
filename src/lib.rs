@@ -64,6 +64,7 @@
 //! ```
 
 #![forbid(missing_docs)]
+#![deny(rustdoc::broken_intra_doc_links)]
 #![allow(clippy::tabs_in_doc_comments)]
 #![allow(clippy::similar_names)]
 #![no_std]

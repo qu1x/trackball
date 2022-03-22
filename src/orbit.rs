@@ -123,6 +123,7 @@ impl Orbit<f32> {
 			);
 		}
 		self.vec = Some((Unit::new_unchecked(old.xyz()), old.w));
+		#[allow(clippy::float_cmp)]
 		(rot.w != 1.0).then(|| UnitQuaternion::new_unchecked(rot))
 	}
 	/// Discards cached normalization of previous cursor/finger position on button/finger release.
@@ -169,6 +170,7 @@ impl Orbit<f64> {
 			);
 		}
 		self.vec = Some((Unit::new_unchecked(old.xyz()), old.w));
+		#[allow(clippy::float_cmp)]
 		(rot.w != 1.0).then(|| UnitQuaternion::new_unchecked(rot))
 	}
 	/// Discards cached normalization of previous cursor/finger position on button/finger release.

@@ -1,0 +1,57 @@
+name: build
+on:
+  push:
+  pull_request:
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  default:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout (default)
+      uses: actions/checkout@v2
+    - name: Toolchain (default)
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - name: Test (default)
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+    - name: Clippy (default)
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+    - name: Doc (default)
+      uses: actions-rs/cargo@v1
+      with:
+        command: doc
+    - name: Fmt (default)
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --check
+  cc:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout (cc)
+      uses: actions/checkout@v2
+    - name: Toolchain (cc)
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - name: Test (cc)
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --features cc
+    - name: Clippy (cc)
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: --features cc
+    - name: Doc (cc)
+      uses: actions-rs/cargo@v1
+      with:
+        command: doc
+        args: --features cc

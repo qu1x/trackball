@@ -2,18 +2,18 @@
 
 Virtual Trackball Orbiting via the Exponential Map
 
-[![Build Status][]](https://travis-ci.org/qu1x/trackball)
-[![Downloads][]](https://crates.io/crates/trackball)
-[![Rust][]](https://www.rust-lang.org)
-[![Version][]](https://crates.io/crates/trackball)
+[![Build][]](https://github.com/qu1x/trackball/actions/workflows/build.yml)
 [![Documentation][]](https://doc.qu1x.dev/trackball)
+[![Downloads][]](https://crates.io/crates/trackball)
+[![Version][]](https://crates.io/crates/trackball)
+[![Rust][]](https://www.rust-lang.org)
 [![License][]](https://spdx.org/licenses/BSD-2-Clause-Patent.html)
 
-[Build Status]: https://travis-ci.org/qu1x/trackball.svg
-[Downloads]: https://img.shields.io/crates/d/trackball.svg
-[Rust]: https://img.shields.io/badge/rust-stable-brightgreen.svg
-[Version]: https://img.shields.io/crates/v/trackball.svg
+[Build]: https://github.com/qu1x/trackball/actions/workflows/build.yml/badge.svg
 [Documentation]: https://docs.rs/trackball/badge.svg
+[Downloads]: https://img.shields.io/crates/d/trackball.svg
+[Version]: https://img.shields.io/crates/v/trackball.svg
+[Rust]: https://img.shields.io/badge/rust-stable-brightgreen.svg
 [License]: https://img.shields.io/crates/l/trackball.svg
 
 This is an alternative trackball technique using exponential map and parallel transport to

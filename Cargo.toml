@@ -30,9 +30,6 @@ include = [
 	"LICENSES/*.md",
 ]
 
-[badges]
-travis-ci = { repository = "qu1x/trackball" }
-
 [dependencies]
 heapless = { version = "0.7", default-features = false }
 nalgebra = { version = "0.30", default-features = false, features = ["libm"] }
