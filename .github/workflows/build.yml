@@ -1,5 +1,7 @@
 name: build
 on:
+  schedule:
+  - cron: '0 5 * * *'
   push:
   pull_request:
 env:
@@ -8,25 +10,26 @@ jobs:
   default:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout (default)
+    - name: checkout
       uses: actions/checkout@v2
-    - name: Toolchain (default)
+    - name: toolchain
       uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
-    - name: Test (default)
+    - name: test
       uses: actions-rs/cargo@v1
       with:
         command: test
-    - name: Clippy (default)
+    - name: clippy
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-    - name: Doc (default)
+        args: -- --deny clippy::pedantic
+    - name: doc
       uses: actions-rs/cargo@v1
       with:
         command: doc
-    - name: Fmt (default)
+    - name: fmt
       uses: actions-rs/cargo@v1
       with:
         command: fmt
@@ -34,23 +37,23 @@ jobs:
   cc:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout (cc)
+    - name: checkout
       uses: actions/checkout@v2
-    - name: Toolchain (cc)
+    - name: toolchain
       uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
-    - name: Test (cc)
+    - name: test
       uses: actions-rs/cargo@v1
       with:
         command: test
         args: --features cc
-    - name: Clippy (cc)
+    - name: clippy
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --features cc
-    - name: Doc (cc)
+        args: --features cc -- --deny clippy::pedantic
+    - name: doc
       uses: actions-rs/cargo@v1
       with:
         command: doc
