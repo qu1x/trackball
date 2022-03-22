@@ -42,18 +42,18 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
   * Converting between [`Fixed`] quantities wrt to field of view, see [`Scene::set_fov()`].
   * Time-free [`Touch`] gesture recognition for slide, orbit, scale, and focus operations.
 
-[`Frame::slide()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.slide
-[`Frame::orbit()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.orbit
-[`Frame::scale()`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html#method.scale
+[`Frame::slide()`]: https://docs.rs/trackball/latest/trackball/struct.Frame.html#method.slide
+[`Frame::orbit()`]: https://docs.rs/trackball/latest/trackball/struct.Frame.html#method.orbit
+[`Frame::scale()`]: https://docs.rs/trackball/latest/trackball/struct.Frame.html#method.scale
 
-[`First`]: https://doc.qu1x.dev/trackball/trackball/struct.First.html
-[`Frame`]: https://doc.qu1x.dev/trackball/trackball/struct.Frame.html
-[`Clamp`]: https://doc.qu1x.dev/trackball/trackball/struct.Clamp.html
-[`Scene`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html
-[`Touch`]: https://doc.qu1x.dev/trackball/trackball/struct.Touch.html
+[`First`]: https://docs.rs/trackball/latest/trackball/struct.First.html
+[`Frame`]: https://docs.rs/trackball/latest/trackball/struct.Frame.html
+[`Clamp`]: https://docs.rs/trackball/latest/trackball/struct.Clamp.html
+[`Scene`]: https://docs.rs/trackball/latest/trackball/struct.Scene.html
+[`Touch`]: https://docs.rs/trackball/latest/trackball/struct.Touch.html
 
-[`Fixed`]: https://doc.qu1x.dev/trackball/trackball/enum.Fixed.html
-[`Scene::set_fov()`]: https://doc.qu1x.dev/trackball/trackball/struct.Scene.html#method.set_fov
+[`Fixed`]: https://docs.rs/trackball/latest/trackball/enum.Fixed.html
+[`Scene::set_fov()`]: https://docs.rs/trackball/latest/trackball/struct.Scene.html#method.set_fov
 
 See the [release history](RELEASES.md) to keep track of the development.
 
@@ -105,7 +105,7 @@ Identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` 
 trackball = { version = "0.8", features = ["cc"] }
 ```
 
-[`Orbit`]: https://doc.qu1x.dev/trackball/trackball/struct.Orbit.html
+[`Orbit`]: https://docs.rs/trackball/latest/trackball/struct.Orbit.html
 
 ## License
 
