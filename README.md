@@ -63,8 +63,10 @@ A trackball camera mode implementation can be as easy as this by delegating even
 graphics library of choice to the [`Orbit`] operation handler along with other handlers.
 
 ```rust
-use nalgebra::{Point2, Vector3};
-use trackball::{Frame, Image, Orbit};
+use trackball::{
+	nalgebra::{Point2, Vector3},
+	Frame, Image, Orbit,
+};
 
 /// Trackball camera mode.
 pub struct Trackball {
