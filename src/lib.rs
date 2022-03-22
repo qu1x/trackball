@@ -32,8 +32,10 @@
 //! graphics library of choice to the [`Orbit`] operation handler along with other handlers.
 //!
 //! ```
-//! use nalgebra::{Point2, Vector3};
-//! use trackball::{Frame, Image, Orbit};
+//! use trackball::{
+//! 	nalgebra::{Point2, Vector3},
+//! 	Frame, Image, Orbit,
+//! };
 //!
 //! /// Trackball camera mode.
 //! pub struct Trackball {
@@ -68,6 +70,8 @@
 #![allow(clippy::tabs_in_doc_comments)]
 #![allow(clippy::similar_names)]
 #![no_std]
+
+pub use nalgebra;
 
 mod clamp;
 mod first;
