@@ -102,7 +102,7 @@ Identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` 
 
 ```toml
 [dependencies]
-trackball = { version = "0.8", features = ["cc"] }
+trackball = { version = "0.9.0", features = ["cc"] }
 ```
 
 [`Orbit`]: https://docs.rs/trackball/latest/trackball/struct.Orbit.html

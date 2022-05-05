@@ -1,6 +1,6 @@
 [package]
 name = "trackball"
-version = "0.8.1"
+version = "0.9.0"
 authors = ["Rouven Spreckels <rs@qu1x.dev>"]
 edition = "2021"
 description = "Virtual Trackball Orbiting via the Exponential Map"
@@ -31,8 +31,8 @@ include = [
 ]
 
 [dependencies]
-heapless = { version = "0.7", default-features = false }
-nalgebra = { version = "0.30", default-features = false, features = ["libm"] }
+heapless = { version = "0.7.10", default-features = false }
+nalgebra = { version = "0.31.0", default-features = false, features = ["libm-force"] }
 
 [build-dependencies]
-cc = { version = "1", optional = true }
+cc = { version = "1.0.73", optional = true }
