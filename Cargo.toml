@@ -32,7 +32,10 @@ include = [
 
 [dependencies]
 heapless = { version = "0.7.16", default-features = false }
-nalgebra = { version = "0.32.2", default-features = false, features = ["libm-force"] }
+nalgebra = { version = "0.32.3", default-features = false, features = ["libm-force"] }
 
 [build-dependencies]
 cc = { version = "1.0.79", optional = true }
+
+[features]
+glam = ["nalgebra/convert-glam024"]

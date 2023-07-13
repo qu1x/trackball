@@ -5,7 +5,7 @@ use nalgebra::RealField;
 /// Clamp as user boundary conditions of [`Frame`].
 ///
 /// Implements [`Default`] and can be created with `Clamp::default()`.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Clamp<N: Copy + RealField> {
 	/// Ensures user boundary conditions. Default is [`Self::zcp_collision()`].
 	ubc: fn(frame: Frame<N>, scene: &Scene<N>) -> Frame<N>,

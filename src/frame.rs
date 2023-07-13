@@ -139,8 +139,19 @@ impl<N: Copy + RealField> Frame<N> {
 	pub fn set_angles(&mut self, pitch: N, yaw: N, roll: N) {
 		self.rot = UnitQuaternion::from_euler_angles(pitch, yaw, roll);
 	}
-	/// View transformation from world to camera space.
+	/// View transformation from camera to world space.
 	pub fn view(&self) -> Isometry3<N> {
+		Isometry3::from_parts(
+			// Eye position in world space with origin in camera space.
+			self.eye().into(),
+			// Eye rotation from camera to world space around target.
+			self.rot,
+		)
+	}
+	/// Inverse view transformation from world to camera space.
+	///
+	/// Uses less computations than [`Self::view()`]`.inverse()`.
+	pub fn inverse_view(&self) -> Isometry3<N> {
 		// Eye rotation from world to camera space around target.
 		let rot = self.rot.inverse();
 		// Eye position in camera space with origin in world space.
