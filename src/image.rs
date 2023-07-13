@@ -56,6 +56,7 @@ impl<N: Copy + RealField> Image<N> {
 	/// Recomputes only cached matrices whose parameters have changed, see [`Self::set_compute()`].
 	///
 	/// Returns `Some(true)` on success, `Some(false)` on failure, and `None` with no changes.
+	#[allow(clippy::useless_let_if_seq)]
 	pub fn compute(&mut self, frame: Frame<N>, scene: Scene<N>) -> Option<bool> {
 		let mut compute = false;
 		if self.frame != frame {
@@ -87,7 +88,7 @@ impl<N: Copy + RealField> Image<N> {
 		self.compute_inv = compute_inv;
 	}
 	/// Current position in screen space of hovering input or pointing device.
-	pub fn pos(&self) -> &Point2<N> {
+	pub const fn pos(&self) -> &Point2<N> {
 		&self.pos
 	}
 	/// Sets current position in screen space of hovering input or pointing device.
@@ -95,7 +96,7 @@ impl<N: Copy + RealField> Image<N> {
 		self.pos = pos;
 	}
 	/// Maximum position in screen space as screen's width and height.
-	pub fn max(&self) -> &Point2<N> {
+	pub const fn max(&self) -> &Point2<N> {
 		&self.max
 	}
 	/// Sets maximum position in screen space as screen's width and height.
@@ -107,15 +108,15 @@ impl<N: Copy + RealField> Image<N> {
 		self.max = max;
 	}
 	/// Cached unit per pixel on focus plane to scale/project positions/vectors onto focus plane.
-	pub fn upp(&self) -> N {
+	pub const fn upp(&self) -> N {
 		self.upp
 	}
 	/// Cached view isometry.
-	pub fn view_isometry(&self) -> &Isometry3<N> {
+	pub const fn view_isometry(&self) -> &Isometry3<N> {
 		&self.view_iso
 	}
 	/// Cached view matrix.
-	pub fn view(&self) -> &Matrix4<N> {
+	pub const fn view(&self) -> &Matrix4<N> {
 		&self.view_mat
 	}
 	/// Computes view isometry and matrix from frame wrt camera eye and target.
@@ -124,7 +125,7 @@ impl<N: Copy + RealField> Image<N> {
 		self.view_mat = self.view_iso.to_homogeneous();
 	}
 	/// Cached projection matrix.
-	pub fn projection(&self) -> &Matrix4<N> {
+	pub const fn projection(&self) -> &Matrix4<N> {
 		&self.proj_mat
 	}
 	/// Computes projection matrix and unit per pixel on focus plane.
@@ -134,7 +135,7 @@ impl<N: Copy + RealField> Image<N> {
 		self.proj_mat = mat;
 	}
 	/// Cached projection view matrix.
-	pub fn transformation(&self) -> &Matrix4<N> {
+	pub const fn transformation(&self) -> &Matrix4<N> {
 		&self.proj_view_mat
 	}
 	/// Computes projection view matrix.
@@ -142,7 +143,7 @@ impl<N: Copy + RealField> Image<N> {
 		self.proj_view_mat = self.proj_mat * self.view_mat;
 	}
 	/// Cached inverse projection view matrix.
-	pub fn inverse_transformation(&self) -> &Matrix4<N> {
+	pub const fn inverse_transformation(&self) -> &Matrix4<N> {
 		&self.proj_view_inv
 	}
 	/// Computes inverse of projection view matrix.

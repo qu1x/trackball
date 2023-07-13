@@ -23,11 +23,11 @@ impl<N: Copy + RealField> Scale<N> {
 		N::one() - num / self.den
 	}
 	/// Denominator. Default is scroll unit of `120.0`.
-	pub fn denominator(&self) -> N {
+	pub const fn denominator(&self) -> N {
 		self.den
 	}
 	/// Sets denominator. Default is scroll unit of `120.0`.
-	pub fn set_denominator(&self) -> N {
+	pub const fn set_denominator(&self) -> N {
 		self.den
 	}
 }

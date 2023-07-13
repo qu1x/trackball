@@ -37,7 +37,7 @@ impl<N: Copy + RealField> First<N> {
 		self.ray = None;
 	}
 	/// Whether a yaw axis has been captured.
-	pub fn enabled(&self) -> bool {
+	pub const fn enabled(&self) -> bool {
 		self.ray.is_some()
 	}
 }

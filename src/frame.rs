@@ -30,7 +30,7 @@ impl<N: Copy + RealField> Frame<N> {
 		*self = Self::look_at(self.pos, eye, up);
 	}
 	/// Target position in world space.
-	pub fn target(&self) -> &Point3<N> {
+	pub const fn target(&self) -> &Point3<N> {
 		&self.pos
 	}
 	/// Sets target position in world space preserving eye position inclusive its roll attitude.
@@ -40,7 +40,7 @@ impl<N: Copy + RealField> Frame<N> {
 		self.zat = (self.pos - eye).norm();
 	}
 	/// Distance between eye and target.
-	pub fn distance(&self) -> N {
+	pub const fn distance(&self) -> N {
 		self.zat
 	}
 	/// Sets distance between eye and target preserving target position.

@@ -37,7 +37,7 @@ impl<N: Copy + RealField> Default for Scene<N> {
 
 impl<N: Copy + RealField> Scene<N> {
 	/// Fixed quantity wrt field of view, see [`Self::set_fov()`].
-	pub fn fov(&self) -> Fixed<N> {
+	pub const fn fov(&self) -> Fixed<N> {
 		self.fov
 	}
 	/// Sets fixed quantity wrt field of view.
@@ -86,7 +86,7 @@ impl<N: Copy + RealField> Scene<N> {
 	/// Object inspection mode.
 	///
 	/// Scales clip plane distances by measuring from target instead of eye. Default is `false`.
-	pub fn scale(&self) -> bool {
+	pub const fn scale(&self) -> bool {
 		self.oim
 	}
 	/// Sets object inspection mode.
@@ -98,7 +98,7 @@ impl<N: Copy + RealField> Scene<N> {
 	/// Orthographic projection mode.
 	///
 	/// Computes scale-identical orthographic instead of perspective projection. Default is `false`.
-	pub fn ortho(&self) -> bool {
+	pub const fn ortho(&self) -> bool {
 		self.opm
 	}
 	/// Sets orthographic projection mode.
@@ -206,7 +206,7 @@ impl<N: Copy + RealField> Fixed<N> {
 		}
 	}
 	/// Underlying quantity.
-	pub fn into_inner(self) -> N {
+	pub const fn into_inner(self) -> N {
 		match self {
 			Self::Hor(fov) | Self::Ver(fov) => fov,
 			Self::Upp(upp) => upp,
