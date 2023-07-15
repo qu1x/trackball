@@ -27,7 +27,7 @@ impl<N: Copy + RealField> Scale<N> {
 		self.den
 	}
 	/// Sets denominator. Default is scroll unit of `120.0`.
-	pub const fn set_denominator(&self) -> N {
-		self.den
+	pub fn set_denominator(&mut self, den: N) {
+		self.den = den;
 	}
 }

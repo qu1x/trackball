@@ -21,7 +21,7 @@ impl<N: Copy + RealField> Default for Clamp<N> {
 
 impl<N: Copy + RealField> Clamp<N> {
 	/// Computes clamped [`Frame`] wrt to user boundary conditions.
-	pub fn compute(&mut self, frame: Frame<N>, scene: &Scene<N>) -> Frame<N> {
+	pub fn compute(&self, frame: Frame<N>, scene: &Scene<N>) -> Frame<N> {
 		(self.ubc)(frame, scene)
 	}
 	/// Replace with new and return old user boundary conditions.

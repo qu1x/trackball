@@ -40,4 +40,8 @@ impl<N: Copy + RealField> First<N> {
 	pub const fn enabled(&self) -> bool {
 		self.ray.is_some()
 	}
+	/// Captured yaw axis.
+	pub const fn yaw_axis(&self) -> Option<&Unit<Vector3<N>>> {
+		self.ray.as_ref()
+	}
 }
