@@ -12,7 +12,7 @@ pub struct Scene<N: Copy + RealField> {
 	/// Clip plane distances.
 	///
 	/// Near and far clip plane distances from either target or eye whether [`Self::oim`]. Default
-	/// is `(1e-1, 1e+6)` measured from eye.
+	/// is `(1e-1, 1e+3)` measured from eye.
 	zcp: (N, N),
 	/// Object inspection mode.
 	///
@@ -28,7 +28,7 @@ impl<N: Copy + RealField> Default for Scene<N> {
 	fn default() -> Self {
 		Self {
 			fov: Fixed::default(),
-			zcp: (convert(1e-1), convert(1e+6)),
+			zcp: (convert(1e-1), convert(1e+3)),
 			oim: false,
 			opm: false,
 		}
@@ -68,7 +68,7 @@ impl<N: Copy + RealField> Scene<N> {
 	/// Clip plane distances from eye regardless of [`Self::scale()`] wrt to distance between eye
 	/// and target.
 	///
-	/// Default is `(1e-1, 1e+6)` measured from eye.
+	/// Default is `(1e-1, 1e+3)` measured from eye.
 	pub fn clip_planes(&self, zat: N) -> (N, N) {
 		if self.oim {
 			let (znear, zfar) = self.zcp;
@@ -79,7 +79,7 @@ impl<N: Copy + RealField> Scene<N> {
 	}
 	/// Sets clip plane distances from target or eye whether [`Self::scale()`].
 	///
-	/// Default is `(1e-1, 1e+6)` measured from eye.
+	/// Default is `(1e-1, 1e+3)` measured from eye.
 	pub fn set_clip_planes(&mut self, znear: N, zfar: N) {
 		self.zcp = (znear, zfar);
 	}

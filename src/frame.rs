@@ -1,7 +1,7 @@
 use nalgebra::{Isometry3, Point3, RealField, Unit, UnitQuaternion, Vector3};
 
 /// Frame wrt camera eye and target.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct Frame<N: Copy + RealField> {
 	/// Target position in world space.
 	pos: Point3<N>,
