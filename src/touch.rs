@@ -111,15 +111,14 @@ impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
 	///
 	/// Returns `None` as long as there are finger positions or no tap gesture has been recognized.
 	///
-	/// # Panics
-	///
-	/// Panics if generic finger ID `fid` is unknown.
+	/// Discards finger positions and tap gesture if generic finger ID `fid` is unknown.
 	pub fn discard(&mut self, fid: F) -> Option<(usize, Point2<N>)> {
-		self.pos.remove(&fid).expect("Unknown touch ID");
+		let unknown = self.pos.remove(&fid).is_none();
 		self.vec = None;
-		if self.pos.is_empty() {
+		if self.pos.is_empty() || unknown {
+			self.pos.clear();
 			self.mvs = 0;
-			self.tap.take()
+			self.tap.take().filter(|_tap| !unknown)
 		} else {
 			None
 		}
