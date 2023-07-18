@@ -125,20 +125,6 @@ impl<N: Copy + RealField> Frame<N> {
 	pub fn roll_axis(&self) -> Unit<Vector3<N>> {
 		self.rot * self.local_roll_axis()
 	}
-	/// Eye attitude via intrinsic `(pitch, yaw, roll)` angles, see [`Self::set_angles()`].
-	pub fn angles(&self) -> (N, N, N) {
-		self.rot.euler_angles()
-	}
-	/// Sets eye attitude via intrinsic angles.
-	///
-	/// Eye rotation occurs in the sense prescribed by the right-hand rule in the following order:
-	///
-	///  1. roll about [`Self::roll_axis()`] within ±π,
-	///  2. pitch about rolled [`Self::pitch_axis()`] within ±π,
-	///  3. yaw about rolled and pitched [`Self::yaw_axis()`] within ±π/2.
-	pub fn set_angles(&mut self, pitch: N, yaw: N, roll: N) {
-		self.rot = UnitQuaternion::from_euler_angles(pitch, yaw, roll);
-	}
 	/// View transformation from camera to world space.
 	pub fn view(&self) -> Isometry3<N> {
 		Isometry3::from_parts(
