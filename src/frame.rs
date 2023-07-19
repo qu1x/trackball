@@ -98,6 +98,26 @@ impl<N: Copy + RealField> Frame<N> {
 		self.local_orbit_around(&pitch, &Point3::new(N::zero(), N::zero(), self.zat));
 		self.orbit_around(&yaw, &self.eye());
 	}
+	/// Attempts to interpolates between two frames using a linear interpolation for the translation
+	/// part, and a spherical linear interpolation for the rotation part.
+	///
+	/// Returns `None` if the angle between both rotations is 180 degrees (in which case the
+	/// interpolation is not well-defined).
+	///
+	/// # Arguments
+	///
+	///   * `self`: The initial frame to interpolate from.
+	///   * `other`: The final frame to interpolate toward.
+	///   * `t`: The interpolation parameter between 0 and 1.
+	///   * `epsilon`: The value below which the sinus of the angle separating both quaternion
+	///     must be to return `None`.
+	pub fn try_lerp_slerp(&self, other: &Self, t: N, epsilon: N) -> Option<Frame<N>> {
+		Some(Self {
+			pos: self.pos.lerp(&other.pos, t),
+			rot: self.rot.try_slerp(&other.rot, t, epsilon)?,
+			zat: self.zat * (N::one() - t) + other.zat * t,
+		})
+	}
 	/// Positive x-axis in camera space pointing from left to right.
 	#[allow(clippy::unused_self)]
 	pub fn local_pitch_axis(&self) -> Unit<Vector3<N>> {
