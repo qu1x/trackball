@@ -33,6 +33,7 @@ include = [
 [dependencies]
 heapless = { version = "0.7.16", default-features = false }
 nalgebra = { version = "0.32.3", default-features = false, features = ["libm-force"] }
+approx = { version = "0.5.1", default-features = false }
 
 [build-dependencies]
 cc = { version = "1.0.79", optional = true }

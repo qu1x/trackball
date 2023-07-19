@@ -1,3 +1,4 @@
+use approx::{AbsDiffEq, RelativeEq, UlpsEq};
 use nalgebra::{Isometry3, Point3, RealField, Unit, UnitQuaternion, Vector3};
 
 /// Frame wrt camera eye and target.
@@ -111,7 +112,7 @@ impl<N: Copy + RealField> Frame<N> {
 	///   * `t`: The interpolation parameter between 0 and 1.
 	///   * `epsilon`: The value below which the sinus of the angle separating both quaternion
 	///     must be to return `None`.
-	pub fn try_lerp_slerp(&self, other: &Self, t: N, epsilon: N) -> Option<Frame<N>> {
+	pub fn try_lerp_slerp(&self, other: &Self, t: N, epsilon: N) -> Option<Self> {
 		Some(Self {
 			pos: self.pos.lerp(&other.pos, t),
 			rot: self.rot.try_slerp(&other.rot, t, epsilon)?,
@@ -164,5 +165,52 @@ impl<N: Copy + RealField> Frame<N> {
 		let eye = rot * self.pos + Vector3::z_axis().into_inner() * self.zat;
 		// Translate in such a way that the eye position with origin in world space vanishes.
 		Isometry3::from_parts((-eye.coords).into(), rot)
+	}
+}
+
+impl<N: Copy + RealField + AbsDiffEq> AbsDiffEq for Frame<N>
+where
+	N::Epsilon: Copy,
+{
+	type Epsilon = N::Epsilon;
+
+	fn default_epsilon() -> N::Epsilon {
+		N::default_epsilon()
+	}
+
+	fn abs_diff_eq(&self, other: &Self, epsilon: N::Epsilon) -> bool {
+		self.pos.abs_diff_eq(&other.pos, epsilon)
+			&& self.rot.abs_diff_eq(&other.rot, epsilon)
+			&& self.zat.abs_diff_eq(&other.zat, epsilon)
+	}
+}
+
+impl<N: Copy + RealField + RelativeEq> RelativeEq for Frame<N>
+where
+	N::Epsilon: Copy,
+{
+	fn default_max_relative() -> N::Epsilon {
+		N::default_max_relative()
+	}
+
+	fn relative_eq(&self, other: &Self, epsilon: N::Epsilon, max_relative: N::Epsilon) -> bool {
+		self.pos.relative_eq(&other.pos, epsilon, max_relative)
+			&& self.rot.relative_eq(&other.rot, epsilon, max_relative)
+			&& self.zat.relative_eq(&other.zat, epsilon, max_relative)
+	}
+}
+
+impl<N: Copy + RealField + UlpsEq> UlpsEq for Frame<N>
+where
+	N::Epsilon: Copy,
+{
+	fn default_max_ulps() -> u32 {
+		N::default_max_ulps()
+	}
+
+	fn ulps_eq(&self, other: &Self, epsilon: N::Epsilon, max_ulps: u32) -> bool {
+		self.pos.ulps_eq(&other.pos, epsilon, max_ulps)
+			&& self.rot.ulps_eq(&other.rot, epsilon, max_ulps)
+			&& self.zat.ulps_eq(&other.zat, epsilon, max_ulps)
 	}
 }
