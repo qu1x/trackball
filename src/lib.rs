@@ -71,6 +71,7 @@
 #![allow(clippy::similar_names)]
 #![no_std]
 
+pub use approx;
 pub use nalgebra;
 
 mod clamp;
