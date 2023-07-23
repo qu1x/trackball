@@ -99,26 +99,6 @@ impl<N: Copy + RealField> Frame<N> {
 		self.local_orbit_around(&pitch, &Point3::new(N::zero(), N::zero(), self.zat));
 		self.orbit_around(&yaw, &self.eye());
 	}
-	/// Attempts to interpolates between two frames using a linear interpolation for the translation
-	/// part, and a spherical linear interpolation for the rotation part.
-	///
-	/// Returns `None` if the angle between both rotations is 180 degrees (in which case the
-	/// interpolation is not well-defined).
-	///
-	/// # Arguments
-	///
-	///   * `self`: The initial frame to interpolate from.
-	///   * `other`: The final frame to interpolate toward.
-	///   * `t`: The interpolation parameter between 0 and 1.
-	///   * `epsilon`: The value below which the sinus of the angle separating both quaternion
-	///     must be to return `None`.
-	pub fn try_lerp_slerp(&self, other: &Self, t: N, epsilon: N) -> Option<Self> {
-		Some(Self {
-			pos: self.pos.lerp(&other.pos, t),
-			rot: self.rot.try_slerp(&other.rot, t, epsilon)?,
-			zat: self.zat * (N::one() - t) + other.zat * t,
-		})
-	}
 	/// Positive x-axis in camera space pointing from left to right.
 	#[allow(clippy::unused_self)]
 	pub fn local_pitch_axis(&self) -> Unit<Vector3<N>> {
@@ -145,6 +125,26 @@ impl<N: Copy + RealField> Frame<N> {
 	/// Positive z-axis in world space pointing from back to front.
 	pub fn roll_axis(&self) -> Unit<Vector3<N>> {
 		self.rot * self.local_roll_axis()
+	}
+	/// Attempts to interpolates between two frames using a linear interpolation for the translation
+	/// part, and a spherical linear interpolation for the rotation part.
+	///
+	/// Returns `None` if the angle between both rotations is 180 degrees (in which case the
+	/// interpolation is not well-defined).
+	///
+	/// # Arguments
+	///
+	///   * `self`: The initial frame to interpolate from.
+	///   * `other`: The final frame to interpolate toward.
+	///   * `t`: The interpolation parameter between 0 and 1.
+	///   * `epsilon`: The value below which the sinus of the angle separating both quaternion
+	///     must be to return `None`.
+	pub fn try_lerp_slerp(&self, other: &Self, t: N, epsilon: N) -> Option<Self> {
+		Some(Self {
+			pos: self.pos.lerp(&other.pos, t),
+			rot: self.rot.try_slerp(&other.rot, t, epsilon)?,
+			zat: self.zat * (N::one() - t) + other.zat * t,
+		})
 	}
 	/// View transformation from camera to world space.
 	pub fn view(&self) -> Isometry3<N> {
@@ -212,5 +212,100 @@ where
 		self.pos.ulps_eq(&other.pos, epsilon, max_ulps)
 			&& self.rot.ulps_eq(&other.rot, epsilon, max_ulps)
 			&& self.zat.ulps_eq(&other.zat, epsilon, max_ulps)
+	}
+}
+
+/// Delta transform from initial to final [`Frame`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Delta<N: Copy + RealField> {
+	/// Yields frame as identity transform (default).
+	Frame,
+	/// Orbits target around eye by pitch and yaw preserving roll attitude aka first person view.
+	///
+	/// See [`Frame::look_around()`].
+	First {
+		/// Pitch angle.
+		pitch: N,
+		/// Yaw angle.
+		yaw: N,
+		/// Yaw axis.
+		yaw_axis: Unit<Vector3<N>>,
+	},
+	/// Orbits eye by rotation in camera space around point in camera space.
+	///
+	/// See [`Frame::local_orbit_around()`].
+	Orbit {
+		/// Rotation in camera space.
+		rot: UnitQuaternion<N>,
+		/// Point in camera space.
+		pos: Point3<N>,
+	},
+	/// Slides camera eye and target by vector in camera space.
+	///
+	/// See [`Frame::local_slide()`].
+	Slide {
+		/// Vector in camera space.
+		vec: Vector3<N>,
+	},
+	/// Scales distance between eye and point in camera space by ratio preserving target position.
+	///
+	/// See [`Frame::local_scale_around()`].
+	Scale {
+		/// Scale ratio.
+		rat: N,
+		/// Point in camera space.
+		pos: Point3<N>,
+	},
+}
+
+impl<N: Copy + RealField> Delta<N> {
+	/// Transforms from initial to final frame.
+	pub fn transform(&self, frame: &Frame<N>) -> Frame<N> {
+		let mut frame = frame.clone();
+		match self {
+			Self::Frame => {}
+			Self::First {
+				pitch,
+				yaw,
+				ref yaw_axis,
+			} => frame.look_around(*pitch, *yaw, yaw_axis),
+			Self::Orbit { rot, pos } => frame.orbit_around(rot, pos),
+			Self::Slide { vec } => frame.slide(vec),
+			Self::Scale { rat, pos } => frame.scale_around(*rat, pos),
+		}
+		frame
+	}
+	/// Inverses delta transform.
+	///
+	/// Effectively swaps initial with final frame.
+	#[must_use]
+	pub fn inverse(self) -> Self {
+		match self {
+			Self::Frame => Self::Frame,
+			Self::First {
+				pitch,
+				yaw,
+				yaw_axis,
+			} => Self::First {
+				pitch: -pitch,
+				yaw: -yaw,
+				yaw_axis,
+			},
+			Self::Orbit { rot, pos } => Self::Orbit {
+				rot: rot.inverse(),
+				pos,
+			},
+			Self::Slide { vec } => Self::Slide { vec: -vec },
+			Self::Scale { rat, pos } => Self::Scale {
+				rat: N::one() + N::one() - rat,
+				pos,
+			},
+		}
+	}
+}
+
+impl<N: Copy + RealField> Default for Delta<N> {
+	fn default() -> Self {
+		Self::Frame
 	}
 }

@@ -1,4 +1,4 @@
-use crate::{Frame, Scene};
+use crate::{Delta, Frame, Scene};
 use core::mem::replace;
 use nalgebra::RealField;
 
@@ -8,7 +8,8 @@ use nalgebra::RealField;
 #[derive(Debug, Clone)]
 pub struct Clamp<N: Copy + RealField> {
 	/// Ensures user boundary conditions. Default is [`Self::zcp_collision()`].
-	ubc: fn(frame: Frame<N>, scene: &Scene<N>) -> Frame<N>,
+	#[allow(clippy::type_complexity)]
+	ubc: fn(delta: Delta<N>, frame: &Frame<N>, scene: &Scene<N>) -> Delta<N>,
 }
 
 impl<N: Copy + RealField> Default for Clamp<N> {
@@ -21,24 +22,28 @@ impl<N: Copy + RealField> Default for Clamp<N> {
 
 impl<N: Copy + RealField> Clamp<N> {
 	/// Computes clamped [`Frame`] wrt to user boundary conditions.
-	pub fn compute(&self, frame: Frame<N>, scene: &Scene<N>) -> Frame<N> {
-		(self.ubc)(frame, scene)
+	pub fn compute(&self, delta: Delta<N>, frame: &Frame<N>, scene: &Scene<N>) -> Delta<N> {
+		(self.ubc)(delta, frame, scene)
 	}
 	/// Replace with new and return old user boundary conditions.
+	#[allow(clippy::type_complexity)]
 	pub fn replace(
 		&mut self,
-		ubc: fn(frame: Frame<N>, scene: &Scene<N>) -> Frame<N>,
-	) -> fn(frame: Frame<N>, scene: &Scene<N>) -> Frame<N> {
+		ubc: fn(delta: Delta<N>, frame: &Frame<N>, scene: &Scene<N>) -> Delta<N>,
+	) -> fn(delta: Delta<N>, frame: &Frame<N>, scene: &Scene<N>) -> Delta<N> {
 		replace(&mut self.ubc, ubc)
 	}
 	/// Default boundary conditions preventing clip plane collisions.
-	pub fn zcp_collision(frame: Frame<N>, scene: &Scene<N>) -> Frame<N> {
-		let mut frame = frame;
+	pub fn zcp_collision(mut delta: Delta<N>, frame: &Frame<N>, scene: &Scene<N>) -> Delta<N> {
 		if scene.scale() {
-			let zat = frame.distance();
-			let (znear, _zfar) = scene.clip_planes(N::zero());
-			frame.set_distance(zat.max(-znear * (N::one() + N::default_epsilon().sqrt())));
+			if let Delta::Scale { rat, pos } = delta {
+				let (znear, _zfar) = scene.clip_planes(N::zero());
+				let old_zat = frame.distance();
+				let zat = (old_zat * rat).max(-znear * (N::one() + N::default_epsilon().sqrt()));
+				let rat = zat / old_zat;
+				delta = Delta::Scale { rat, pos };
+			}
 		}
-		frame
+		delta
 	}
 }
