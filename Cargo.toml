@@ -30,6 +30,10 @@ include = [
 	"LICENSES/*",
 ]
 
+[package.metadata.docs.rs]
+features = ["glam", "serde", "rkyv"]
+rustdoc-args = ["--cfg", "docsrs"]
+
 [dependencies]
 heapless = { version = "0.7.16", default-features = false }
 nalgebra = { version = "0.32.3", default-features = false, features = ["libm-force"] }
