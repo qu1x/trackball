@@ -1,5 +1,5 @@
-// Copyright © 2021 Rouven Spreckels <rs@qu1x.dev>
-// SPDX-License-Identifier: BSD-2-Clause-Patent
+// Copyright © 2021-2023 Rouven Spreckels <rs@qu1x.dev>
+// SPDX-License-Identifier: MIT OR Apache-2.0
 /// \file
 /// \brief API header file.
 ///
@@ -18,9 +18,9 @@
 /// [S2CID]: https://en.wikipedia.org/wiki/S2CID_(identifier)
 /// [44199608]: https://api.semanticscholar.org/CorpusID:44199608
 ///
-/// \version v0.9.0
+/// \version v0.10.0
 /// \author Rouven Spreckels <rs@qu1x.dev>
-/// \copyright BSD-2-Clause-Patent
+/// \copyright MIT OR Apache-2.0
 ///
 /// # Example
 ///

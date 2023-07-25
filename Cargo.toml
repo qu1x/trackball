@@ -1,6 +1,6 @@
 [package]
 name = "trackball"
-version = "0.9.0"
+version = "0.10.0"
 authors = ["Rouven Spreckels <rs@qu1x.dev>"]
 edition = "2021"
 description = "Virtual Trackball Orbiting via the Exponential Map"
@@ -8,7 +8,7 @@ documentation = "https://docs.rs/trackball"
 repository = "https://github.com/qu1x/trackball"
 build = "build.rs"
 readme = "README.md"
-license = "BSD-2-Clause-Patent"
+license = "MIT OR Apache-2.0"
 keywords = [
 	"virtual-trackball",
 	"exponential-map",
@@ -27,7 +27,7 @@ include = [
 	"Cargo.toml",
 	"README.md",
 	"RELEASES.md",
-	"LICENSES/*.md",
+	"LICENSES/*",
 ]
 
 [dependencies]

@@ -7,14 +7,14 @@ Virtual Trackball Orbiting via the Exponential Map
 [![Downloads][]](https://crates.io/crates/trackball)
 [![Version][]](https://crates.io/crates/trackball)
 [![Rust][]](https://www.rust-lang.org)
-[![License][]](https://spdx.org/licenses/BSD-2-Clause-Patent.html)
+[![License][]](https://opensource.org/licenses)
 
 [Build]: https://github.com/qu1x/trackball/actions/workflows/build.yml/badge.svg
 [Documentation]: https://docs.rs/trackball/badge.svg
 [Downloads]: https://img.shields.io/crates/d/trackball.svg
 [Version]: https://img.shields.io/crates/v/trackball.svg
 [Rust]: https://img.shields.io/badge/rust-stable-brightgreen.svg
-[License]: https://img.shields.io/crates/l/trackball.svg
+[License]: https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg
 
 This is an alternative trackball technique using exponential map and parallel transport to
 preserve distances and angles for inducing coherent and intuitive trackball rotations. For
@@ -102,27 +102,25 @@ Identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` 
 
 ```toml
 [dependencies]
-trackball = { version = "0.9.0", features = ["cc"] }
+trackball = { version = "0.10.0", features = ["cc"] }
 ```
 
 [`Orbit`]: https://docs.rs/trackball/latest/trackball/struct.Orbit.html
 
 ## License
 
-The works are [licensed](LICENSES/BSD-2-Clause-Patent.md) under the [`BSD-2-Clause-Patent`].
+Copyright © 2021-2023 Rouven Spreckels <rs@qu1x.dev>
 
-This license is designed to provide:
+This project is licensed under either of
 
-  * a simple permissive license,
-  * that is compatible with the [`GPL-2.0-or-later`], and
-  * which also has an express patent grant included, but
-  * unlike the [`Apache-2.0`] without patent retaliation.
+ * Apache License, Version 2.0, ([LICENSES/Apache-2.0](LICENSES/Apache-2.0) or
+   https://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSES/MIT](LICENSES/MIT) or https://opensource.org/licenses/MIT)
 
-[`BSD-2-Clause-Patent`]: https://spdx.org/licenses/BSD-2-Clause-Patent.html
-[`GPL-2.0-or-later`]: https://spdx.org/licenses/GPL-2.0-or-later.html
-[`Apache-2.0`]: https://spdx.org/licenses/Apache-2.0.html
+at your option.
 
-## Contribution
+# Contribution
 
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion
-in the works by you shall be licensed as above, without any additional terms or conditions.
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in
+this project by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without
+any additional terms or conditions.

@@ -1,3 +1,16 @@
+# Version 0.10.0 (2023-07-25)
+
+  * Switch to `MIT OR Apache-2.0`.
+  * Add `Delta` transform.
+  * Support and re-export `approx`.
+  * Add Lerp/Slerp.
+  * Remove Euler angles.
+  * Avoid panic on unknown finger ID.
+  * Support `bevy`:
+     * Update scene defaults (e.g., clip planes).
+     * Invert view transformation.
+     * Support `glam` conversions.
+
 # Version 0.9.0 (2022-05-05)
 
   * Bump `nalgebra` to latest version.

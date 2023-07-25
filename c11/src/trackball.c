@@ -1,5 +1,5 @@
-// Copyright © 2021 Rouven Spreckels <rs@qu1x.dev>
-// SPDX-License-Identifier: BSD-2-Clause-Patent
+// Copyright © 2021-2023 Rouven Spreckels <rs@qu1x.dev>
+// SPDX-License-Identifier: MIT OR Apache-2.0
 /// \file
 /// \brief API source file.
 
