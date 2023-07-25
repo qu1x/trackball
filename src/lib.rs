@@ -75,7 +75,9 @@ pub use approx;
 pub use nalgebra;
 
 mod clamp;
+mod delta;
 mod first;
+mod fixed;
 mod frame;
 mod image;
 mod orbit;
@@ -85,7 +87,9 @@ mod slide;
 mod touch;
 
 pub use clamp::*;
+pub use delta::*;
 pub use first::*;
+pub use fixed::*;
 pub use frame::*;
 pub use image::*;
 pub use orbit::*;
