@@ -1,5 +1,6 @@
 # Version 0.10.0 (2023-07-25)
 
+  * Support `serde` and `rkyv`.
   * Switch to `MIT OR Apache-2.0`.
   * Add `Delta` transform.
   * Support and re-export `approx`.

@@ -3,6 +3,11 @@ use nalgebra::{Point3, RealField, Unit, UnitQuaternion, Vector3};
 
 /// Delta transform from initial to final [`Frame`].
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+	feature = "rkyv",
+	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+)]
 pub enum Delta<N: Copy + RealField> {
 	/// Yields frame as identity transform (default).
 	Frame,

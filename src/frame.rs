@@ -3,6 +3,11 @@ use nalgebra::{Isometry3, Point3, RealField, Unit, UnitQuaternion, Vector3};
 
 /// Frame wrt camera eye and target.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+	feature = "rkyv",
+	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+)]
 pub struct Frame<N: Copy + RealField> {
 	/// Target position in world space.
 	pos: Point3<N>,

@@ -6,6 +6,11 @@ use nalgebra::{Point2, RealField};
 ///     `Fixed::Ver(N::frac_pi_4())`.
 ///   * Implements `From<N>` and can be created with `N::into()` returning `Fixed::Ver()`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+	feature = "rkyv",
+	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+)]
 pub enum Fixed<N: Copy + RealField> {
 	/// Fixed horizontal field of view aka Vert- scaling.
 	Hor(N),

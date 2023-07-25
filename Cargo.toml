@@ -34,9 +34,13 @@ include = [
 heapless = { version = "0.7.16", default-features = false }
 nalgebra = { version = "0.32.3", default-features = false, features = ["libm-force"] }
 approx = { version = "0.5.1", default-features = false }
-
-[build-dependencies]
-cc = { version = "1.0.79", optional = true }
+serde = { version = "1.0.175", default-features = false, features = ["derive"], optional = true }
+rkyv = { version = "0.7.42", default-features = false, optional = true }
 
 [features]
 glam = ["nalgebra/convert-glam024"]
+serde = ["dep:serde", "nalgebra/serde-serialize-no-std"]
+rkyv = ["dep:rkyv", "nalgebra/rkyv-serialize-no-std"]
+
+[build-dependencies]
+cc = { version = "1.0.79", optional = true }

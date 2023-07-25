@@ -3,6 +3,11 @@ use nalgebra::{convert, zero, Isometry3, Matrix4, Point2, Point3, RealField, Vec
 
 /// Image as projection of [`Scene`] wrt [`Frame`].
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+	feature = "rkyv",
+	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+)]
 pub struct Image<N: Copy + RealField> {
 	/// Current position in screen space of hovering input or pointing device.
 	pos: Point2<N>,

@@ -5,6 +5,11 @@ use nalgebra::{convert, Matrix4, Point2, RealField};
 ///
 /// Implements [`Default`] and can be created with `Scene::default()`.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+	feature = "rkyv",
+	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+)]
 pub struct Scene<N: Copy + RealField> {
 	/// Fixed quantity wrt field of view.
 	///
