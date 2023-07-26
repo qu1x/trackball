@@ -45,7 +45,11 @@ impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
 		mvs: usize,
 	) -> Option<(usize, Point2<N>, N, N)> {
 		// Insert or update finger position.
-		let _old_pos = self.pos.insert(fid, pos).expect("Too many fingers");
+		let old_pos = self.pos.insert(fid, pos).expect("Too many fingers");
+		// Ignore events of unchanged finger position.
+		if old_pos == Some(pos) {
+			return None;
+		}
 		// Current number of fingers.
 		let num = self.pos.len();
 		// Maximum number of fingers seen per potential tap.
