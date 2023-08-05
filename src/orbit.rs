@@ -1,4 +1,5 @@
 use nalgebra::{Point2, RealField, Unit, UnitQuaternion, Vector3};
+use simba::scalar::SubsetOf;
 
 #[cfg(not(feature = "cc"))]
 use crate::Image;
@@ -80,6 +81,15 @@ impl<N: Copy + RealField> Orbit<N> {
 	pub fn discard(&mut self) {
 		self.vec = None;
 	}
+	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	pub fn cast<M: Copy + RealField>(self) -> Orbit<M>
+	where
+		N: SubsetOf<M>,
+	{
+		Orbit {
+			vec: self.vec.map(|(ray, len)| (ray.cast(), len.to_superset())),
+		}
+	}
 }
 
 #[cfg(feature = "cc")]
@@ -130,6 +140,15 @@ impl Orbit<f32> {
 	pub fn discard(&mut self) {
 		self.vec = None;
 	}
+	/// Casts components to another type, e.g., to [`f64`].
+	pub fn cast<M: Copy + RealField>(self) -> Orbit<M>
+	where
+		f32: SubsetOf<M>,
+	{
+		Orbit {
+			vec: self.vec.map(|(ray, len)| (ray.cast(), len.to_superset())),
+		}
+	}
 }
 
 #[cfg(feature = "cc")]
@@ -176,6 +195,15 @@ impl Orbit<f64> {
 	/// Discards cached normalization of previous cursor/finger position on button/finger release.
 	pub fn discard(&mut self) {
 		self.vec = None;
+	}
+	/// Casts components to another type, e.g., to [`f32`].
+	pub fn cast<M: Copy + RealField>(self) -> Orbit<M>
+	where
+		f64: SubsetOf<M>,
+	{
+		Orbit {
+			vec: self.vec.map(|(ray, len)| (ray.cast(), len.to_superset())),
+		}
 	}
 }
 

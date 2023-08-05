@@ -1,4 +1,5 @@
 use nalgebra::{convert, Point2, RealField, Unit, Vector2, Vector3};
+use simba::scalar::SubsetOf;
 
 /// First person view induced by displacement on screen.
 ///
@@ -43,5 +44,14 @@ impl<N: Copy + RealField> First<N> {
 	/// Captured yaw axis.
 	pub const fn yaw_axis(&self) -> Option<&Unit<Vector3<N>>> {
 		self.ray.as_ref()
+	}
+	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	pub fn cast<M: Copy + RealField>(self) -> First<M>
+	where
+		N: SubsetOf<M>,
+	{
+		First {
+			ray: self.ray.map(Unit::<Vector3<N>>::cast),
+		}
 	}
 }

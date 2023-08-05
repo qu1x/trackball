@@ -1,4 +1,5 @@
 use nalgebra::{Point2, RealField, Vector2};
+use simba::scalar::SubsetOf;
 
 /// Slide induced by displacement on screen.
 ///
@@ -19,5 +20,14 @@ impl<N: Copy + RealField> Slide<N> {
 	/// Discards cached previous cursor/finger position on button/finger release.
 	pub fn discard(&mut self) {
 		self.pos = None;
+	}
+	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	pub fn cast<M: Copy + RealField>(self) -> Slide<M>
+	where
+		N: SubsetOf<M>,
+	{
+		Slide {
+			pos: self.pos.map(Point2::cast),
+		}
 	}
 }

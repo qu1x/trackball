@@ -1,5 +1,6 @@
 use crate::Frame;
 use nalgebra::{Point3, RealField, Unit, UnitQuaternion, Vector3};
+use simba::scalar::SubsetOf;
 
 /// Delta transform from initial to final [`Frame`].
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -205,6 +206,33 @@ impl<N: Copy + RealField> Delta<N> {
 				pos: *self_pos,
 			}),
 			(_, _) => None,
+		}
+	}
+	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	pub fn cast<M: Copy + RealField>(self) -> Delta<M>
+	where
+		N: SubsetOf<M>,
+	{
+		match self {
+			Self::Frame => Delta::Frame,
+			Self::First {
+				pitch,
+				yaw,
+				yaw_axis,
+			} => Delta::First {
+				pitch: pitch.to_superset(),
+				yaw: yaw.to_superset(),
+				yaw_axis: yaw_axis.cast(),
+			},
+			Self::Orbit { rot, pos } => Delta::Orbit {
+				rot: rot.cast(),
+				pos: pos.cast(),
+			},
+			Self::Slide { vec } => Delta::Slide { vec: vec.cast() },
+			Self::Scale { rat, pos } => Delta::Scale {
+				rat: rat.to_superset(),
+				pos: pos.cast(),
+			},
 		}
 	}
 }

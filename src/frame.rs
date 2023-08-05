@@ -1,5 +1,6 @@
 use approx::{AbsDiffEq, RelativeEq, UlpsEq};
 use nalgebra::{Isometry3, Point3, RealField, Unit, UnitQuaternion, Vector3};
+use simba::scalar::SubsetOf;
 
 /// Frame wrt camera eye and target.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -173,6 +174,17 @@ impl<N: Copy + RealField> Frame<N> {
 		let eye = rot * self.pos + Vector3::z_axis().into_inner() * self.zat;
 		// Translate in such a way that the eye position with origin in world space vanishes.
 		Isometry3::from_parts((-eye.coords).into(), rot)
+	}
+	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	pub fn cast<M: Copy + RealField>(self) -> Frame<M>
+	where
+		N: SubsetOf<M>,
+	{
+		Frame {
+			pos: self.pos.cast(),
+			rot: self.rot.cast(),
+			zat: self.zat.to_superset(),
+		}
 	}
 }
 

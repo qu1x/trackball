@@ -1,4 +1,5 @@
 use nalgebra::{Point2, RealField};
+use simba::scalar::SubsetOf;
 
 /// Fixed quantity wrt field of view.
 ///
@@ -91,6 +92,17 @@ impl<N: Copy + RealField> Fixed<N> {
 		match self {
 			Self::Hor(fov) | Self::Ver(fov) => fov,
 			Self::Upp(upp) => upp,
+		}
+	}
+	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	pub fn cast<M: Copy + RealField>(self) -> Fixed<M>
+	where
+		N: SubsetOf<M>,
+	{
+		match self {
+			Self::Hor(fov) => Fixed::Hor(fov.to_superset()),
+			Self::Ver(fov) => Fixed::Ver(fov.to_superset()),
+			Self::Upp(fov) => Fixed::Upp(fov.to_superset()),
 		}
 	}
 }

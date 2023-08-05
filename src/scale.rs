@@ -1,4 +1,5 @@
 use nalgebra::{convert, RealField};
+use simba::scalar::SubsetOf;
 
 /// Scale induced by relative input.
 ///
@@ -29,5 +30,14 @@ impl<N: Copy + RealField> Scale<N> {
 	/// Sets denominator. Default is scroll unit of `120.0`.
 	pub fn set_denominator(&mut self, den: N) {
 		self.den = den;
+	}
+	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	pub fn cast<M: Copy + RealField>(self) -> Scale<M>
+	where
+		N: SubsetOf<M>,
+	{
+		Scale {
+			den: self.den.to_superset(),
+		}
 	}
 }

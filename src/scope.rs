@@ -1,5 +1,6 @@
 use crate::Fixed;
 use nalgebra::{convert, Matrix4, Point2, RealField};
+use simba::scalar::SubsetOf;
 
 /// Scope defining enclosing viewing frustum.
 ///
@@ -126,6 +127,19 @@ impl<N: Copy + RealField> Scope<N> {
 			let (max, upp) = self.fov.max_and_upp(zat, max);
 			let mat = Matrix4::new_perspective(max.x / max.y, fov, znear, zfar);
 			(mat, upp)
+		}
+	}
+	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	pub fn cast<M: Copy + RealField>(self) -> Scope<M>
+	where
+		N: SubsetOf<M>,
+	{
+		let (near, far) = self.zcp;
+		Scope {
+			fov: self.fov.cast(),
+			zcp: (near.to_superset(), far.to_superset()),
+			oim: self.oim,
+			opm: self.opm,
 		}
 	}
 }

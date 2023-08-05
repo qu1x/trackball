@@ -1,6 +1,7 @@
 use core::fmt::Debug;
 use heapless::LinearMap;
 use nalgebra::{convert, Point2, RealField, Unit, Vector2};
+use simba::scalar::SubsetOf;
 
 /// Touch gestures inducing slide, orbit, scale, and focus.
 ///
@@ -130,5 +131,21 @@ impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
 	/// Number of fingers.
 	pub fn fingers(&self) -> usize {
 		self.pos.len()
+	}
+	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	pub fn cast<M: Copy + RealField>(self) -> Touch<F, M>
+	where
+		N: SubsetOf<M>,
+	{
+		Touch {
+			pos: self
+				.pos
+				.into_iter()
+				.map(|(&fid, pos)| (fid, pos.cast()))
+				.collect::<LinearMap<F, Point2<M>, 10>>(),
+			vec: self.vec.map(|(ray, len)| (ray.cast(), len.to_superset())),
+			tap: self.tap.map(|(mvs, pos)| (mvs, pos.cast())),
+			mvs: self.mvs,
+		}
 	}
 }

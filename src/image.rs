@@ -1,5 +1,6 @@
 use crate::{Frame, Scope};
 use nalgebra::{convert, zero, Isometry3, Matrix4, Point2, Point3, RealField, Vector2, Vector3};
+use simba::scalar::SubsetOf;
 
 /// Image as projection of [`Scope`] wrt [`Frame`].
 #[derive(Debug, Clone)]
@@ -196,5 +197,25 @@ impl<N: Copy + RealField> Image<N> {
 	/// Transforms vector from screen to camera space and projects it onto focus plane.
 	pub fn project_vec(&self, vec: &Vector2<N>) -> Vector3<N> {
 		Self::transform_vec(vec).scale(self.upp).push(N::zero())
+	}
+	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	pub fn cast<M: Copy + RealField>(self) -> Image<M>
+	where
+		N: SubsetOf<M>,
+	{
+		Image {
+			pos: self.pos.cast(),
+			max: self.max.cast(),
+			upp: self.upp.to_superset(),
+			frame: self.frame.cast(),
+			scope: self.scope.cast(),
+			view_iso: self.view_iso.cast(),
+			view_mat: self.view_mat.cast(),
+			proj_mat: self.proj_mat.cast(),
+			proj_view_mat: self.proj_view_mat.cast(),
+			proj_view_inv: self.proj_view_inv.cast(),
+			compute_mat: self.compute_mat,
+			compute_inv: self.compute_inv,
+		}
 	}
 }
