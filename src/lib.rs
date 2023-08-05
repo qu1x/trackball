@@ -23,7 +23,7 @@
 //!   * [`Clamp`] operation handler ensuring user boundary conditions of observer [`Frame`].
 //!   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
 //!   * Scale-preserving transitioning between orthographic and perspective projection mode.
-//!   * Converting between [`Fixed`] quantities wrt to field of view, see [`Scene::set_fov()`].
+//!   * Converting between [`Fixed`] quantities wrt to field of view, see [`Scope::set_fov()`].
 //!   * Time-free [`Touch`] gesture recognition for slide, orbit, scale, and focus operations.
 //!
 //! # Example
@@ -41,7 +41,7 @@
 //! pub struct Trackball {
 //! 	// Frame wrt camera eye and target.
 //! 	frame: Frame<f32>,
-//! 	// Image as projection of `Scene` wrt `Frame`.
+//! 	// Image as projection of `Scope` wrt `Frame`.
 //! 	image: Image<f32>,
 //! 	// Orbit induced by displacement on screen.
 //! 	orbit: Orbit<f32>,

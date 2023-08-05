@@ -39,7 +39,7 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
   * [`Clamp`] operation handler ensuring user boundary conditions of observer [`Frame`].
   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
   * Scale-preserving transitioning between orthographic and perspective projection mode.
-  * Converting between [`Fixed`] quantities wrt to field of view, see [`Scene::set_fov()`].
+  * Converting between [`Fixed`] quantities wrt to field of view, see [`Scope::set_fov()`].
   * Time-free [`Touch`] gesture recognition for slide, orbit, scale, and focus operations.
 
 [`Frame::slide()`]: https://docs.rs/trackball/latest/trackball/struct.Frame.html#method.slide
@@ -49,11 +49,11 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 [`First`]: https://docs.rs/trackball/latest/trackball/struct.First.html
 [`Frame`]: https://docs.rs/trackball/latest/trackball/struct.Frame.html
 [`Clamp`]: https://docs.rs/trackball/latest/trackball/struct.Clamp.html
-[`Scene`]: https://docs.rs/trackball/latest/trackball/struct.Scene.html
+[`Scope`]: https://docs.rs/trackball/latest/trackball/struct.Scope.html
 [`Touch`]: https://docs.rs/trackball/latest/trackball/struct.Touch.html
 
 [`Fixed`]: https://docs.rs/trackball/latest/trackball/enum.Fixed.html
-[`Scene::set_fov()`]: https://docs.rs/trackball/latest/trackball/struct.Scene.html#method.set_fov
+[`Scope::set_fov()`]: https://docs.rs/trackball/latest/trackball/struct.Scope.html#method.set_fov
 
 See the [release history](RELEASES.md) to keep track of the development.
 
@@ -72,7 +72,7 @@ use trackball::{
 pub struct Trackball {
 	// Frame wrt camera eye and target.
 	frame: Frame<f32>,
-	// Image as projection of `Scene` wrt `Frame`.
+	// Image as projection of `Scope` wrt `Frame`.
 	image: Image<f32>,
 	// Orbit induced by displacement on screen.
 	orbit: Orbit<f32>,
