@@ -150,6 +150,10 @@ impl<N: Copy + RealField> Frame<N> {
 			zat: self.zat * (N::one() - t) + other.zat * t,
 		})
 	}
+	/// Renormalizes eye rotation and returns its norm.
+	pub fn renormalize(&mut self) -> N {
+		self.rot.renormalize()
+	}
 	/// View transformation from camera to world space.
 	pub fn view(&self) -> Isometry3<N> {
 		Isometry3::from_parts(
