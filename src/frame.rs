@@ -99,10 +99,9 @@ impl<N: Copy + RealField> Frame<N> {
 	///
 	/// Use fixed [`Self::yaw_axis()`] by capturing it when entering first person view.
 	pub fn look_around(&mut self, pitch: N, yaw: N, yaw_axis: &Unit<Vector3<N>>) {
-		let pitch = UnitQuaternion::from_axis_angle(&self.local_pitch_axis(), pitch);
+		let pitch = UnitQuaternion::from_axis_angle(&self.pitch_axis(), pitch);
 		let yaw = UnitQuaternion::from_axis_angle(yaw_axis, yaw);
-		self.local_orbit_around(&pitch, &Point3::new(N::zero(), N::zero(), self.zat));
-		self.orbit_around(&yaw, &self.eye());
+		self.orbit_around(&(yaw * pitch), &self.eye());
 	}
 	/// Positive x-axis in camera space pointing from left to right.
 	#[allow(clippy::unused_self)]
