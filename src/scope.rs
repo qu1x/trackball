@@ -1,16 +1,16 @@
 use crate::Fixed;
 use nalgebra::{convert, Matrix4, Point2, RealField};
 
-/// Scene wrt enclosing viewing frustum.
+/// Scope defining enclosing viewing frustum.
 ///
-/// Implements [`Default`] and can be created with `Scene::default()`.
+/// Implements [`Default`] and can be created with `Scope::default()`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
 	feature = "rkyv",
 	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
 )]
-pub struct Scene<N: Copy + RealField> {
+pub struct Scope<N: Copy + RealField> {
 	/// Fixed quantity wrt field of view.
 	///
 	/// Default is fixed vertical field of view of π/4.
@@ -30,7 +30,7 @@ pub struct Scene<N: Copy + RealField> {
 	opm: bool,
 }
 
-impl<N: Copy + RealField> Default for Scene<N> {
+impl<N: Copy + RealField> Default for Scope<N> {
 	fn default() -> Self {
 		Self {
 			fov: Fixed::default(),
@@ -41,7 +41,7 @@ impl<N: Copy + RealField> Default for Scene<N> {
 	}
 }
 
-impl<N: Copy + RealField> Scene<N> {
+impl<N: Copy + RealField> Scope<N> {
 	/// Fixed quantity wrt field of view, see [`Self::set_fov()`].
 	pub const fn fov(&self) -> Fixed<N> {
 		self.fov
@@ -52,21 +52,21 @@ impl<N: Copy + RealField> Scene<N> {
 	///
 	/// ```
 	/// use nalgebra::Point2;
-	/// use trackball::Scene;
+	/// use trackball::Scope;
 	///
 	/// // Current screen size.
 	/// let max = Point2::new(800, 600);
-	/// // Default scene with fixed vertical field of view of π/4:
+	/// // Default scope with fixed vertical field of view of π/4:
 	/// //
 	/// //   * Increasing width increases horizontal field of view (more can be seen).
-	/// //   * Increasing height scales scene zooming in as vertical field of view is fixed.
-	/// let mut scene = Scene::default();
+	/// //   * Increasing height scales scope zooming in as vertical field of view is fixed.
+	/// let mut scope = Scope::default();
 	/// // Unfix vertical field of view by fixing current unit per pixel on focus plane at distance
 	/// // from eye of one, that is effectively `upp` divided by `zat` to make it scale-independant:
 	/// //
 	/// //   * Increasing width increases horizontal field of view (more can be seen).
 	/// //   * Increasing height increases vertical field of view (more can be seen).
-	/// scene.set_fov(scene.fov().to_upp(&max.cast::<f32>()));
+	/// scope.set_fov(scope.fov().to_upp(&max.cast::<f32>()));
 	/// ```
 	pub fn set_fov(&mut self, fov: impl Into<Fixed<N>>) {
 		self.fov = fov.into();

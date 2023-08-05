@@ -83,7 +83,7 @@ mod frame;
 mod image;
 mod orbit;
 mod scale;
-mod scene;
+mod scope;
 mod slide;
 mod touch;
 
@@ -95,6 +95,6 @@ pub use frame::*;
 pub use image::*;
 pub use orbit::*;
 pub use scale::*;
-pub use scene::*;
+pub use scope::*;
 pub use slide::*;
 pub use touch::*;

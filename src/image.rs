@@ -1,7 +1,7 @@
-use crate::{Frame, Scene};
+use crate::{Frame, Scope};
 use nalgebra::{convert, zero, Isometry3, Matrix4, Point2, Point3, RealField, Vector2, Vector3};
 
-/// Image as projection of [`Scene`] wrt [`Frame`].
+/// Image as projection of [`Scope`] wrt [`Frame`].
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
@@ -17,8 +17,8 @@ pub struct Image<N: Copy + RealField> {
 	upp: N,
 	/// Cached previous frame.
 	frame: Frame<N>,
-	/// Cached previous scene.
-	scene: Scene<N>,
+	/// Cached previous scope.
+	scope: Scope<N>,
 	/// Cached view isometry from world to camera space coinciding with right-handed look-at space.
 	view_iso: Isometry3<N>,
 	/// Cached homogeneous view matrix computed from view isometry.
@@ -36,14 +36,14 @@ pub struct Image<N: Copy + RealField> {
 }
 
 impl<N: Copy + RealField> Image<N> {
-	/// Computes initial transformations from frame, scene, and screen's width and height.
-	pub fn new(frame: &Frame<N>, scene: &Scene<N>, max: Point2<N>) -> Self {
+	/// Computes initial transformations from frame, scope, and screen's width and height.
+	pub fn new(frame: &Frame<N>, scope: &Scope<N>, max: Point2<N>) -> Self {
 		let mut image = Self {
 			pos: Point2::origin(),
 			max,
 			upp: zero(),
 			frame: frame.clone(),
-			scene: scene.clone(),
+			scope: scope.clone(),
 			view_iso: Isometry3::identity(),
 			view_mat: zero(),
 			proj_mat: zero(),
@@ -53,7 +53,7 @@ impl<N: Copy + RealField> Image<N> {
 			compute_inv: true,
 		};
 		image.compute_view(frame);
-		image.compute_projection_and_upp(frame.distance(), scene);
+		image.compute_projection_and_upp(frame.distance(), scope);
 		image.compute_transformation();
 		image.compute_inverse_transformation();
 		image
@@ -62,18 +62,18 @@ impl<N: Copy + RealField> Image<N> {
 	///
 	/// Returns `Some(true)` on success, `Some(false)` on failure, and `None` with no changes.
 	#[allow(clippy::useless_let_if_seq)]
-	pub fn compute(&mut self, frame: Frame<N>, scene: Scene<N>) -> Option<bool> {
+	pub fn compute(&mut self, frame: Frame<N>, scope: Scope<N>) -> Option<bool> {
 		let mut compute = false;
 		if self.frame != frame {
 			self.compute_view(&frame);
 			compute = true;
 		}
-		if self.frame.distance() != frame.distance() || self.scene != scene {
-			self.compute_projection_and_upp(frame.distance(), &scene);
+		if self.frame.distance() != frame.distance() || self.scope != scope {
+			self.compute_projection_and_upp(frame.distance(), &scope);
 			compute = true;
 		}
 		self.frame = frame;
-		self.scene = scene;
+		self.scope = scope;
 		compute.then(|| {
 			if self.compute_mat || self.compute_inv {
 				self.compute_transformation();
@@ -106,9 +106,9 @@ impl<N: Copy + RealField> Image<N> {
 	}
 	/// Sets maximum position in screen space as screen's width and height.
 	pub fn set_max(&mut self, max: Point2<N>) {
-		// Let `Self::compute()` recompute projection matrix by invalidating cached previous scene.
+		// Let `Self::compute()` recompute projection matrix by invalidating cached previous scope.
 		if self.max != max {
-			self.scene.set_fov(N::zero());
+			self.scope.set_fov(N::zero());
 		}
 		self.max = max;
 	}
@@ -134,8 +134,8 @@ impl<N: Copy + RealField> Image<N> {
 		&self.proj_mat
 	}
 	/// Computes projection matrix and unit per pixel on focus plane.
-	pub fn compute_projection_and_upp(&mut self, zat: N, scene: &Scene<N>) {
-		let (mat, upp) = scene.projection_and_upp(zat, &self.max);
+	pub fn compute_projection_and_upp(&mut self, zat: N, scope: &Scope<N>) {
+		let (mat, upp) = scope.projection_and_upp(zat, &self.max);
 		self.upp = upp;
 		self.proj_mat = mat;
 	}
