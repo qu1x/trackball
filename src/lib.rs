@@ -75,6 +75,7 @@
 pub use approx;
 pub use nalgebra;
 
+mod bound;
 mod clamp;
 mod delta;
 mod first;
@@ -88,6 +89,7 @@ mod scope;
 mod slide;
 mod touch;
 
+pub use bound::*;
 pub use clamp::*;
 pub use delta::*;
 pub use first::*;
