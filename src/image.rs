@@ -38,6 +38,7 @@ pub struct Image<N: Copy + RealField> {
 
 impl<N: Copy + RealField> Image<N> {
 	/// Computes initial transformations from frame, scope, and screen's width and height.
+	#[must_use]
 	pub fn new(frame: &Frame<N>, scope: &Scope<N>, max: Point2<N>) -> Self {
 		let mut image = Self {
 			pos: Point2::origin(),
@@ -94,6 +95,7 @@ impl<N: Copy + RealField> Image<N> {
 		self.compute_inv = compute_inv;
 	}
 	/// Current position in screen space of hovering input or pointing device.
+	#[must_use]
 	pub const fn pos(&self) -> &Point2<N> {
 		&self.pos
 	}
@@ -102,6 +104,7 @@ impl<N: Copy + RealField> Image<N> {
 		self.pos = pos;
 	}
 	/// Maximum position in screen space as screen's width and height.
+	#[must_use]
 	pub const fn max(&self) -> &Point2<N> {
 		&self.max
 	}
@@ -114,14 +117,17 @@ impl<N: Copy + RealField> Image<N> {
 		self.max = max;
 	}
 	/// Cached unit per pixel on focus plane to scale/project positions/vectors onto focus plane.
+	#[must_use]
 	pub const fn upp(&self) -> N {
 		self.upp
 	}
 	/// Cached view isometry.
+	#[must_use]
 	pub const fn view_isometry(&self) -> &Isometry3<N> {
 		&self.view_iso
 	}
 	/// Cached view matrix.
+	#[must_use]
 	pub const fn view(&self) -> &Matrix4<N> {
 		&self.view_mat
 	}
@@ -131,6 +137,7 @@ impl<N: Copy + RealField> Image<N> {
 		self.view_mat = self.view_iso.to_homogeneous();
 	}
 	/// Cached projection matrix.
+	#[must_use]
 	pub const fn projection(&self) -> &Matrix4<N> {
 		&self.proj_mat
 	}
@@ -141,6 +148,7 @@ impl<N: Copy + RealField> Image<N> {
 		self.proj_mat = mat;
 	}
 	/// Cached projection view matrix.
+	#[must_use]
 	pub const fn transformation(&self) -> &Matrix4<N> {
 		&self.proj_view_mat
 	}
@@ -149,6 +157,7 @@ impl<N: Copy + RealField> Image<N> {
 		self.proj_view_mat = self.proj_mat * self.view_mat;
 	}
 	/// Cached inverse projection view matrix.
+	#[must_use]
 	pub const fn inverse_transformation(&self) -> &Matrix4<N> {
 		&self.proj_view_inv
 	}
@@ -163,14 +172,17 @@ impl<N: Copy + RealField> Image<N> {
 		inv.is_some()
 	}
 	/// Clamps position in screen space wrt its maximum in screen space.
+	#[must_use]
 	pub fn clamp_pos_wrt_max(pos: &Point2<N>, max: &Point2<N>) -> Point2<N> {
 		Point2::new(pos.x.clamp(N::zero(), max.x), pos.y.clamp(N::zero(), max.y))
 	}
 	/// Clamps position in screen space.
+	#[must_use]
 	pub fn clamp_pos(&self, pos: &Point2<N>) -> Point2<N> {
 		Self::clamp_pos_wrt_max(pos, &self.max)
 	}
 	/// Transforms position and its maximum from screen to camera space wrt its maximum.
+	#[must_use]
 	pub fn transform_pos_and_max_wrt_max(
 		pos: &Point2<N>,
 		max: &Point2<N>,
@@ -179,14 +191,17 @@ impl<N: Copy + RealField> Image<N> {
 		(Point2::new(pos.x - max.x, max.y - pos.y), max)
 	}
 	/// Transforms position from screen to camera space.
+	#[must_use]
 	pub fn transform_pos(&self, pos: &Point2<N>) -> Point2<N> {
 		Self::transform_pos_and_max_wrt_max(pos, &self.max).0
 	}
 	/// Transforms vector from screen to camera space.
+	#[must_use]
 	pub fn transform_vec(pos: &Vector2<N>) -> Vector2<N> {
 		Vector2::new(pos.x, -pos.y)
 	}
 	/// Transforms position from screen to camera space and projects it onto focus plane.
+	#[must_use]
 	pub fn project_pos(&self, pos: &Point2<N>) -> Point3<N> {
 		self.transform_pos(pos)
 			.coords
@@ -195,10 +210,12 @@ impl<N: Copy + RealField> Image<N> {
 			.into()
 	}
 	/// Transforms vector from screen to camera space and projects it onto focus plane.
+	#[must_use]
 	pub fn project_vec(&self, vec: &Vector2<N>) -> Vector3<N> {
 		Self::transform_vec(vec).scale(self.upp).push(N::zero())
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> Image<M>
 	where
 		N: SubsetOf<M>,

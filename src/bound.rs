@@ -67,12 +67,12 @@ impl<N: Copy + RealField> Clamp<N> for Bound<N> {
 	fn target(&self, frame: &Frame<N>) -> Option<Plane<N>> {
 		let target = self.transform.inverse() * frame.target();
 		let axes = [Vector3::x_axis(), Vector3::y_axis(), Vector3::z_axis()];
-		for axis in 0..2 {
-			let min_plane = Plane::new(axes[axis], self.min_target[axis]);
+		for (distance, axis) in axes.into_iter().enumerate() {
+			let min_plane = Plane::new(axis, self.min_target[distance]);
 			if min_plane.distance_from(&target) > self.hysteresis {
 				return Some(min_plane);
 			}
-			let max_plane = Plane::new(axes[axis], self.max_target[axis]);
+			let max_plane = Plane::new(axis, self.max_target[distance]);
 			if max_plane.distance_from(&target) < -self.hysteresis {
 				return Some(max_plane);
 			}
@@ -90,12 +90,12 @@ impl<N: Copy + RealField> Clamp<N> for Bound<N> {
 		}
 		let eye = self.transform.inverse() * frame.eye();
 		let axes = [Vector3::x_axis(), Vector3::y_axis(), Vector3::z_axis()];
-		for axis in 0..2 {
-			let min_plane = Plane::new(axes[axis], self.min_eye[axis]);
+		for (distance, axis) in axes.into_iter().enumerate() {
+			let min_plane = Plane::new(axis, self.min_eye[distance]);
 			if min_plane.distance_from(&eye) > self.hysteresis {
 				return Some(min_plane);
 			}
-			let max_plane = Plane::new(axes[axis], self.max_eye[axis]);
+			let max_plane = Plane::new(axis, self.max_eye[distance]);
 			if max_plane.distance_from(&eye) < -self.hysteresis {
 				return Some(max_plane);
 			}
@@ -111,12 +111,12 @@ impl<N: Copy + RealField> Clamp<N> for Bound<N> {
 		);
 		let up = yaw * frame.yaw_axis();
 		let axes = [Vector3::x_axis(), Vector3::y_axis(), Vector3::z_axis()];
-		for axis in 0..2 {
-			let min_plane = Plane::new(yaw.inverse() * axes[axis], self.min_up[axis]);
+		for (distance, axis) in axes.into_iter().enumerate() {
+			let min_plane = Plane::new(yaw.inverse() * axis, self.min_up[distance]);
 			if min_plane.distance_from(&Point3::from(up.into_inner())) > self.hysteresis {
 				return Some(min_plane);
 			}
-			let max_plane = Plane::new(yaw.inverse() * axes[axis], self.max_up[axis]);
+			let max_plane = Plane::new(yaw.inverse() * axis, self.max_up[distance]);
 			if max_plane.distance_from(&Point3::from(up.into_inner())) < -self.hysteresis {
 				return Some(max_plane);
 			}

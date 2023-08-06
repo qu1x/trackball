@@ -38,14 +38,17 @@ impl<N: Copy + RealField> First<N> {
 		self.ray = None;
 	}
 	/// Whether a yaw axis has been captured.
+	#[must_use]
 	pub const fn enabled(&self) -> bool {
 		self.ray.is_some()
 	}
 	/// Captured yaw axis.
+	#[must_use]
 	pub const fn yaw_axis(&self) -> Option<&Unit<Vector3<N>>> {
 		self.ray.as_ref()
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> First<M>
 	where
 		N: SubsetOf<M>,

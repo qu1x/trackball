@@ -88,6 +88,7 @@ impl<N: Copy + RealField> Fixed<N> {
 		}
 	}
 	/// Underlying quantity.
+	#[must_use]
 	pub const fn into_inner(self) -> N {
 		match self {
 			Self::Hor(fov) | Self::Ver(fov) => fov,
@@ -95,6 +96,7 @@ impl<N: Copy + RealField> Fixed<N> {
 		}
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> Fixed<M>
 	where
 		N: SubsetOf<M>,

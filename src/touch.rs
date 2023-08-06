@@ -129,10 +129,12 @@ impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
 		}
 	}
 	/// Number of fingers.
+	#[must_use]
 	pub fn fingers(&self) -> usize {
 		self.pos.len()
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> Touch<F, M>
 	where
 		N: SubsetOf<M>,

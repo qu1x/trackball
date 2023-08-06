@@ -20,10 +20,12 @@ impl<N: Copy + RealField> Default for Scale<N> {
 
 impl<N: Copy + RealField> Scale<N> {
 	/// Computes scale ratio from relative value.
+	#[must_use]
 	pub fn compute(&self, num: N) -> N {
 		N::one() - num / self.den
 	}
 	/// Denominator. Default is scroll unit of `120.0`.
+	#[must_use]
 	pub const fn denominator(&self) -> N {
 		self.den
 	}
@@ -32,6 +34,7 @@ impl<N: Copy + RealField> Scale<N> {
 		self.den = den;
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> Scale<M>
 	where
 		N: SubsetOf<M>,

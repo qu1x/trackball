@@ -52,6 +52,7 @@ pub enum Delta<N: Copy + RealField> {
 
 impl<N: Copy + RealField> Delta<N> {
 	/// Transforms from initial to final frame.
+	#[must_use]
 	pub fn transform(&self, frame: &Frame<N>) -> Frame<N> {
 		let mut frame = frame.clone();
 		match self {
@@ -130,6 +131,7 @@ impl<N: Copy + RealField> Delta<N> {
 	/// Assumes `other` to be similar (e.g., a clamped `self`).
 	///
 	/// Returns `None` if transforms are of different variants and neither is [`Self::Frame`].
+	#[must_use]
 	pub fn minimum(&self, other: &Self) -> Option<Self> {
 		match (self, other) {
 			(Self::Frame, _) => Some(other.clone()),
@@ -209,6 +211,7 @@ impl<N: Copy + RealField> Delta<N> {
 		}
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> Delta<M>
 	where
 		N: SubsetOf<M>,

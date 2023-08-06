@@ -44,6 +44,7 @@ impl<N: Copy + RealField> Default for Scope<N> {
 
 impl<N: Copy + RealField> Scope<N> {
 	/// Fixed quantity wrt field of view, see [`Self::set_fov()`].
+	#[must_use]
 	pub const fn fov(&self) -> Fixed<N> {
 		self.fov
 	}
@@ -76,6 +77,7 @@ impl<N: Copy + RealField> Scope<N> {
 	/// and target.
 	///
 	/// Default is `(1e-1, 1e+3)` measured from eye.
+	#[must_use]
 	pub fn clip_planes(&self, zat: N) -> (N, N) {
 		if self.oim {
 			let (znear, zfar) = self.zcp;
@@ -93,6 +95,7 @@ impl<N: Copy + RealField> Scope<N> {
 	/// Object inspection mode.
 	///
 	/// Scales clip plane distances by measuring from target instead of eye. Default is `false`.
+	#[must_use]
 	pub const fn scale(&self) -> bool {
 		self.oim
 	}
@@ -105,6 +108,7 @@ impl<N: Copy + RealField> Scope<N> {
 	/// Orthographic projection mode.
 	///
 	/// Computes scale-identical orthographic instead of perspective projection. Default is `false`.
+	#[must_use]
 	pub const fn ortho(&self) -> bool {
 		self.opm
 	}
@@ -116,6 +120,7 @@ impl<N: Copy + RealField> Scope<N> {
 	}
 	/// Projection transformation and unit per pixel on focus plane wrt distance between eye and
 	/// target and maximum position in screen space.
+	#[must_use]
 	pub fn projection_and_upp(&self, zat: N, max: &Point2<N>) -> (Matrix4<N>, N) {
 		let (znear, zfar) = self.clip_planes(zat);
 		if self.opm {
@@ -130,6 +135,7 @@ impl<N: Copy + RealField> Scope<N> {
 		}
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> Scope<M>
 	where
 		N: SubsetOf<M>,

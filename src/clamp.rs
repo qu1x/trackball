@@ -18,6 +18,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 	/// Measure to break out of validation loop as last resort. Default is `100`. Round boundary
 	/// conditions require more loops where as flat ones should stop with the 3rd validation
 	/// (i.e., a corner) for each validated position (e.g., target, eye).
+	#[must_use]
 	fn loops(&self) -> usize {
 		100
 	}
@@ -25,19 +26,23 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 	/// Exceeded boundary plane for target position in world space.
 	///
 	/// Must return `None` if target position satisfies all boundary conditions.
+	#[must_use]
 	fn target(&self, frame: &Frame<N>) -> Option<Plane<N>>;
 	/// Exceeded boundary plane for eye position in world space.
 	///
 	/// Must return `None` if eye position satisfies all boundary conditions.
+	#[must_use]
 	fn eye(&self, frame: &Frame<N>) -> Option<Plane<N>>;
 	/// Exceeded boundary plane for up position in world space.
 	///
 	/// Must return `None` if up position satisfies all boundary conditions.
+	#[must_use]
 	fn up(&self, frame: &Frame<N>) -> Option<Plane<N>>;
 
 	/// Computes clamped [`Delta`] wrt abstract user boundary conditions of [`Frame`] and [`Scope`].
 	///
 	/// Returns `None` if [`Delta`] satisfies all boundary conditions.
+	#[must_use]
 	fn compute(
 		&self,
 		frame: &Frame<N>,
@@ -70,7 +75,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 						// Radius of spherical cap.
 						let radius = (height * (distance * (N::one() + N::one()) - height)).sqrt();
 						// New clamped target position in spherical cap space.
-						let new_target = (plane.project_point(&frame.target()) - center)
+						let new_target = (plane.project_point(frame.target()) - center)
 							.normalize()
 							.scale(radius);
 						// New clamped target position in world space.
@@ -131,7 +136,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 					if let Some(plane) = self.eye(&frame) {
 						bound = true;
 						// Center of spherical cap in world space.
-						let center = plane.project_point(&target);
+						let center = plane.project_point(target);
 						// Height of spherical cap.
 						let height = distance - (center - target).norm();
 						// Radius of spherical cap.
@@ -179,11 +184,11 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 					let mut bound = false;
 					if let Some(plane) = self.target(&frame) {
 						bound = true;
-						let new_target = plane.project_point(&frame.target());
+						let new_target = plane.project_point(frame.target());
 						let vec = old_rot_inverse * (new_target - old_target);
 						min_delta = Delta::Slide { vec };
 					}
-					let frame = min_delta.transform(&old_frame);
+					let frame = min_delta.transform(old_frame);
 					if let Some(plane) = self.eye(&frame) {
 						bound = true;
 						let new_eye = plane.project_point(&frame.eye());
@@ -219,8 +224,8 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 						let new_zat = old_zat * rat;
 						if new_zat < min_zat {
 							bound = true;
-							let _rat = min_zat / old_zat;
 							// TODO Implement grind.
+							let _rat = min_zat / old_zat;
 							min_delta = Delta::Frame;
 						}
 					}

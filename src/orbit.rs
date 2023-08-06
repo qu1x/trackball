@@ -82,6 +82,7 @@ impl<N: Copy + RealField> Orbit<N> {
 		self.vec = None;
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> Orbit<M>
 	where
 		N: SubsetOf<M>,
@@ -141,6 +142,7 @@ impl Orbit<f32> {
 		self.vec = None;
 	}
 	/// Casts components to another type, e.g., to [`f64`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> Orbit<M>
 	where
 		f32: SubsetOf<M>,
@@ -197,6 +199,7 @@ impl Orbit<f64> {
 		self.vec = None;
 	}
 	/// Casts components to another type, e.g., to [`f32`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> Orbit<M>
 	where
 		f64: SubsetOf<M>,

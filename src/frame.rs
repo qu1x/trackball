@@ -20,6 +20,7 @@ pub struct Frame<N: Copy + RealField> {
 
 impl<N: Copy + RealField> Frame<N> {
 	/// Sets eye position inclusive its roll attitude and target position in world space.
+	#[must_use]
 	pub fn look_at(target: Point3<N>, eye: &Point3<N>, up: &Vector3<N>) -> Self {
 		let dir = target - eye;
 		Self {
@@ -29,6 +30,7 @@ impl<N: Copy + RealField> Frame<N> {
 		}
 	}
 	/// Eye position in world space.
+	#[must_use]
 	pub fn eye(&self) -> Point3<N> {
 		self.pos + self.rot * Vector3::z_axis().into_inner() * self.zat
 	}
@@ -37,6 +39,7 @@ impl<N: Copy + RealField> Frame<N> {
 		*self = Self::look_at(self.pos, eye, up);
 	}
 	/// Target position in world space.
+	#[must_use]
 	pub const fn target(&self) -> &Point3<N> {
 		&self.pos
 	}
@@ -47,6 +50,7 @@ impl<N: Copy + RealField> Frame<N> {
 		self.zat = (self.pos - eye).norm();
 	}
 	/// Distance between eye and target.
+	#[must_use]
 	pub const fn distance(&self) -> N {
 		self.zat
 	}
@@ -106,28 +110,34 @@ impl<N: Copy + RealField> Frame<N> {
 	}
 	/// Positive x-axis in camera space pointing from left to right.
 	#[allow(clippy::unused_self)]
+	#[must_use]
 	pub fn local_pitch_axis(&self) -> Unit<Vector3<N>> {
 		Vector3::x_axis()
 	}
 	/// Positive y-axis in camera space pointing from bottom to top.
 	#[allow(clippy::unused_self)]
+	#[must_use]
 	pub fn local_yaw_axis(&self) -> Unit<Vector3<N>> {
 		Vector3::y_axis()
 	}
 	/// Positive z-axis in camera space pointing from back to front.
 	#[allow(clippy::unused_self)]
+	#[must_use]
 	pub fn local_roll_axis(&self) -> Unit<Vector3<N>> {
 		Vector3::z_axis()
 	}
 	/// Positive x-axis in world space pointing from left to right.
+	#[must_use]
 	pub fn pitch_axis(&self) -> Unit<Vector3<N>> {
 		self.rot * self.local_pitch_axis()
 	}
 	/// Positive y-axis in world space pointing from bottom to top.
+	#[must_use]
 	pub fn yaw_axis(&self) -> Unit<Vector3<N>> {
 		self.rot * self.local_yaw_axis()
 	}
 	/// Positive z-axis in world space pointing from back to front.
+	#[must_use]
 	pub fn roll_axis(&self) -> Unit<Vector3<N>> {
 		self.rot * self.local_roll_axis()
 	}
@@ -144,6 +154,7 @@ impl<N: Copy + RealField> Frame<N> {
 	///   * `t`: The interpolation parameter between 0 and 1.
 	///   * `epsilon`: The value below which the sinus of the angle separating both quaternion
 	///     must be to return `None`.
+	#[must_use]
 	pub fn try_lerp_slerp(&self, other: &Self, t: N, epsilon: N) -> Option<Self> {
 		Some(Self {
 			pos: self.pos.lerp(&other.pos, t),
@@ -156,6 +167,7 @@ impl<N: Copy + RealField> Frame<N> {
 		self.rot.renormalize()
 	}
 	/// View transformation from camera to world space.
+	#[must_use]
 	pub fn view(&self) -> Isometry3<N> {
 		Isometry3::from_parts(
 			// Eye position in world space with origin in camera space.
@@ -167,6 +179,7 @@ impl<N: Copy + RealField> Frame<N> {
 	/// Inverse view transformation from world to camera space.
 	///
 	/// Uses less computations than [`Self::view()`]`.inverse()`.
+	#[must_use]
 	pub fn inverse_view(&self) -> Isometry3<N> {
 		// Eye rotation from world to camera space around target.
 		let rot = self.rot.inverse();
@@ -176,6 +189,7 @@ impl<N: Copy + RealField> Frame<N> {
 		Isometry3::from_parts((-eye.coords).into(), rot)
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> Frame<M>
 	where
 		N: SubsetOf<M>,

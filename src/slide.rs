@@ -22,6 +22,7 @@ impl<N: Copy + RealField> Slide<N> {
 		self.pos = None;
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> Slide<M>
 	where
 		N: SubsetOf<M>,

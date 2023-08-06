@@ -50,6 +50,7 @@ impl<N: Copy + RealField> Plane<N> {
 	/// assert_eq!(plane.distance(), -5.0);
 	/// assert_eq!(plane.bias, 5.0);
 	/// ```
+	#[must_use]
 	pub fn new(normal: Unit<Vector3<N>>, distance: N) -> Self {
 		Self {
 			normal,
@@ -57,33 +58,40 @@ impl<N: Copy + RealField> Plane<N> {
 		}
 	}
 	/// Plane from unit normal with point in plane.
+	#[must_use]
 	pub fn with_point(normal: Unit<Vector3<N>>, point: &Point3<N>) -> Self {
 		Self::new(normal, normal.dot(&point.coords))
 	}
 	/// Signed orthogonal distance from the origin.
+	#[must_use]
 	pub fn distance(&self) -> N {
 		-self.bias
 	}
 	/// Signed orthogonal distance from `point`.
+	#[must_use]
 	pub fn distance_from(&self, point: &Point3<N>) -> N {
 		self.distance() - self.normal.dot(&point.coords)
 	}
 	/// Projects point onto plane.
+	#[must_use]
 	pub fn project_point(&self, point: &Point3<N>) -> Point3<N> {
 		self.project_vector(&point.coords).into()
 	}
 	/// Projects axis onto plane.
+	#[must_use]
 	pub fn project_axis(&self, axis: &Unit<Vector3<N>>) -> Unit<Vector3<N>> {
 		Unit::new_normalize(self.project_vector(&axis.into_inner()))
 	}
 	/// Projects vector onto plane.
+	#[must_use]
 	pub fn project_vector(&self, vector: &Vector3<N>) -> Vector3<N> {
 		vector - self.normal.into_inner() * (self.normal.dot(vector) + self.bias)
 	}
 	/// Singed angle from `a` to `b` where both vectors are in the plane.
+	#[must_use]
 	pub fn angle_between(&self, a: &Vector3<N>, b: &Vector3<N>) -> N {
-		let angle = a.angle(&b);
-		let axis = a.cross(&b);
+		let angle = a.angle(b);
+		let axis = a.cross(b);
 		if self.normal.dot(&axis).is_sign_negative() {
 			-angle
 		} else {
@@ -91,6 +99,7 @@ impl<N: Copy + RealField> Plane<N> {
 		}
 	}
 	/// Rotates plane.
+	#[must_use]
 	pub fn rotate_by(self, rot: &UnitQuaternion<N>) -> Self {
 		Self {
 			normal: Unit::new_unchecked(rot.transform_vector(&self.normal)),
@@ -98,6 +107,7 @@ impl<N: Copy + RealField> Plane<N> {
 		}
 	}
 	/// Translates plane.
+	#[must_use]
 	pub fn translate_by(self, vec: &Vector3<N>) -> Self {
 		Self {
 			normal: self.normal,
@@ -128,11 +138,13 @@ impl<N: Copy + RealField> Plane<N> {
 	/// // Plane intersecting x-axis at `-10.0`.
 	/// assert!(plane.abs_diff_eq(&Plane::new(-Vector3::x_axis(), 10.0), EPSILON));
 	/// ```
+	#[must_use]
 	pub fn transform_by(self, iso: &Isometry3<N>) -> Self {
 		self.rotate_by(&iso.rotation)
 			.translate_by(&iso.translation.vector)
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
+	#[must_use]
 	pub fn cast<M: Copy + RealField>(self) -> Plane<M>
 	where
 		N: SubsetOf<M>,
