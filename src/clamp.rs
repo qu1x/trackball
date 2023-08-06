@@ -42,6 +42,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 	/// Computes clamped [`Delta`] wrt abstract user boundary conditions of [`Frame`] and [`Scope`].
 	///
 	/// Returns `None` if [`Delta`] satisfies all boundary conditions.
+	#[allow(clippy::too_many_lines)]
 	#[must_use]
 	fn compute(
 		&self,
@@ -98,6 +99,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 						let yaw = yaw_plane.angle_between(&old_yaw_target, &new_yaw_target);
 
 						// FIXME It stutters and seems that roll attitude isn't preserved.
+						#[allow(clippy::no_effect_underscore_binding)]
 						let _min_delta = Delta::First {
 							pitch,
 							yaw,
@@ -225,6 +227,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 						if new_zat < min_zat {
 							bound = true;
 							// TODO Implement grind.
+							#[allow(clippy::no_effect_underscore_binding)]
 							let _rat = min_zat / old_zat;
 							min_delta = Delta::Frame;
 						}
