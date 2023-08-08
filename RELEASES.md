@@ -5,6 +5,8 @@
     currently just stop the movement.
   * Implement boundary `Plane` and projecting points onto it.
   * Implement `Clamp` with `Bound` defining orthogonal boundary conditions.
+  * Add `cast` methods to cast between `f32` and `f64`.
+  * Rename `Scene` to `Scope`.
 
 # Version 0.10.0 (2023-07-25)
 
