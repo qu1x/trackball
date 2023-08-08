@@ -20,7 +20,11 @@
 //!   * Observer [`Frame`] with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`]
 //!     operations in world space and their local complements in camera space and with orbit and
 //!     slide operations around arbitrary points in either world or camera space.
-//!   * [`Clamp`] operation handler ensuring user boundary conditions of observer [`Frame`].
+//!   * Gliding [`Clamp`] operation handler trait ensuring boundary conditions of observer
+//!     [`Frame`]. When [`Delta`] between initial and final [`Frame`] is not orthogonal to a
+//!     boundary [`Plane`], [`Delta`] is changed in such a way that the clamped movement glides
+//!     along the plane.
+//!   * [`Bound`] implementing [`Clamp`] providing customizable orthogonal boundary conditions.
 //!   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
 //!   * Scale-preserving transitioning between orthographic and perspective projection mode.
 //!   * Converting between [`Fixed`] quantities wrt to field of view, see [`Scope::set_fov()`].

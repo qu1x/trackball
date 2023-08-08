@@ -1,3 +1,11 @@
+# Version 0.11.0 (2023-08-08)
+
+  * Refactor `Clamp` as trait realizing gliding along a boundary `Plane`. This
+    is implemented for `Delta::Orbit` and `Delta::Slide`. Other variants
+    currently just stop the movement.
+  * Implement boundary `Plane` and projecting points onto it.
+  * Implement `Clamp` with `Bound` defining orthogonal boundary conditions.
+
 # Version 0.10.0 (2023-07-25)
 
   * Support `serde` and `rkyv`.

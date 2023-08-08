@@ -31,12 +31,16 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 
   * Common trackball operations split into several operation handlers.
   * Coherent and intuitive orbiting via the exponential map, see [`Orbit`] operation handler.
-  * Identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` feature gate.
+  * Identical C11 implementation for [`Orbit`] operation handler behind `cc` feature gate.
   * Coherent [`First`] person view aka free look or mouse look wrt [`Orbit`] operation handler.
   * Observer [`Frame`] with [`Frame::slide()`], [`Frame::orbit()`], [`Frame::scale()`]
-    operations in world space and their local complements in camera space and with orbit and slide
-    operations around arbitrary points in either world or camera space.
-  * [`Clamp`] operation handler ensuring user boundary conditions of observer [`Frame`].
+    operations in world space and their local complements in camera space and with orbit and
+    slide operations around arbitrary points in either world or camera space.
+  * Gliding [`Clamp`] operation handler trait ensuring boundary conditions of observer
+    [`Frame`]. When [`Delta`] between initial and final [`Frame`] is not orthogonal to a
+    boundary [`Plane`], [`Delta`] is changed in such a way that the clamped movement glides
+    along the plane.
+  * [`Bound`] implementing [`Clamp`] providing customizable orthogonal boundary conditions.
   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
   * Scale-preserving transitioning between orthographic and perspective projection mode.
   * Converting between [`Fixed`] quantities wrt to field of view, see [`Scope::set_fov()`].
@@ -49,6 +53,9 @@ Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CI
 [`First`]: https://docs.rs/trackball/latest/trackball/struct.First.html
 [`Frame`]: https://docs.rs/trackball/latest/trackball/struct.Frame.html
 [`Clamp`]: https://docs.rs/trackball/latest/trackball/struct.Clamp.html
+[`Delta`]: https://docs.rs/trackball/latest/trackball/struct.Delta.html
+[`Bound`]: https://docs.rs/trackball/latest/trackball/struct.Bound.html
+[`Plane`]: https://docs.rs/trackball/latest/trackball/struct.Plane.html
 [`Scope`]: https://docs.rs/trackball/latest/trackball/struct.Scope.html
 [`Touch`]: https://docs.rs/trackball/latest/trackball/struct.Touch.html
 
@@ -102,7 +109,7 @@ Identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` 
 
 ```toml
 [dependencies]
-trackball = { version = "0.10.0", features = ["cc"] }
+trackball = { version = "0.11.0", features = ["cc"] }
 ```
 
 [`Orbit`]: https://docs.rs/trackball/latest/trackball/struct.Orbit.html

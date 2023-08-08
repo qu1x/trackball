@@ -4,7 +4,7 @@ use nalgebra::{Point3, RealField, UnitQuaternion};
 
 /// Clamp wrt abstract boundary conditions of [`Frame`] and [`Scope`].
 ///
-/// The specific boundary conditions are defined by trait implementations (e.g., [`Bound`]).
+/// Specific boundary conditions are defined by trait implementations (e.g., [`Bound`]).
 ///
 /// Exceeding a boundary condition is communicated by specifying an exceeded plane. If the plane is
 /// orthogonal to [`Delta`], it is completely stopped. If not, it glides along the plane. In this
@@ -14,6 +14,8 @@ use nalgebra::{Point3, RealField, UnitQuaternion};
 /// exceeded. For orthogonal boundary conditions (e.g., a box), revalidation usually passes after
 /// one, two, or three loops whenever zero, one, or two boundary conditions intersect (i.e., face,
 /// edge, or corner).
+///
+/// [`Bound`]: crate::Bound
 pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 	/// Maximum loops due to maximum possible boundary plane intersections.
 	///
