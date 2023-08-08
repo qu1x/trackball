@@ -210,7 +210,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 				}
 				(min_delta != *delta).then_some((min_delta, loops))
 			}
-			&Delta::Scale { rat, pos: _ } => {
+			&Delta::Scale { mut rat, pos } => {
 				let old_zat = frame.distance();
 				let mut min_delta = delta.clone();
 				let mut loops = 0;
@@ -229,9 +229,8 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 						if new_zat < min_zat {
 							bound = true;
 							// TODO Implement gliding.
-							#[allow(clippy::no_effect_underscore_binding)]
-							let _rat = min_zat / old_zat;
-							min_delta = Delta::Frame;
+							rat = min_zat / old_zat;
+							min_delta = Delta::Scale { rat, pos };
 						}
 					}
 					if bound {
