@@ -2,7 +2,7 @@ use crate::{Clamp, Frame, Plane};
 use core::fmt::Debug;
 use nalgebra::{Isometry3, Point3, RealField, UnitQuaternion, Vector3};
 
-/// Orthogonal user boundary conditions implementing [`Clamp`].
+/// Orthogonal boundary conditions implementing [`Clamp`].
 ///
 /// Implements [`Default`] and can be created with `Bound::default()`.
 #[derive(Debug, Clone)]
@@ -59,7 +59,7 @@ impl<N: Copy + RealField> Default for Bound<N> {
 }
 
 impl<N: Copy + RealField> Clamp<N> for Bound<N> {
-	/// Lower maximum validations for flat boundary conditions.
+	/// Using lower loop limit for flat boundary conditions.
 	fn loops(&self) -> usize {
 		10
 	}

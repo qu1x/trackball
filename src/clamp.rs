@@ -2,21 +2,23 @@ use crate::{Delta, Frame, Plane, Scope};
 use core::fmt::Debug;
 use nalgebra::{Point3, RealField, UnitQuaternion};
 
-/// Clamp wrt abstract user boundary conditions of [`Frame`] and [`Scope`].
+/// Clamp wrt abstract boundary conditions of [`Frame`] and [`Scope`].
 ///
-/// Exceeding a user boundary condition is communicated by specifying an exceeded plane. If the
-/// plane is orthogonal to [`Delta`], it is completely stopped. If not, grinding clamping is
-/// realized which changes the direction of [`Delta`] by projecting the exceeded position onto the
+/// The specific boundary conditions are defined by trait implementations (e.g., [`Bound`]).
+///
+/// Exceeding a boundary condition is communicated by specifying an exceeded plane. If the plane is
+/// orthogonal to [`Delta`], it is completely stopped. If not, it glides along the plane. In this
+/// case, the direction of [`Delta`] is changed by projecting the exceeded position onto the
 /// boundary plane and finding the [`Delta`] from initial to projected position. This projected
-/// [`Delta`] is repeatedly revalidated wrt user boundary conditions until no new boundary plane
-/// will have been exceeded. For orthogonal user boundary conditions, revalidation usually passes
-/// after one or two loops whenever two or three boundary conditions intersect (i.e., an edge
-/// or corner).
+/// [`Delta`] is repeatedly revalidated wrt boundary conditions until no new boundary plane is
+/// exceeded. For orthogonal boundary conditions (e.g., a box), revalidation usually passes after
+/// one, two, or three loops whenever zero, one, or two boundary conditions intersect (i.e., face,
+/// edge, or corner).
 pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 	/// Maximum loops due to maximum possible boundary plane intersections.
 	///
 	/// Measure to break out of validation loop as last resort. Default is `100`. Round boundary
-	/// conditions require more loops where as flat ones should stop with the 3rd validation
+	/// conditions require more loops whereas flat ones should stop with the 3rd validation
 	/// (i.e., a corner) for each validated position (e.g., target, eye).
 	#[must_use]
 	fn loops(&self) -> usize {
@@ -39,7 +41,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 	#[must_use]
 	fn up(&self, frame: &Frame<N>) -> Option<Plane<N>>;
 
-	/// Computes clamped [`Delta`] wrt abstract user boundary conditions of [`Frame`] and [`Scope`].
+	/// Computes clamped [`Delta`] wrt abstract boundary conditions of [`Frame`] and [`Scope`].
 	///
 	/// Returns `None` if [`Delta`] satisfies all boundary conditions.
 	#[allow(clippy::too_many_lines)]
@@ -158,7 +160,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 					let frame = min_delta.transform(old_frame);
 					if let Some(_plane) = self.up(&frame) {
 						bound = true;
-						// TODO Implement grind.
+						// TODO Implement gliding.
 						min_delta = Delta::Frame;
 					}
 					if bound {
@@ -215,7 +217,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 					let mut bound = false;
 					if let Some(_plane) = self.eye(&frame) {
 						bound = true;
-						// TODO Implement grind.
+						// TODO Implement gliding.
 						min_delta = Delta::Frame;
 					}
 					if scope.scale() {
@@ -224,7 +226,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 						let new_zat = old_zat * rat;
 						if new_zat < min_zat {
 							bound = true;
-							// TODO Implement grind.
+							// TODO Implement gliding.
 							#[allow(clippy::no_effect_underscore_binding)]
 							let _rat = min_zat / old_zat;
 							min_delta = Delta::Frame;
