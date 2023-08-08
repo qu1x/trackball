@@ -107,13 +107,12 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 						};
 						min_delta = Delta::Frame;
 					}
-					if bound && loops == self.loops() {
-						bound = false;
-						min_delta = Delta::Frame;
-					} else {
+					if bound {
+						if loops == self.loops() {
+							break;
+						}
 						loops += 1;
-					}
-					if !bound {
+					} else {
 						break;
 					}
 				}
@@ -164,7 +163,6 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 					}
 					if bound {
 						if loops == self.loops() {
-							min_delta = Delta::Frame;
 							break;
 						}
 						loops += 1;
@@ -197,12 +195,12 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 						let vec = old_rot_inverse * (new_eye - old_eye);
 						min_delta = Delta::Slide { vec };
 					}
-					if bound && loops == self.loops() {
-						bound = false;
-					} else {
+					if bound {
+						if loops == self.loops() {
+							break;
+						}
 						loops += 1;
-					}
-					if !bound {
+					} else {
 						break;
 					}
 				}
@@ -232,12 +230,12 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 							min_delta = Delta::Frame;
 						}
 					}
-					if bound && loops == self.loops() {
-						bound = false;
-					} else {
+					if bound {
+						if loops == self.loops() {
+							break;
+						}
 						loops += 1;
-					}
-					if !bound {
+					} else {
 						break;
 					}
 				}
