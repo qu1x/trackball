@@ -1,3 +1,8 @@
+# Version 0.11.1 (2023-08-09)
+
+  * Fix scale boundary in `Scope::scale()` mode.
+  * Disable `rkyv` for `docsrs`.
+
 # Version 0.11.0 (2023-08-08)
 
   * Refactor `Clamp` as trait realizing gliding along a boundary `Plane`. This
