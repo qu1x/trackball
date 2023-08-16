@@ -51,6 +51,25 @@ jobs:
       run: |
         cargo clippy --tests --all-features -- -D clippy::all -D clippy::pedantic -D clippy::nursery
     - name: doc
+      run: cargo doc --all-features
+    - name: fmt
+      run: cargo fmt --check --all-features
+  all-features-nightly:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v3
+    - name: toolchain
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: nightly
+        components: rustfmt, rust-docs, clippy
+    - name: test
+      run: cargo test --all-features
+    - name: clippy
+      run: |
+        cargo clippy --tests --all-features -- -D clippy::all -D clippy::pedantic -D clippy::nursery
+    - name: doc
       env:
         RUSTDOCFLAGS: --cfg docsrs
       run: cargo doc --all-features
