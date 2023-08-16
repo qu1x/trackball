@@ -12,9 +12,9 @@ jobs:
     - name: checkout
       uses: actions/checkout@v3
     - name: msrv
-      run: >
+      run: |
         msrv=$(cargo metadata --no-deps --format-version 1 |
-          jq --raw-output '.packages[] | select(.name=="trackball") | .rust_version');
+          jq --raw-output '.packages[] | select(.name=="trackball") | .rust_version')
         echo "MSRV=$msrv" >> $GITHUB_ENV
     - name: toolchain
       uses: dtolnay/rust-toolchain@master
@@ -24,9 +24,8 @@ jobs:
     - name: test
       run: cargo test
     - name: clippy
-      run: >
-        cargo clippy --tests --
-          -D clippy::all -D clippy::pedantic -D clippy::nursery;
+      run: |
+        cargo clippy --tests -- -D clippy::all -D clippy::pedantic -D clippy::nursery
     - name: doc
       run: cargo doc
     - name: fmt
@@ -37,9 +36,9 @@ jobs:
     - name: checkout
       uses: actions/checkout@v3
     - name: msrv
-      run: >
+      run: |
         msrv=$(cargo metadata --no-deps --format-version 1 |
-          jq --raw-output '.packages[] | select(.name=="trackball") | .rust_version');
+          jq --raw-output '.packages[] | select(.name=="trackball") | .rust_version')
         echo "MSRV=$msrv" >> $GITHUB_ENV
     - name: toolchain
       uses: dtolnay/rust-toolchain@master
@@ -49,9 +48,8 @@ jobs:
     - name: test
       run: cargo test --all-features
     - name: clippy
-      run: >
-        cargo clippy --tests --all-features --
-          -D clippy::all -D clippy::pedantic -D clippy::nursery;
+      run: |
+        cargo clippy --tests --all-features -- -D clippy::all -D clippy::pedantic -D clippy::nursery
     - name: doc
       env:
         RUSTDOCFLAGS: --cfg docsrs
