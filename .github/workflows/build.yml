@@ -1,9 +1,8 @@
 name: build
 on:
-  schedule:
-  - cron: '0 5 * * *'
-  push:
+  merge_group:
   pull_request:
+  push:
 env:
   CARGO_TERM_COLOR: always
 jobs:
@@ -11,50 +10,51 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+    - name: msrv
+      run: >
+        msrv=$(cargo metadata --no-deps --format-version 1 |
+          jq --raw-output '.packages[] | select(.name=="trackball") | .rust_version');
+        echo "MSRV=$msrv" >> $GITHUB_ENV
     - name: toolchain
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@master
       with:
-        toolchain: stable
+        toolchain: ${{ env.MSRV }}
+        components: rustfmt, rust-docs, clippy
     - name: test
-      uses: actions-rs/cargo@v1
-      with:
-        command: test
+      run: cargo test
     - name: clippy
-      uses: actions-rs/cargo@v1
-      with:
-        command: clippy
-        args: -- --deny clippy::pedantic
+      run: >
+        cargo clippy --tests --
+          -D clippy::all -D clippy::pedantic -D clippy::nursery;
     - name: doc
-      uses: actions-rs/cargo@v1
-      with:
-        command: doc
+      run: cargo doc
     - name: fmt
-      uses: actions-rs/cargo@v1
-      with:
-        command: fmt
-        args: --check
-  cc:
+      run: cargo fmt --check
+  all-features:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+    - name: msrv
+      run: >
+        msrv=$(cargo metadata --no-deps --format-version 1 |
+          jq --raw-output '.packages[] | select(.name=="trackball") | .rust_version');
+        echo "MSRV=$msrv" >> $GITHUB_ENV
     - name: toolchain
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@master
       with:
-        toolchain: stable
+        toolchain: ${{ env.MSRV }}
+        components: rustfmt, rust-docs, clippy
     - name: test
-      uses: actions-rs/cargo@v1
-      with:
-        command: test
-        args: --features cc
+      run: cargo test --all-features
     - name: clippy
-      uses: actions-rs/cargo@v1
-      with:
-        command: clippy
-        args: --features cc -- --deny clippy::pedantic
+      run: >
+        cargo clippy --tests --all-features --
+          -D clippy::all -D clippy::pedantic -D clippy::nursery;
     - name: doc
-      uses: actions-rs/cargo@v1
-      with:
-        command: doc
-        args: --features cc
+      env:
+        RUSTDOCFLAGS: --cfg docsrs
+      run: cargo doc --all-features
+    - name: fmt
+      run: cargo fmt --check --all-features
