@@ -3,12 +3,8 @@ use nalgebra::{Isometry3, Point3, RealField, Unit, UnitQuaternion, Vector3};
 use simba::scalar::SubsetOf;
 
 /// Frame wrt camera eye and target.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
-)]
 pub struct Frame<N: Copy + RealField> {
 	/// Target position in world space.
 	pos: Point3<N>,
@@ -246,5 +242,33 @@ where
 		self.pos.ulps_eq(&other.pos, epsilon, max_ulps)
 			&& self.rot.ulps_eq(&other.rot, epsilon, max_ulps)
 			&& self.zat.ulps_eq(&other.zat, epsilon, max_ulps)
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<N: Copy + RealField> rkyv::Archive for Frame<N> {
+	type Archived = Self;
+	type Resolver = ();
+
+	#[inline]
+	#[allow(unsafe_code)]
+	unsafe fn resolve(&self, _: usize, _: Self::Resolver, out: *mut Self::Archived) {
+		out.write(rkyv::to_archived!(*self as Self));
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<Ser: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Serialize<Ser> for Frame<N> {
+	#[inline]
+	fn serialize(&self, _: &mut Ser) -> Result<Self::Resolver, Ser::Error> {
+		Ok(())
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<De: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Deserialize<Self, De> for Frame<N> {
+	#[inline]
+	fn deserialize(&self, _: &mut De) -> Result<Self, De::Error> {
+		Ok(rkyv::from_archived!(*self))
 	}
 }

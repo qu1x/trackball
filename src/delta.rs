@@ -3,12 +3,8 @@ use nalgebra::{Point3, RealField, Unit, UnitQuaternion, Vector3};
 use simba::scalar::SubsetOf;
 
 /// Delta transform from initial to final [`Frame`].
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
-)]
 pub enum Delta<N: Copy + RealField> {
 	/// Yields frame as identity transform (default).
 	Frame,
@@ -54,7 +50,7 @@ impl<N: Copy + RealField> Delta<N> {
 	/// Transforms from initial to final frame.
 	#[must_use]
 	pub fn transform(&self, frame: &Frame<N>) -> Frame<N> {
-		let mut frame = frame.clone();
+		let mut frame = *frame;
 		match self {
 			Self::Frame => {}
 			Self::First {
@@ -104,7 +100,7 @@ impl<N: Copy + RealField> Delta<N> {
 	///   * `t`: The interpolation parameter between 0 and 1.
 	#[must_use]
 	pub fn lerp_slerp(&self, t: N) -> Self {
-		match self.clone() {
+		match *self {
 			Self::Frame => Self::Frame,
 			Self::First {
 				pitch,
@@ -159,5 +155,33 @@ impl<N: Copy + RealField> Delta<N> {
 impl<N: Copy + RealField> Default for Delta<N> {
 	fn default() -> Self {
 		Self::Frame
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<N: Copy + RealField> rkyv::Archive for Delta<N> {
+	type Archived = Self;
+	type Resolver = ();
+
+	#[inline]
+	#[allow(unsafe_code)]
+	unsafe fn resolve(&self, _: usize, _: Self::Resolver, out: *mut Self::Archived) {
+		out.write(rkyv::to_archived!(*self as Self));
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<Ser: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Serialize<Ser> for Delta<N> {
+	#[inline]
+	fn serialize(&self, _: &mut Ser) -> Result<Self::Resolver, Ser::Error> {
+		Ok(())
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<De: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Deserialize<Self, De> for Delta<N> {
+	#[inline]
+	fn deserialize(&self, _: &mut De) -> Result<Self, De::Error> {
+		Ok(rkyv::from_archived!(*self))
 	}
 }

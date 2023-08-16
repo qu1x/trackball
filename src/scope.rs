@@ -5,12 +5,8 @@ use simba::scalar::SubsetOf;
 /// Scope defining enclosing viewing frustum.
 ///
 /// Implements [`Default`] and can be created with `Scope::default()`.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
-)]
 pub struct Scope<N: Copy + RealField> {
 	/// Fixed quantity wrt field of view.
 	///
@@ -147,5 +143,33 @@ impl<N: Copy + RealField> Scope<N> {
 			oim: self.oim,
 			opm: self.opm,
 		}
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<N: Copy + RealField> rkyv::Archive for Scope<N> {
+	type Archived = Self;
+	type Resolver = ();
+
+	#[inline]
+	#[allow(unsafe_code)]
+	unsafe fn resolve(&self, _: usize, _: Self::Resolver, out: *mut Self::Archived) {
+		out.write(rkyv::to_archived!(*self as Self));
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<Ser: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Serialize<Ser> for Scope<N> {
+	#[inline]
+	fn serialize(&self, _: &mut Ser) -> Result<Self::Resolver, Ser::Error> {
+		Ok(())
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<De: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Deserialize<Self, De> for Scope<N> {
+	#[inline]
+	fn deserialize(&self, _: &mut De) -> Result<Self, De::Error> {
+		Ok(rkyv::from_archived!(*self))
 	}
 }

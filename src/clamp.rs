@@ -66,7 +66,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 				let pitch_axis = frame.pitch_axis();
 				// Old target position in eye space.
 				let old_target = frame.target() - eye;
-				let mut min_delta = delta.clone();
+				let mut min_delta = *delta;
 				let mut loops = 0;
 				loop {
 					let frame = min_delta.transform(frame);
@@ -133,7 +133,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 				let old_rot_inverse = frame.view().rotation.inverse();
 				// Old eye position in camera space.
 				let old_eye = old_rot_inverse * (frame.eye() - target);
-				let mut min_delta = delta.clone();
+				let mut min_delta = *delta;
 				let mut loops = 0;
 				loop {
 					let mut bound = false;
@@ -181,7 +181,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 				let old_target = frame.target();
 				let old_rot_inverse = frame.view().rotation.inverse();
 				let old_eye = frame.eye();
-				let mut min_delta = delta.clone();
+				let mut min_delta = *delta;
 				let mut loops = 0;
 				loop {
 					let frame = min_delta.transform(old_frame);
@@ -212,7 +212,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 			}
 			&Delta::Scale { mut rat, pos } => {
 				let old_zat = frame.distance();
-				let mut min_delta = delta.clone();
+				let mut min_delta = *delta;
 				let mut loops = 0;
 				loop {
 					let frame = min_delta.transform(frame);

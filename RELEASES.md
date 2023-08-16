@@ -1,3 +1,9 @@
+# Version 0.11.2 (2023-08-16)
+
+  * Make some types `Copy`.
+  * Fix `rkyv` by implementing `Archive` for `Self`.
+  * Enable `rkyv` for `docsrs` again.
+
 # Version 0.11.1 (2023-08-09)
 
   * Fix scale boundary in `Scope::scale()` mode.

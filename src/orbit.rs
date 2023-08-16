@@ -125,6 +125,7 @@ impl Orbit<f32> {
 			.vec
 			.map(|(ray, len)| ray.into_inner().push(len))
 			.unwrap_or_default();
+		#[allow(unsafe_code)]
 		unsafe {
 			trackball_orbit_f(
 				rot.as_vector_mut().as_mut_ptr(),
@@ -182,6 +183,7 @@ impl Orbit<f64> {
 			.vec
 			.map(|(ray, len)| ray.into_inner().push(len))
 			.unwrap_or_default();
+		#[allow(unsafe_code)]
 		unsafe {
 			trackball_orbit_d(
 				rot.as_vector_mut().as_mut_ptr(),

@@ -5,12 +5,8 @@ use nalgebra::{Isometry3, Point3, RealField, UnitQuaternion, Vector3};
 /// Orthogonal boundary conditions implementing [`Clamp`].
 ///
 /// Implements [`Default`] and can be created with `Bound::default()`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
-)]
 pub struct Bound<N: Copy + RealField> {
 	/// Isometry in world space of bound inversely transforming target and eye positions.
 	pub transform: Isometry3<N>,
@@ -122,5 +118,33 @@ impl<N: Copy + RealField> Clamp<N> for Bound<N> {
 			}
 		}
 		None
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<N: Copy + RealField> rkyv::Archive for Bound<N> {
+	type Archived = Self;
+	type Resolver = ();
+
+	#[inline]
+	#[allow(unsafe_code)]
+	unsafe fn resolve(&self, _: usize, _: Self::Resolver, out: *mut Self::Archived) {
+		out.write(rkyv::to_archived!(*self as Self));
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<Ser: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Serialize<Ser> for Bound<N> {
+	#[inline]
+	fn serialize(&self, _: &mut Ser) -> Result<Self::Resolver, Ser::Error> {
+		Ok(())
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<De: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Deserialize<Self, De> for Bound<N> {
+	#[inline]
+	fn deserialize(&self, _: &mut De) -> Result<Self, De::Error> {
+		Ok(rkyv::from_archived!(*self))
 	}
 }

@@ -6,12 +6,8 @@ use simba::scalar::SubsetOf;
 ///   * Implements [`Default`] and can be created with `Fixed::default()` returning
 ///     `Fixed::Ver(N::frac_pi_4())`.
 ///   * Implements `From<N>` and can be created with `N::into()` returning `Fixed::Ver()`.
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
-)]
 pub enum Fixed<N: Copy + RealField> {
 	/// Fixed horizontal field of view aka Vert- scaling.
 	Hor(N),
@@ -106,5 +102,33 @@ impl<N: Copy + RealField> Fixed<N> {
 			Self::Ver(fov) => Fixed::Ver(fov.to_superset()),
 			Self::Upp(fov) => Fixed::Upp(fov.to_superset()),
 		}
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<N: Copy + RealField> rkyv::Archive for Fixed<N> {
+	type Archived = Self;
+	type Resolver = ();
+
+	#[inline]
+	#[allow(unsafe_code)]
+	unsafe fn resolve(&self, _: usize, _: Self::Resolver, out: *mut Self::Archived) {
+		out.write(rkyv::to_archived!(*self as Self));
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<Ser: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Serialize<Ser> for Fixed<N> {
+	#[inline]
+	fn serialize(&self, _: &mut Ser) -> Result<Self::Resolver, Ser::Error> {
+		Ok(())
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<De: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Deserialize<Self, De> for Fixed<N> {
+	#[inline]
+	fn deserialize(&self, _: &mut De) -> Result<Self, De::Error> {
+		Ok(rkyv::from_archived!(*self))
 	}
 }

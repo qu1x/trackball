@@ -7,10 +7,6 @@ use simba::scalar::SubsetOf;
 /// Realizes plane equation `a*x+b*y+c*z+d=0` with unit normal `[x, y, z]` and signed bias `d`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
-)]
 #[repr(C)]
 pub struct Plane<N: Copy + RealField> {
 	/// Plane unit normal.
@@ -210,5 +206,33 @@ where
 	fn ulps_eq(&self, other: &Self, epsilon: N::Epsilon, max_ulps: u32) -> bool {
 		self.normal.ulps_eq(&other.normal, epsilon, max_ulps)
 			&& self.bias.ulps_eq(&other.bias, epsilon, max_ulps)
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<N: Copy + RealField> rkyv::Archive for Plane<N> {
+	type Archived = Self;
+	type Resolver = ();
+
+	#[inline]
+	#[allow(unsafe_code)]
+	unsafe fn resolve(&self, _: usize, _: Self::Resolver, out: *mut Self::Archived) {
+		out.write(rkyv::to_archived!(*self as Self));
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<Ser: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Serialize<Ser> for Plane<N> {
+	#[inline]
+	fn serialize(&self, _: &mut Ser) -> Result<Self::Resolver, Ser::Error> {
+		Ok(())
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<De: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Deserialize<Self, De> for Plane<N> {
+	#[inline]
+	fn deserialize(&self, _: &mut De) -> Result<Self, De::Error> {
+		Ok(rkyv::from_archived!(*self))
 	}
 }

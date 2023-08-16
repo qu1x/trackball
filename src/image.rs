@@ -3,12 +3,8 @@ use nalgebra::{convert, zero, Isometry3, Matrix4, Point2, Point3, RealField, Vec
 use simba::scalar::SubsetOf;
 
 /// Image as projection of [`Scope`] wrt [`Frame`].
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
-)]
 pub struct Image<N: Copy + RealField> {
 	/// Current position in screen space of hovering input or pointing device.
 	pos: Point2<N>,
@@ -44,8 +40,8 @@ impl<N: Copy + RealField> Image<N> {
 			pos: Point2::origin(),
 			max,
 			upp: zero(),
-			frame: frame.clone(),
-			scope: scope.clone(),
+			frame: *frame,
+			scope: *scope,
 			view_iso: Isometry3::identity(),
 			view_mat: zero(),
 			proj_mat: zero(),
@@ -234,5 +230,33 @@ impl<N: Copy + RealField> Image<N> {
 			compute_mat: self.compute_mat,
 			compute_inv: self.compute_inv,
 		}
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<N: Copy + RealField> rkyv::Archive for Image<N> {
+	type Archived = Self;
+	type Resolver = ();
+
+	#[inline]
+	#[allow(unsafe_code)]
+	unsafe fn resolve(&self, _: usize, _: Self::Resolver, out: *mut Self::Archived) {
+		out.write(rkyv::to_archived!(*self as Self));
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<Ser: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Serialize<Ser> for Image<N> {
+	#[inline]
+	fn serialize(&self, _: &mut Ser) -> Result<Self::Resolver, Ser::Error> {
+		Ok(())
+	}
+}
+
+#[cfg(feature = "rkyv")]
+impl<De: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Deserialize<Self, De> for Image<N> {
+	#[inline]
+	fn deserialize(&self, _: &mut De) -> Result<Self, De::Error> {
+		Ok(rkyv::from_archived!(*self))
 	}
 }
