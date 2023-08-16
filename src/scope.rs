@@ -153,7 +153,7 @@ impl<N: Copy + RealField> rkyv::Archive for Scope<N> {
 
 	#[inline]
 	#[allow(unsafe_code)]
-	unsafe fn resolve(&self, _: usize, _: Self::Resolver, out: *mut Self::Archived) {
+	unsafe fn resolve(&self, _: usize, (): Self::Resolver, out: *mut Self::Archived) {
 		out.write(rkyv::to_archived!(*self as Self));
 	}
 }
