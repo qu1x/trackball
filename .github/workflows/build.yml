@@ -53,7 +53,7 @@ jobs:
     - name: doc
       run: cargo doc --all-features
     - name: fmt
-      run: cargo fmt --check --all-features
+      run: cargo fmt --check
   all-features-nightly:
     runs-on: ubuntu-latest
     steps:
@@ -74,4 +74,4 @@ jobs:
         RUSTDOCFLAGS: --cfg docsrs
       run: cargo doc --all-features
     - name: fmt
-      run: cargo fmt --check --all-features
+      run: cargo fmt --check
