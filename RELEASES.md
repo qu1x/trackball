@@ -1,4 +1,4 @@
-# Version 0.11.2 (2023-08-16)
+# Version 0.11.2 (2023-08-19)
 
   * Make some types `Copy`.
   * Fix `rkyv` by implementing `Archive` for `Self`.
