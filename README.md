@@ -13,7 +13,7 @@ Virtual Trackball Orbiting via the Exponential Map
 [Documentation]: https://docs.rs/trackball/badge.svg
 [Downloads]: https://img.shields.io/crates/d/trackball.svg
 [Version]: https://img.shields.io/crates/v/trackball.svg
-[Rust]: https://img.shields.io/badge/rust-v1.70-brightgreen.svg
+[Rust]: https://img.shields.io/badge/rust-v1.71-brightgreen.svg
 [License]: https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg
 
 This is an alternative trackball technique using exponential map and parallel transport to
