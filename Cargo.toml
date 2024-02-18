@@ -1,6 +1,6 @@
 [package]
 name = "trackball"
-version = "0.11.2"
+version = "0.12.0"
 rust-version = "1.71.0"
 authors = ["Rouven Spreckels <rs@qu1x.dev>"]
 edition = "2021"
@@ -36,17 +36,17 @@ all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
-heapless = { version = "0.7.16", default-features = false }
-nalgebra = { version = "0.32.3", default-features = false, features = ["libm-force"] }
+heapless = { version = "0.8.0", default-features = false }
+nalgebra = { git = "https://github.com/dimforge/nalgebra", default-features = false, features = ["libm-force"] }
 simba = { version = "0.8.1", default-features = false, features = ["libm"] }
 approx = { version = "0.5.1", default-features = false }
-serde = { version = "1.0.183", default-features = false, features = ["derive"], optional = true }
-rkyv = { version = "0.7.42", default-features = false, optional = true }
+serde = { version = "1.0.196", default-features = false, features = ["derive"], optional = true }
+rkyv = { version = "0.7.44", default-features = false, optional = true }
 
 [features]
-glam = ["nalgebra/convert-glam024"]
+glam = ["nalgebra/convert-glam025"]
 serde = ["dep:serde", "nalgebra/serde-serialize-no-std", "simba/serde_serialize"]
 rkyv = ["dep:rkyv", "nalgebra/rkyv-serialize-no-std", "simba/rkyv-serialize"]
 
 [build-dependencies]
-cc = { version = "1.0.82", optional = true }
+cc = { version = "1.0.83", optional = true }
