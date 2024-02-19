@@ -37,7 +37,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 heapless = { version = "0.8.0", default-features = false }
-nalgebra = { git = "https://github.com/dimforge/nalgebra", default-features = false, features = ["libm-force"] }
+nalgebra = { version = "0.32.4", default-features = false, features = ["libm-force"] }
 simba = { version = "0.8.1", default-features = false, features = ["libm"] }
 approx = { version = "0.5.1", default-features = false }
 serde = { version = "1.0.196", default-features = false, features = ["derive"], optional = true }
