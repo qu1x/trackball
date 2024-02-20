@@ -19,6 +19,13 @@ pub enum Delta<N: Copy + RealField> {
 		/// Yaw axis.
 		yaw_axis: Unit<Vector3<N>>,
 	},
+	/// Tracks target which slides by vector in world space.
+	///
+	/// Preserves eye position inclusive its roll attitude.
+	Track {
+		/// Vector in world space of a sliding target to track.
+		vec: Vector3<N>,
+	},
 	/// Orbits eye by rotation in camera space around point in camera space.
 	///
 	/// See [`Frame::local_orbit_around()`].
@@ -58,6 +65,7 @@ impl<N: Copy + RealField> Delta<N> {
 				yaw,
 				ref yaw_axis,
 			} => frame.look_around(*pitch, *yaw, yaw_axis),
+			Self::Track { vec } => frame.set_target(frame.target() + vec),
 			Self::Orbit { rot, pos } => frame.local_orbit_around(rot, pos),
 			Self::Slide { vec } => frame.local_slide(vec),
 			Self::Scale { rat, pos } => frame.local_scale_around(*rat, pos),
@@ -80,6 +88,7 @@ impl<N: Copy + RealField> Delta<N> {
 				yaw: -yaw,
 				yaw_axis,
 			},
+			Self::Track { vec } => Self::Track { vec: -vec },
 			Self::Orbit { rot, pos } => Self::Orbit {
 				rot: rot.inverse(),
 				pos,
@@ -111,6 +120,7 @@ impl<N: Copy + RealField> Delta<N> {
 				yaw: yaw * t,
 				yaw_axis,
 			},
+			Self::Track { vec } => Self::Track { vec: vec * t },
 			Self::Orbit { rot, pos } => Self::Orbit {
 				rot: rot.powf(t),
 				pos,
@@ -139,6 +149,7 @@ impl<N: Copy + RealField> Delta<N> {
 				yaw: yaw.to_superset(),
 				yaw_axis: yaw_axis.cast(),
 			},
+			Self::Track { vec } => Delta::Track { vec: vec.cast() },
 			Self::Orbit { rot, pos } => Delta::Orbit {
 				rot: rot.cast(),
 				pos: pos.cast(),

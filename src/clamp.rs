@@ -122,6 +122,38 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 				}
 				(min_delta != *delta).then_some((min_delta, loops))
 			}
+			Delta::Track { vec: _ } => {
+				let old_frame = frame;
+				let old_target = frame.target();
+				let old_rot_inverse = frame.view().rotation.inverse();
+				let mut min_delta = *delta;
+				let mut loops = 0;
+				loop {
+					let frame = min_delta.transform(old_frame);
+					let mut bound = false;
+					if let Some(plane) = self.target(&frame) {
+						bound = true;
+						let new_target = plane.project_point(frame.target());
+						let vec = old_rot_inverse * (new_target - old_target);
+						min_delta = Delta::Track { vec };
+					}
+					let frame = min_delta.transform(old_frame);
+					if let Some(_plane) = self.up(&frame) {
+						bound = true;
+						// TODO Implement gliding.
+						min_delta = Delta::Frame;
+					}
+					if bound {
+						if loops == self.loops() {
+							break;
+						}
+						loops += 1;
+					} else {
+						break;
+					}
+				}
+				(min_delta != *delta).then_some((min_delta, loops))
+			}
 			&Delta::Orbit { rot: _, pos } => {
 				if pos != Point3::origin() {
 					return Some((Delta::Frame, 0));

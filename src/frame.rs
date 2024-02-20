@@ -40,10 +40,16 @@ impl<N: Copy + RealField> Frame<N> {
 		&self.pos
 	}
 	/// Sets target position in world space preserving eye position inclusive its roll attitude.
-	pub fn set_target(&mut self, target: Point3<N>) {
+	///
+	/// Allows to track a moving object.
+	pub fn set_target(&mut self, pos: Point3<N>) {
 		let eye = self.eye();
-		self.pos = target;
-		self.zat = (self.pos - eye).norm();
+		let (new_dir, zat) = Unit::new_and_get(pos - eye);
+		let old_dir = Unit::new_normalize(self.pos - eye);
+		let rot = UnitQuaternion::rotation_between_axis(&old_dir, &new_dir)
+			.unwrap_or_else(|| UnitQuaternion::from_axis_angle(&self.yaw_axis(), N::pi()));
+		let rot = rot * self.rot;
+		*self = Self { pos, rot, zat }
 	}
 	/// Distance between eye and target.
 	#[must_use]
