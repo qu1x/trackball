@@ -1,3 +1,8 @@
+# Version 0.12.0 (2024-02-21)
+
+  * Support latest `glam`.
+  * Implement `Delta::Track`, changing behavior of `Frame::set_target`.
+
 # Version 0.11.2 (2023-08-19)
 
   * Make some types `Copy`.
