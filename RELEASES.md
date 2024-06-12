@@ -1,3 +1,7 @@
+# Version 0.13.0 (2024-06-12)
+
+  * Bump dependencies.
+
 # Version 0.12.0 (2024-02-21)
 
   * Support latest `glam`.

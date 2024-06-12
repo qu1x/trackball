@@ -1,4 +1,4 @@
-// Copyright © 2021-2023 Rouven Spreckels <rs@qu1x.dev>
+// Copyright © 2021-2024 Rouven Spreckels <rs@qu1x.dev>
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #include "trackball.h"
