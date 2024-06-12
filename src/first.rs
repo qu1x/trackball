@@ -23,11 +23,7 @@ impl<N: Copy + RealField> First<N> {
 	/// Carries cursor/finger displacements to arcs of the same length on great circles of an
 	/// eye-centered trackball with radius of maximum of half the screen's width and height in
 	/// compliance with [`crate::Orbit`] except that its trackball is target-centered.
-	pub fn compute(
-		&mut self,
-		vec: &Vector2<N>,
-		max: &Point2<N>,
-	) -> Option<(N, N, &Unit<Vector3<N>>)> {
+	pub fn compute(&self, vec: &Vector2<N>, max: &Point2<N>) -> Option<(N, N, &Unit<Vector3<N>>)> {
 		self.ray.as_ref().map(|ray| {
 			let max = max.x.max(max.y) * convert(0.5);
 			(vec.y / max, vec.x / max, ray)
