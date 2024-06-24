@@ -1,6 +1,6 @@
 [package]
 name = "trackball"
-version = "0.13.0"
+version = "0.14.0"
 rust-version = "1.71.0"
 authors = ["Rouven Spreckels <rs@qu1x.dev>"]
 edition = "2021"
@@ -37,16 +37,16 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 heapless = { version = "0.8.0", default-features = false }
-nalgebra = { version = "0.32.6", default-features = false, features = ["libm-force"] }
-simba = { version = "0.8.1", default-features = false, features = ["libm"] }
+nalgebra = { version = "0.33.0", default-features = false, features = ["libm-force"] }
+simba = { version = "0.9.0", default-features = false, features = ["libm"] }
 approx = { version = "0.5.1", default-features = false }
 serde = { version = "1.0.203", default-features = false, features = ["derive"], optional = true }
 rkyv = { version = "0.7.44", default-features = false, optional = true }
 
 [features]
-glam = ["nalgebra/convert-glam027"]
+glam = ["nalgebra/convert-glam028"]
 serde = ["dep:serde", "nalgebra/serde-serialize-no-std", "simba/serde_serialize"]
 rkyv = ["dep:rkyv", "nalgebra/rkyv-serialize-no-std", "simba/rkyv-serialize"]
 
 [build-dependencies]
-cc = { version = "1.0.99", optional = true }
+cc = { version = "1.0.100", optional = true }

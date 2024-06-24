@@ -1,3 +1,7 @@
+# Version 0.14.0 (2024-06-24)
+
+  * Bump `nalgebra` to latest version.
+
 # Version 0.13.0 (2024-06-12)
 
   * Bump dependencies.
