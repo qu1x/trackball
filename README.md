@@ -105,12 +105,7 @@ impl Trackball {
 
 ## C11 Implementation
 
-Identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` feature gate:
-
-```toml
-[dependencies]
-trackball = { version = "0.13.0", features = ["cc"] }
-```
+Use identical [C11 implementation](c11) for [`Orbit`] operation handler behind `cc` feature gate.
 
 [`Orbit`]: https://docs.rs/trackball/latest/trackball/struct.Orbit.html
 

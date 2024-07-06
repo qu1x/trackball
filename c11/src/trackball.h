@@ -18,7 +18,7 @@
 /// [S2CID]: https://en.wikipedia.org/wiki/S2CID_(identifier)
 /// [44199608]: https://api.semanticscholar.org/CorpusID:44199608
 ///
-/// \version v0.13.0
+/// \version v0.14.0
 /// \author Rouven Spreckels <rs@qu1x.dev>
 /// \copyright MIT OR Apache-2.0
 ///
