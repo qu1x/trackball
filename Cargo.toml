@@ -44,9 +44,22 @@ serde = { version = "1.0.203", default-features = false, features = ["derive"], 
 rkyv = { version = "0.7.44", default-features = false, optional = true }
 
 [features]
-glam = ["nalgebra/convert-glam028"]
+glam = ["nalgebra/convert-glam027"]
 serde = ["dep:serde", "nalgebra/serde-serialize-no-std", "simba/serde_serialize"]
 rkyv = ["dep:rkyv", "nalgebra/rkyv-serialize-no-std", "simba/rkyv-serialize"]
 
 [build-dependencies]
 cc = { version = "1.0.100", optional = true }
+
+[lints.rust]
+missing-docs = "forbid"
+
+[lints.rustdoc]
+broken-intra-doc-links = "forbid"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+tabs-in-doc-comments = "allow"
+similar_names = "allow"

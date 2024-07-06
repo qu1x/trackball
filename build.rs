@@ -1,3 +1,5 @@
+//! Use identical C11 implementation for `Orbit` operation handler behind `cc` feature gate.
+
 fn main() {
 	#[cfg(feature = "cc")]
 	{
