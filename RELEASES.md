@@ -1,4 +1,4 @@
-# Version 0.14.0 (2024-06-24)
+# Version 0.14.0 (2024-07-06)
 
   * Bump `nalgebra` to latest version.
 
