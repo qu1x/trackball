@@ -37,19 +37,19 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 heapless = { version = "0.8.0", default-features = false }
-nalgebra = { version = "0.33.0", default-features = false, features = ["libm-force"] }
+nalgebra = { git = "https://github.com/dimforge/nalgebra", rev = "refs/pull/1434/head", default-features = false, features = ["libm-force"] }
 simba = { version = "0.9.0", default-features = false, features = ["libm"] }
 approx = { version = "0.5.1", default-features = false }
 serde = { version = "1.0.203", default-features = false, features = ["derive"], optional = true }
-rkyv = { version = "0.7.44", default-features = false, optional = true }
+rkyv = { version = "0.7.45", default-features = false, optional = true }
 
 [features]
-glam = ["nalgebra/convert-glam027"]
+glam = ["nalgebra/convert-glam029"]
 serde = ["dep:serde", "nalgebra/serde-serialize-no-std", "simba/serde_serialize"]
 rkyv = ["dep:rkyv", "nalgebra/rkyv-serialize-no-std", "simba/rkyv-serialize"]
 
 [build-dependencies]
-cc = { version = "1.0.100", optional = true }
+cc = { version = "1.1.31", optional = true }
 
 [lints.rust]
 missing-docs = "forbid"
