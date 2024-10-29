@@ -1,3 +1,8 @@
+# Version 0.15.0 (2024-10-29)
+
+  * Support latest `glam`.
+  * Bump `nalgebra` to latest version.
+
 # Version 0.14.0 (2024-07-06)
 
   * Bump `nalgebra` to latest version.

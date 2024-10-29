@@ -1,6 +1,6 @@
 [package]
 name = "trackball"
-version = "0.14.0"
+version = "0.15.0"
 rust-version = "1.71.0"
 authors = ["Rouven Spreckels <rs@qu1x.dev>"]
 edition = "2021"
@@ -37,7 +37,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 heapless = { version = "0.8.0", default-features = false }
-nalgebra = { git = "https://github.com/dimforge/nalgebra", rev = "refs/pull/1434/head", default-features = false, features = ["libm-force"] }
+nalgebra = { version = "0.33.2", default-features = false, features = ["libm-force"] }
 simba = { version = "0.9.0", default-features = false, features = ["libm"] }
 approx = { version = "0.5.1", default-features = false }
 serde = { version = "1.0.203", default-features = false, features = ["derive"], optional = true }
