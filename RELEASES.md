@@ -2,6 +2,7 @@
 
   * Support latest `glam`.
   * Bump `nalgebra` to latest version.
+  * Bump MSRV.
 
 # Version 0.14.0 (2024-07-06)
 
