@@ -85,7 +85,7 @@ impl<N: Copy + RealField> Scope<N> {
 	/// Sets clip plane distances from target or eye whether [`Self::scale()`].
 	///
 	/// Default is `(1e-1, 1e+3)` measured from eye.
-	pub fn set_clip_planes(&mut self, znear: N, zfar: N) {
+	pub const fn set_clip_planes(&mut self, znear: N, zfar: N) {
 		self.zcp = (znear, zfar);
 	}
 	/// Object inspection mode.
@@ -98,7 +98,7 @@ impl<N: Copy + RealField> Scope<N> {
 	/// Sets object inspection mode.
 	///
 	/// Scales clip plane distances by measuring from target instead of eye. Default is `false`.
-	pub fn set_scale(&mut self, oim: bool) {
+	pub const fn set_scale(&mut self, oim: bool) {
 		self.oim = oim;
 	}
 	/// Orthographic projection mode.
@@ -111,7 +111,7 @@ impl<N: Copy + RealField> Scope<N> {
 	/// Sets orthographic projection mode.
 	///
 	/// Computes scale-identical orthographic instead of perspective projection. Default is `false`.
-	pub fn set_ortho(&mut self, opm: bool) {
+	pub const fn set_ortho(&mut self, opm: bool) {
 		self.opm = opm;
 	}
 	/// Projection transformation and unit per pixel on focus plane wrt distance between eye and

@@ -86,7 +86,7 @@ impl<N: Copy + RealField> Image<N> {
 	/// Sets whether to compute transformation and inverse transformation with [`Self::compute()`].
 	///
 	/// Default is `(true, true)`.
-	pub fn set_compute(&mut self, compute_mat: bool, compute_inv: bool) {
+	pub const fn set_compute(&mut self, compute_mat: bool, compute_inv: bool) {
 		self.compute_mat = compute_mat;
 		self.compute_inv = compute_inv;
 	}
@@ -96,7 +96,7 @@ impl<N: Copy + RealField> Image<N> {
 		&self.pos
 	}
 	/// Sets current position in screen space of hovering input or pointing device.
-	pub fn set_pos(&mut self, pos: Point2<N>) {
+	pub const fn set_pos(&mut self, pos: Point2<N>) {
 		self.pos = pos;
 	}
 	/// Maximum position in screen space as screen's width and height.

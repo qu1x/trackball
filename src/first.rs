@@ -15,7 +15,7 @@ pub struct First<N: Copy + RealField> {
 
 impl<N: Copy + RealField> First<N> {
 	/// Captures current yaw axis when entering first person view.
-	pub fn capture(&mut self, yaw_axis: Unit<Vector3<N>>) {
+	pub const fn capture(&mut self, yaw_axis: Unit<Vector3<N>>) {
 		self.ray = Some(yaw_axis);
 	}
 	/// Computes pitch and yaw from cursor/finger displacement vector in screen space.
@@ -30,7 +30,7 @@ impl<N: Copy + RealField> First<N> {
 		})
 	}
 	/// Discards captured yaw axis when leaving first person view.
-	pub fn discard(&mut self) {
+	pub const fn discard(&mut self) {
 		self.ray = None;
 	}
 	/// Whether a yaw axis has been captured.

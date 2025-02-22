@@ -57,7 +57,7 @@ impl<N: Copy + RealField> Frame<N> {
 		self.zat
 	}
 	/// Sets distance between eye and target preserving target position.
-	pub fn set_distance(&mut self, zat: N) {
+	pub const fn set_distance(&mut self, zat: N) {
 		self.zat = zat;
 	}
 	/// Scales distance between eye and target by ratio preserving target position.

@@ -18,7 +18,7 @@ impl<N: Copy + RealField> Slide<N> {
 		self.pos.replace(pos).map(|old| old - pos)
 	}
 	/// Discards cached previous cursor/finger position on button/finger release.
-	pub fn discard(&mut self) {
+	pub const fn discard(&mut self) {
 		self.pos = None;
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].

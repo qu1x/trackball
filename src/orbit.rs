@@ -78,7 +78,7 @@ impl<N: Copy + RealField> Orbit<N> {
 		Unit::try_new(vec, N::zero()).map(|ray| UnitQuaternion::from_axis_angle(&ray, len / max))
 	}
 	/// Discards cached normalization of previous cursor/finger position on button/finger release.
-	pub fn discard(&mut self) {
+	pub const fn discard(&mut self) {
 		self.vec = None;
 	}
 	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
