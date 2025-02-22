@@ -213,7 +213,8 @@ impl Orbit<f64> {
 }
 
 #[cfg(feature = "cc")]
-extern "C" {
+#[allow(unsafe_code)]
+unsafe extern "C" {
 	fn trackball_orbit_f(xyzw: *mut f32, xyzm: *mut f32, xy: *const f32, wh: *const f32);
 	fn trackball_orbit_d(xyzw: *mut f64, xyzm: *mut f64, xy: *const f64, wh: *const f64);
 }
