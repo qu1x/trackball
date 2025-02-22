@@ -139,7 +139,7 @@ impl Orbit<f32> {
 		(rot.w != 1.0).then(|| UnitQuaternion::new_unchecked(rot))
 	}
 	/// Discards cached normalization of previous cursor/finger position on button/finger release.
-	pub fn discard(&mut self) {
+	pub const fn discard(&mut self) {
 		self.vec = None;
 	}
 	/// Casts components to another type, e.g., to [`f64`].
@@ -197,7 +197,7 @@ impl Orbit<f64> {
 		(rot.w != 1.0).then(|| UnitQuaternion::new_unchecked(rot))
 	}
 	/// Discards cached normalization of previous cursor/finger position on button/finger release.
-	pub fn discard(&mut self) {
+	pub const fn discard(&mut self) {
 		self.vec = None;
 	}
 	/// Casts components to another type, e.g., to [`f32`].
