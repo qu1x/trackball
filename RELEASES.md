@@ -1,3 +1,10 @@
+# Version 0.16.0 (2025-02-22)
+
+  * Rust Edition 2024.
+  * Bump MSRV.
+  * Bump dependencies.
+  * Fix build with `cc` feature.
+
 # Version 0.15.0 (2024-10-29)
 
   * Support latest `glam`.

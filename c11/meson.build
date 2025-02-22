@@ -1,5 +1,5 @@
 project('trackball', 'c',
-	version : '0.15.0',
+	version : '0.16.0',
 	license : 'MIT OR Apache-2.0',
 	default_options : ['c_std=c11'])
 

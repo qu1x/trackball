@@ -111,7 +111,7 @@ Use identical [C11 implementation](c11) for [`Orbit`] operation handler behind `
 
 ## License
 
-Copyright © 2021-2024 Rouven Spreckels <rs@qu1x.dev>
+Copyright © 2021-2025 Rouven Spreckels <rs@qu1x.dev>
 
 This project is licensed under either of
 
