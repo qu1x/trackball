@@ -1,5 +1,5 @@
 use crate::Fixed;
-use nalgebra::{convert, Matrix4, Point2, RealField};
+use nalgebra::{Matrix4, Point2, RealField, convert};
 use simba::scalar::SubsetOf;
 
 /// Scope defining enclosing viewing frustum.

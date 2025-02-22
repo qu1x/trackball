@@ -63,7 +63,7 @@ impl<N: Copy + RealField> Delta<N> {
 			Self::First {
 				pitch,
 				yaw,
-				ref yaw_axis,
+				yaw_axis,
 			} => frame.look_around(*pitch, *yaw, yaw_axis),
 			Self::Track { vec } => frame.set_target(frame.target() + vec),
 			Self::Orbit { rot, pos } => frame.local_orbit_around(rot, pos),

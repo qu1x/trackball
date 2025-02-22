@@ -1,4 +1,4 @@
-use nalgebra::{convert, RealField};
+use nalgebra::{RealField, convert};
 use simba::scalar::SubsetOf;
 
 /// Scale induced by relative input.

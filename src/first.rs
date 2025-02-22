@@ -1,4 +1,4 @@
-use nalgebra::{convert, Point2, RealField, Unit, Vector2, Vector3};
+use nalgebra::{Point2, RealField, Unit, Vector2, Vector3, convert};
 use simba::scalar::SubsetOf;
 
 /// First person view induced by displacement on screen.

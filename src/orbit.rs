@@ -49,7 +49,7 @@ impl<N: Copy + RealField> Orbit<N> {
 		// Positive z-axis pointing from far to near.
 		let (pos, pza) = (pos.coords.push(N::zero()), Vector3::z_axis());
 		// New position as ray and length on xy-plane or z-axis of zero length for origin position.
-		let (ray, len) = Unit::try_new_and_get(pos, N::zero()).unwrap_or((pza, N::zero()));
+		let (ray, len) = Unit::try_new_and_get(pos, N::zero()).unwrap_or_else(|| (pza, N::zero()));
 		// Get old ray and length as start position and offset and replace with new ray and length.
 		let (pos, off) = self.vec.replace((ray, len))?;
 		// Displacement vector from old to new ray and length.

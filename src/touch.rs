@@ -1,6 +1,6 @@
 use core::fmt::Debug;
 use heapless::LinearMap;
-use nalgebra::{convert, Point2, RealField, Unit, Vector2};
+use nalgebra::{Point2, RealField, Unit, Vector2, convert};
 use simba::scalar::SubsetOf;
 
 /// Touch gestures inducing slide, orbit, scale, and focus.

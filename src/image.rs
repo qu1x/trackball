@@ -1,5 +1,5 @@
 use crate::{Frame, Scope};
-use nalgebra::{convert, zero, Isometry3, Matrix4, Point2, Point3, RealField, Vector2, Vector3};
+use nalgebra::{Isometry3, Matrix4, Point2, Point3, RealField, Vector2, Vector3, convert, zero};
 use simba::scalar::SubsetOf;
 
 /// Image as projection of [`Scope`] wrt [`Frame`].
