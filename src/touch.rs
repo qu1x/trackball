@@ -143,7 +143,7 @@ impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
 			pos: self
 				.pos
 				.into_iter()
-				.map(|(&fid, pos)| (fid, pos.cast()))
+				.map(|(fid, pos)| (fid, pos.cast()))
 				.collect::<LinearMap<F, Point2<M>, 10>>(),
 			vec: self.vec.map(|(ray, len)| (ray.cast(), len.to_superset())),
 			tap: self.tap.map(|(mvs, pos)| (mvs, pos.cast())),

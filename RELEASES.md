@@ -1,3 +1,8 @@
+# Version 0.17.0 (2025-10-05)
+
+  * Bump MSRV.
+  * Bump dependencies.
+
 # Version 0.16.0 (2025-02-22)
 
   * Rust Edition 2024.

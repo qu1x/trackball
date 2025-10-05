@@ -1,7 +1,7 @@
 [package]
 name = "trackball"
-version = "0.16.0"
-rust-version = "1.85.0"
+version = "0.17.0"
+rust-version = "1.87.0"
 edition = "2024"
 authors = ["Rouven Spreckels <rs@qu1x.dev>"]
 description = "Virtual Trackball Orbiting via the Exponential Map"
@@ -32,24 +32,25 @@ include = [
 ]
 
 [package.metadata.docs.rs]
-all-features = true
+features = ["glam", "serde", "rkyv"]
 rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
-heapless = { version = "0.8.0", default-features = false }
-nalgebra = { version = "0.33.2", default-features = false, features = ["libm-force"] }
-simba = { version = "0.9.0", default-features = false, features = ["libm"] }
+heapless = { version = "0.9.1", default-features = false }
+nalgebra = { version = "0.34.1", default-features = false }
+simba = { version = "0.9.1", default-features = false }
 approx = { version = "0.5.1", default-features = false }
-serde = { version = "1.0.218", default-features = false, features = ["derive"], optional = true }
+serde = { version = "1.0.228", default-features = false, features = ["derive"], optional = true }
 rkyv = { version = "0.7.45", default-features = false, optional = true }
 
 [features]
-glam = ["nalgebra/convert-glam029"]
+libm = ["nalgebra/libm", "simba/libm"]
+glam = ["nalgebra/convert-glam030"]
 serde = ["dep:serde", "nalgebra/serde-serialize-no-std", "simba/serde_serialize"]
 rkyv = ["dep:rkyv", "nalgebra/rkyv-serialize-no-std", "simba/rkyv-serialize"]
 
 [build-dependencies]
-cc = { version = "1.2.15", optional = true }
+cc = { version = "1.2.39", optional = true }
 
 [lints.rust]
 missing-docs = "forbid"

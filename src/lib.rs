@@ -5,11 +5,11 @@
 //! instance, displacements on straight radial lines through the screen's center are carried to arcs
 //! of the same length on great circles of the trackball. This is in contrast to state-of-the-art
 //! techniques using orthogonal projection which distorts radial distances further away from the
-//! screen's center. This implementation strictly follows the recipe given in the paper of
-//! Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” . [S2CID] [44199608].
+//! screen's center.[^1]
 //!
-//! [S2CID]: https://en.wikipedia.org/wiki/S2CID_(identifier)
-//! [44199608]: https://api.semanticscholar.org/CorpusID:44199608
+//! [^1]: G. Stantchev, “Virtual Trackball Modeling and the Exponential Map”, [S2CID 44199608 (2004)
+//! ](https://api.semanticscholar.org/CorpusID:44199608), [Archived PDF
+//! ](https://web.archive.org/web/2/http://www.math.umd.edu:80/~gogo/Papers/trackballExp.pdf)
 //!
 //! # Features
 //!
@@ -29,6 +29,16 @@
 //!   * Scale-preserving transitioning between orthographic and perspective projection mode.
 //!   * Converting between [`Fixed`] quantities wrt to field of view, see [`Scope::set_fov()`].
 //!   * Time-free [`Touch`] gesture recognition for slide, orbit, scale, and focus operations.
+//!
+//! # Optional Features
+//!
+//! Following features are disabled unless their corresponding feature gate is enabled:
+//!
+//!   * `libm` for supporting `no_std` environments.
+//!   * `glam` for converting between `nalgebra` and `glam` types.
+//!   * `serde` for `serde` support of various structures of this crate and its dependencies.
+//!   * `rkyv` for `rkyv` support of various structures of this crate and its dependencies.
+//!   * `cc` for testing the behaviorally identical C implementation of the exponential map.
 //!
 //! # Example
 //!
