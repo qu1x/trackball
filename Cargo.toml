@@ -33,6 +33,7 @@ include = [
 
 [package.metadata.docs.rs]
 features = ["glam", "serde", "rkyv"]
+cargo-args = ["-Z", "unstable-options", "-Z", "rustdoc-scrape-examples"]
 rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]

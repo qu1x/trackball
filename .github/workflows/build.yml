@@ -54,24 +54,3 @@ jobs:
       run: cargo doc --all-features
     - name: fmt
       run: cargo fmt --check
-  all-features-nightly:
-    runs-on: ubuntu-latest
-    steps:
-    - name: checkout
-      uses: actions/checkout@v4
-    - name: toolchain
-      uses: dtolnay/rust-toolchain@master
-      with:
-        toolchain: nightly
-        components: rustfmt, rust-docs, clippy
-    - name: test
-      run: cargo test --all-features
-    - name: clippy
-      run: |
-        cargo clippy --tests --all-features
-    - name: doc
-      env:
-        RUSTDOCFLAGS: --cfg docsrs
-      run: cargo doc --all-features
-    - name: fmt
-      run: cargo fmt --check
