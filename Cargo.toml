@@ -37,6 +37,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 heapless = { version = "0.9.1", default-features = false }
+glam = { version = "0.30.8", default-features = false, optional = true }
 nalgebra = { version = "0.34.1", default-features = false, features = ["libm"] }
 simba = { version = "0.9.1", default-features = false, features = ["libm"] }
 approx = { version = "0.5.1", default-features = false }
@@ -44,7 +45,7 @@ serde = { version = "1.0.228", default-features = false, features = ["derive"], 
 rkyv = { version = "0.7.45", default-features = false, optional = true }
 
 [features]
-glam = ["nalgebra/convert-glam030"]
+glam = ["dep:glam", "glam/libm", "nalgebra/convert-glam030"]
 serde = ["dep:serde", "nalgebra/serde-serialize-no-std", "simba/serde_serialize"]
 rkyv = ["dep:rkyv", "nalgebra/rkyv-serialize-no-std", "simba/rkyv-serialize"]
 
