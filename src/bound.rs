@@ -28,10 +28,10 @@ pub struct Bound<N: Copy + RealField> {
 	pub max_distance: N,
 	/// Epsilon allowing clamped [`Delta`] to more likely pass revalidation.
 	///
-	/// Default is [`AbsDiffEq::default_epsilon()`]`.sqrt()`.
+	/// Default is <code>[AbsDiffEq::default_epsilon()].sqrt()</code>.
 	///
 	/// [`Delta`]: crate::Delta
-	/// [`AbsDiffEq::default_epsilon()`]: approx::AbsDiffEq::default_epsilon()
+	/// [AbsDiffEq::default_epsilon()]: approx::AbsDiffEq::default_epsilon()
 	pub hysteresis: N,
 }
 

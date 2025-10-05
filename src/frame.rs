@@ -180,7 +180,7 @@ impl<N: Copy + RealField> Frame<N> {
 	}
 	/// Inverse view transformation from world to camera space.
 	///
-	/// Uses less computations than [`Self::view()`]`.inverse()`.
+	/// Uses less computations than <code>[Self::view()].inverse()</code>.
 	#[must_use]
 	pub fn inverse_view(&self) -> Isometry3<N> {
 		// Eye rotation from world to camera space around target.
