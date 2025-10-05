@@ -3,10 +3,11 @@ use nalgebra::{Point3, RealField, Unit, UnitQuaternion, Vector3};
 use simba::scalar::SubsetOf;
 
 /// Delta transform from initial to final [`Frame`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Delta<N: Copy + RealField> {
 	/// Yields frame as identity transform (default).
+	#[default]
 	Frame,
 	/// Orbits target around eye by pitch and yaw preserving roll attitude aka first person view.
 	///
@@ -160,12 +161,6 @@ impl<N: Copy + RealField> Delta<N> {
 				pos: pos.cast(),
 			},
 		}
-	}
-}
-
-impl<N: Copy + RealField> Default for Delta<N> {
-	fn default() -> Self {
-		Self::Frame
 	}
 }
 
