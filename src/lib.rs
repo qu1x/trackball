@@ -34,7 +34,6 @@
 //!
 //! Following features are disabled unless their corresponding feature gate is enabled:
 //!
-//!   * `libm` for supporting `no_std` environments.
 //!   * `glam` for converting between `nalgebra` and `glam` types.
 //!   * `serde` for `serde` support of various structures of this crate and its dependencies.
 //!   * `rkyv` for `rkyv` support of various structures of this crate and its dependencies.
