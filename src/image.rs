@@ -30,6 +30,8 @@ pub struct Image<N: Copy + RealField> {
 	compute_mat: bool,
 	/// Whether to compute inverse transformation. Default is `true`.
 	compute_inv: bool,
+	/// Whether to use passive transformations. Default is `false`.
+	use_passive: bool,
 }
 
 impl<N: Copy + RealField> Image<N> {
@@ -49,11 +51,14 @@ impl<N: Copy + RealField> Image<N> {
 			proj_view_inv: zero(),
 			compute_mat: true,
 			compute_inv: true,
+			use_passive: false,
 		};
-		image.compute_view(frame);
-		image.compute_projection_and_upp(frame.distance(), scope);
-		image.compute_transformation();
-		image.compute_inverse_transformation();
+		if frame.distance() != N::zero() {
+			image.compute_view(frame);
+			image.compute_projection_and_upp(frame.distance(), scope);
+			image.compute_transformation();
+			image.compute_inverse_transformation();
+		}
 		image
 	}
 	/// Recomputes only cached matrices whose parameters have changed, see [`Self::set_compute()`].
@@ -89,6 +94,12 @@ impl<N: Copy + RealField> Image<N> {
 	pub const fn set_compute(&mut self, compute_mat: bool, compute_inv: bool) {
 		self.compute_mat = compute_mat;
 		self.compute_inv = compute_inv;
+	}
+	/// Sets whether to use passive transformations.
+	///
+	/// Default is `false`.
+	pub const fn set_passive(&mut self, use_passive: bool) {
+		self.use_passive = use_passive;
 	}
 	/// Current position in screen space of hovering input or pointing device.
 	#[must_use]
@@ -129,7 +140,11 @@ impl<N: Copy + RealField> Image<N> {
 	}
 	/// Computes view isometry and matrix from frame wrt camera eye and target.
 	pub fn compute_view(&mut self, frame: &Frame<N>) {
-		self.view_iso = frame.view();
+		self.view_iso = if self.use_passive {
+			frame.inverse_view()
+		} else {
+			frame.view()
+		};
 		self.view_mat = self.view_iso.to_homogeneous();
 	}
 	/// Cached projection matrix.
@@ -229,6 +244,7 @@ impl<N: Copy + RealField> Image<N> {
 			proj_view_inv: self.proj_view_inv.cast(),
 			compute_mat: self.compute_mat,
 			compute_inv: self.compute_inv,
+			use_passive: self.use_passive,
 		}
 	}
 }
