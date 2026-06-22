@@ -1,3 +1,8 @@
+# Version 0.18.0 (2026-06-22)
+
+  * Bump MSRV.
+  * Bump dependencies.
+
 # Version 0.17.1 (2025-10-19)
 
   * Add `Image::set_passive()`.
