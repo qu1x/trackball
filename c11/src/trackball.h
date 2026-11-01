@@ -5,15 +5,22 @@
 ///
 /// \mainpage Virtual Trackball Orbiting via the Exponential Map
 ///
-/// This is an alternative trackball technique using exponential map and
-/// parallel transport to preserve distances and angles for inducing coherent
-/// and intuitive trackball rotations. For instance, displacements on straight
-/// radial lines through the screen's center are carried to arcs of the same
-/// length on great circles of the trackball. This is in contrast to
-/// state-of-the-art techniques using orthogonal projection which distorts
-/// radial distances further away from the screen's center. This implementation
-/// strictly follows the recipe given in the paper of Stantchev, G.. “Virtual
-/// Trackball Modeling and the Exponential Map.” . [S2CID][] [44199608][].
+/// This is an alternative trackball technique using the exponential map for
+/// inducing coherent and intuitive trackball rotations based on the paper of
+/// Stantchev, G.. “Virtual Trackball Modeling and the Exponential Map.” .
+/// [S2CID][] [44199608][]. Displacements on straight radial lines through the
+/// screen's center are carried to arcs of the same length on great circles of
+/// the trackball, whose half circumference is the maximum of the screen's width
+/// and height. This is in contrast to state-of-the-art techniques using
+/// orthogonal projection which distorts radial distances further away from the
+/// screen's center. Each rotation carries the trackball's point under the
+/// previous cursor/finger position along the shortest arc to the one under the
+/// current position, keeping the grabbed point under the cursor/finger. This
+/// follows the paper's differential of the exponential map rather than its
+/// recipe, which takes the differential to be parallel transport, preserving
+/// the lengths of displacements but letting the grabbed point drift. Screen
+/// corners beyond the trackball's border are mapped beyond its equator, keeping
+/// radial displacements linear.
 ///
 /// [S2CID]: https://en.wikipedia.org/wiki/S2CID_(identifier)
 /// [44199608]: https://api.semanticscholar.org/CorpusID:44199608
@@ -36,9 +43,15 @@
 
 /// Computes rotation between previous and current cursor/finger position.
 ///
-/// Normalization of previous position is cached and has to be discarded on
-/// button/finger release by resetting it to zero. Current position is clamped
-/// between origin and maximum position as screen's width and height.
+/// Trackball point of previous position is cached and has to be discarded on
+/// button/finger release by resetting its length to zero. Current position is
+/// clamped between origin and maximum position as screen's width and height.
+///
+/// Maps positions via the exponential map onto a target-centered trackball with
+/// radius of maximum of the screen's width and height divided by π and rotates
+/// along the shortest arc between their trackball points so that the
+/// trackball's point under the cursor/finger stays under it. Positions in
+/// screen corners beyond the trackball's border are mapped beyond its equator.
 ///
 /// Screen space with origin in top left corner:
 ///
@@ -57,7 +70,8 @@
 /// xyzw controlling the generic selection of the implementation's scalar type.
 ///
 /// \param[out]    xyzw Induced rotation as unit quaternion.
-/// \param[in,out] xyzm Cached normalization of previous position.
+/// \param[in,out] xyzm Cached trackball point of previous position with its
+///                     length or zero for no position.
 /// \param[in]     xy   Current position.
 /// \param[in]     wh   Maximum position as screen's width and height.
 #define trackball_orbit(xyzw, xyzm, xy, wh) _Generic((xyzw), \

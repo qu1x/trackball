@@ -21,8 +21,8 @@ impl First {
 	/// Computes pitch and yaw from cursor/finger displacement vector in screen space.
 	///
 	/// Carries cursor/finger displacements to arcs of the same length on great circles of an
-	/// eye-centered trackball with radius of maximum of the screen's width and height divided by
-	/// π in compliance with [`crate::Orbit`] except that its trackball is target-centered.
+	/// eye-centered trackball with the radius of the target-centered trackball of
+	/// [`crate::Orbit`], that is maximum of the screen's width and height divided by π.
 	#[must_use]
 	pub fn compute(&self, vec: Vec2, max: Vec2) -> Option<(f32, f32, Vec3)> {
 		self.ray.map(|ray| {

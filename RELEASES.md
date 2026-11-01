@@ -36,12 +36,14 @@
   * Add capacity parameter to `Touch` defaulting to ten fingers.
   * Pass operands by value, e.g., `Frame`, `Scope`, `Delta`, `Plane`, and `Rigid` of `Clamp`
     methods.
-  * Compute `Orbit` as rotation of a displacement starting at the trackball's pole conjugated by
-    the parallel transport along the geodesic to its actual start position.
+  * Make `Orbit` keep the trackball's point under the cursor/finger by rotating along the shortest
+    arc between the trackball points of previous and current position instead of parallel
+    transporting displacements, e.g., rolling at the trackball's border by the angle the
+    cursor/finger turns around the screen's center.
   * Fix `Orbit` ignoring (Rust) or distorting (C) displacements starting at the screen's center.
-  * Rotate `Orbit` and `First` by displacement length over the same trackball radius that maps
-    start positions, i.e., by a factor of π/2 faster, keeping the trackball's point under the
-    cursor on radial displacements.
+  * Rotate `First` by a factor of π/2 faster matching the trackball radius of `Orbit` which maps
+    the maximum of half the screen's width or height onto a quarter of its circumference.
+  * Return rotations of the C implementation of `Orbit` regardless of how small they are.
   * Use type-generic math of `<tgmath.h>` in C implementation so that `long double` is computed
     in its own precision instead of in `double` precision.
   * Rebuild C implementation of `cc` feature on source changes.
