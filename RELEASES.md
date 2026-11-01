@@ -13,6 +13,12 @@
     (default), `libm`, or `nostd-libm` feature. Use `default-features = false` and `nostd-libm`
     for `no_std` environments.
   * Drop `heapless` in favor of array-based finger positions of `Touch`.
+  * Complete gliding `Clamp` for `Delta::First`, `Delta::Track`, `Delta::Orbit` around arbitrary
+    points, `Delta::Scale`, and up axis bounds.
+  * Stop `Delta` at boundary instead of partially clamping it when `Clamp::loops()` is reached.
+  * Fix `Delta::Track` gliding in world space instead of camera space.
+  * Return `Bound` planes in world space wrt `Bound::transform` and distance planes wrt target.
+  * Define heading of `Bound` up axis by pitch axis which is well-defined at the poles.
   * Use type-generic math of `<tgmath.h>` in C implementation so that `long double` is computed
     in its own precision instead of in `double` precision.
 

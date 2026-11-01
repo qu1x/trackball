@@ -21,9 +21,13 @@ pub struct Bound {
 	pub min_eye: Vec3,
 	/// Maximum components of eye position in world space. Default splats `f32::MAX`.
 	pub max_eye: Vec3,
-	/// Minimum components of up axis in world space following yaw. Default splats `f32::MIN`.
+	/// Minimum components of up axis in bound space following yaw. Default splats `f32::MIN`.
+	///
+	/// See [`Clamp::up()`] implementation of [`Bound`].
 	pub min_up: Vec3,
-	/// Maximum components of up axis in world space following yaw. Default splats `f32::MAX`.
+	/// Maximum components of up axis in bound space following yaw. Default splats `f32::MAX`.
+	///
+	/// See [`Clamp::up()`] implementation of [`Bound`].
 	pub max_up: Vec3,
 	/// Minimum distance of eye from target. Default is `0.0`.
 	pub min_distance: f32,
@@ -62,59 +66,59 @@ impl Clamp for Bound {
 	/// Find any boundary plane exceeded by target position.
 	fn target(&self, frame: &Frame) -> Option<Plane> {
 		let target = self.transform.inverse() * frame.target();
-		let axes = [Vec3::X, Vec3::Y, Vec3::Z];
-		for (distance, axis) in axes.into_iter().enumerate() {
-			let min_plane = Plane::new(axis, self.min_target[distance]);
-			if min_plane.distance_from(target) > self.hysteresis {
-				return Some(min_plane);
-			}
-			let max_plane = Plane::new(axis, self.max_target[distance]);
-			if max_plane.distance_from(target) < -self.hysteresis {
-				return Some(max_plane);
-			}
-		}
-		None
+		self.exceeded(target, self.min_target, self.max_target, Quat::IDENTITY)
+			.map(|plane| plane.transform_by(&self.transform))
 	}
 	/// Find any boundary plane exceeded by eye position.
+	///
+	/// Distance planes are orthogonal to the roll axis at minimum or maximum distance from target.
 	fn eye(&self, frame: &Frame) -> Option<Plane> {
 		let distance = frame.distance();
+		let (target, roll_axis) = (frame.target(), frame.roll_axis());
 		if (self.min_distance - distance) > self.hysteresis {
-			return Some(Plane::new(frame.roll_axis(), self.min_distance));
+			return Some(Plane::with_point(
+				roll_axis,
+				target + roll_axis * self.min_distance,
+			));
 		}
 		if (self.max_distance - distance) < -self.hysteresis {
-			return Some(Plane::new(frame.roll_axis(), self.max_distance));
+			return Some(Plane::with_point(
+				roll_axis,
+				target + roll_axis * self.max_distance,
+			));
 		}
 		let eye = self.transform.inverse() * frame.eye();
-		let axes = [Vec3::X, Vec3::Y, Vec3::Z];
-		for (distance, axis) in axes.into_iter().enumerate() {
-			let min_plane = Plane::new(axis, self.min_eye[distance]);
-			if min_plane.distance_from(eye) > self.hysteresis {
-				return Some(min_plane);
-			}
-			let max_plane = Plane::new(axis, self.max_eye[distance]);
-			if max_plane.distance_from(eye) < -self.hysteresis {
-				return Some(max_plane);
-			}
-		}
-		None
+		self.exceeded(eye, self.min_eye, self.max_eye, Quat::IDENTITY)
+			.map(|plane| plane.transform_by(&self.transform))
 	}
 	/// Find any boundary plane exceeded by up position.
+	///
+	/// Up position is expressed in bound space following yaw, i.e., rotated around y-axis by the
+	/// heading whose x-axis is the horizontal pitch axis. Its y-component bounds the tilt (e.g.,
+	/// `min_up.y = 0.0` prevents turning upside down but allows rolling sideways over the pole)
+	/// whereas its x-component bounds the roll (e.g., `min_up.x = max_up.x = 0.0` prevents rolling
+	/// and stops at the pole like a turntable) and its z-component bounds the forward tilt.
 	fn up(&self, frame: &Frame) -> Option<Plane> {
-		let roll_axis = frame.roll_axis();
-		let yaw = Quat::from_axis_angle(
-			frame.local_yaw_axis(),
-			float::atan2(roll_axis.x, roll_axis.z),
-		);
-		let up = yaw * frame.yaw_axis();
+		let rotation = self.transform.rotation;
+		let pitch_axis = rotation.inverse() * frame.pitch_axis();
+		let heading = Quat::from_rotation_y(float::atan2(-pitch_axis.z, pitch_axis.x));
+		let up = heading.inverse() * rotation.inverse() * frame.yaw_axis();
+		self.exceeded(up, self.min_up, self.max_up, rotation * heading)
+	}
+}
+
+impl Bound {
+	/// Find any boundary plane exceeded by position in bound space and rotate it by `rotation`.
+	fn exceeded(&self, position: Vec3, min: Vec3, max: Vec3, rotation: Quat) -> Option<Plane> {
 		let axes = [Vec3::X, Vec3::Y, Vec3::Z];
-		for (distance, axis) in axes.into_iter().enumerate() {
-			let min_plane = Plane::new(yaw.inverse() * axis, self.min_up[distance]);
-			if min_plane.distance_from(up) > self.hysteresis {
-				return Some(min_plane);
+		for (index, axis) in axes.into_iter().enumerate() {
+			let min_plane = Plane::new(axis, min[index]);
+			if min_plane.distance_from(position) > self.hysteresis {
+				return Some(min_plane.rotate_by(rotation));
 			}
-			let max_plane = Plane::new(yaw.inverse() * axis, self.max_up[distance]);
-			if max_plane.distance_from(up) < -self.hysteresis {
-				return Some(max_plane);
+			let max_plane = Plane::new(axis, max[index]);
+			if max_plane.distance_from(position) < -self.hysteresis {
+				return Some(max_plane.rotate_by(rotation));
 			}
 		}
 		None
