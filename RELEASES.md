@@ -174,7 +174,7 @@
 
 # Version 0.2.3 (2021-04-08)
 
-  * Switch to [BSD-2-Clause-Patent](LICENSES/BSD-2-Clause-Patent.md).
+  * Switch to [BSD-2-Clause-Patent](https://spdx.org/licenses/BSD-2-Clause-Patent.html).
   * Ignore resize events with unchanged screen size.
   * Rephrase `Frame` documentation.
 
