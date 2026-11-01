@@ -62,6 +62,16 @@ screen's center.[^1]
 [`Fixed`]: https://docs.rs/trackball/latest/trackball/enum.Fixed.html
 [`Scope::set_fov()`]: https://docs.rs/trackball/latest/trackball/struct.Scope.html#method.set_fov
 
+## Math Backend
+
+Like `glam`, this crate requires one of the following math backends, forwarded to `glam`:
+
+  * `std` (default) for using the math functions of the standard library.
+  * `libm` for using `libm` instead of `std`, e.g., for consistent results across platforms.
+  * `nostd-libm` for using `libm` only if `std` is disabled, e.g., in `no_std` environments.
+
+This crate is `no_std` with `default-features = false` and `libm` or `nostd-libm` enabled.
+
 ## Optional Features
 
 Following features are disabled unless their corresponding feature gate is enabled:

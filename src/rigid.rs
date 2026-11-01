@@ -1,4 +1,3 @@
-use approx::{AbsDiffEq, RelativeEq, UlpsEq};
 use core::ops::{Mul, MulAssign};
 use glam::{Mat4, Quat, Vec3};
 
@@ -63,6 +62,14 @@ impl Rigid {
 	pub fn to_mat4(&self) -> Mat4 {
 		Mat4::from_rotation_translation(self.rotation, self.translation)
 	}
+	/// Whether all components are approximately equal within absolute difference `max_abs_diff`.
+	#[must_use]
+	pub fn abs_diff_eq(&self, other: &Self, max_abs_diff: f32) -> bool {
+		self.rotation.abs_diff_eq(other.rotation, max_abs_diff)
+			&& self
+				.translation
+				.abs_diff_eq(other.translation, max_abs_diff)
+	}
 }
 
 impl From<Rigid> for Mat4 {
@@ -94,45 +101,5 @@ impl Mul<Vec3> for Rigid {
 	/// Transforms point, see [`Rigid::transform_point()`].
 	fn mul(self, rhs: Vec3) -> Vec3 {
 		self.transform_point(rhs)
-	}
-}
-
-impl AbsDiffEq for Rigid {
-	type Epsilon = f32;
-
-	fn default_epsilon() -> f32 {
-		f32::default_epsilon()
-	}
-
-	fn abs_diff_eq(&self, other: &Self, epsilon: f32) -> bool {
-		self.rotation.abs_diff_eq(other.rotation, epsilon)
-			&& self.translation.abs_diff_eq(other.translation, epsilon)
-	}
-}
-
-impl RelativeEq for Rigid {
-	fn default_max_relative() -> f32 {
-		f32::default_max_relative()
-	}
-
-	fn relative_eq(&self, other: &Self, epsilon: f32, max_relative: f32) -> bool {
-		self.rotation
-			.relative_eq(&other.rotation, epsilon, max_relative)
-			&& self
-				.translation
-				.relative_eq(&other.translation, epsilon, max_relative)
-	}
-}
-
-impl UlpsEq for Rigid {
-	fn default_max_ulps() -> u32 {
-		f32::default_max_ulps()
-	}
-
-	fn ulps_eq(&self, other: &Self, epsilon: f32, max_ulps: u32) -> bool {
-		self.rotation.ulps_eq(&other.rotation, epsilon, max_ulps)
-			&& self
-				.translation
-				.ulps_eq(&other.translation, epsilon, max_ulps)
 	}
 }

@@ -1,8 +1,5 @@
-use crate::{Clamp, Frame, Plane, Rigid};
-use approx::AbsDiffEq;
+use crate::{Clamp, Frame, Plane, Rigid, float};
 use glam::{Quat, Vec3};
-#[cfg_attr(test, allow(unused_imports))]
-use num_traits::Float;
 
 /// Orthogonal boundary conditions implementing [`Clamp`].
 ///
@@ -34,10 +31,9 @@ pub struct Bound {
 	pub max_distance: f32,
 	/// Epsilon allowing clamped [`Delta`] to more likely pass revalidation.
 	///
-	/// Default is <code>[AbsDiffEq::default_epsilon()].sqrt()</code>.
+	/// Default is <code>[f32::EPSILON].sqrt()</code>.
 	///
 	/// [`Delta`]: crate::Delta
-	/// [AbsDiffEq::default_epsilon()]: approx::AbsDiffEq::default_epsilon()
 	pub hysteresis: f32,
 }
 
@@ -45,7 +41,7 @@ impl Default for Bound {
 	fn default() -> Self {
 		Self {
 			transform: Rigid::IDENTITY,
-			hysteresis: f32::default_epsilon().sqrt(),
+			hysteresis: float::sqrt(f32::EPSILON),
 			min_target: Vec3::MIN,
 			max_target: Vec3::MAX,
 			min_eye: Vec3::MIN,
@@ -105,7 +101,10 @@ impl Clamp for Bound {
 	/// Find any boundary plane exceeded by up position.
 	fn up(&self, frame: &Frame) -> Option<Plane> {
 		let roll_axis = frame.roll_axis();
-		let yaw = Quat::from_axis_angle(frame.local_yaw_axis(), roll_axis.x.atan2(roll_axis.z));
+		let yaw = Quat::from_axis_angle(
+			frame.local_yaw_axis(),
+			float::atan2(roll_axis.x, roll_axis.z),
+		);
 		let up = yaw * frame.yaw_axis();
 		let axes = [Vec3::X, Vec3::Y, Vec3::Z];
 		for (distance, axis) in axes.into_iter().enumerate() {

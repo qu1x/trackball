@@ -1,8 +1,6 @@
+use crate::float;
 use core::fmt::Debug;
 use glam::Vec2;
-use heapless::LinearMap;
-#[cfg_attr(test, allow(unused_imports))]
-use num_traits::Float;
 
 /// Touch gestures inducing slide, orbit, scale, and focus.
 ///
@@ -12,8 +10,8 @@ use num_traits::Float;
 /// graphics library of choice.
 #[derive(Debug, Clone, Default)]
 pub struct Touch<F: Debug + Eq> {
-	/// Finger positions in insertion order.
-	pos: LinearMap<F, Vec2, 10>,
+	/// Finger positions of up to ten fingers.
+	pos: Fingers<F>,
 	/// Cached normalization of previous two-finger vector.
 	vec: Option<(Vec2, f32)>,
 	/// Number of fingers and centroid position of potential finger tap gesture.
@@ -86,7 +84,7 @@ impl<F: Debug + Copy + Eq> Touch<F> {
 				// Get old and replace with new vector.
 				if let Some((old_ray, old_len)) = self.vec.replace((new_ray, new_len)) {
 					// Roll angle in opposite direction at centroid.
-					let rot = old_ray.perp_dot(new_ray).atan2(old_ray.dot(new_ray));
+					let rot = float::atan2(old_ray.perp_dot(new_ray), old_ray.dot(new_ray));
 					// Scale ratio at centroid.
 					let rat = old_len / new_len;
 					// Induced two-finger slide, roll, and scale.
@@ -110,7 +108,7 @@ impl<F: Debug + Copy + Eq> Touch<F> {
 	///
 	/// Discards finger positions and tap gesture if generic finger ID `fid` is unknown.
 	pub fn discard(&mut self, fid: F) -> Option<(usize, Vec2)> {
-		let unknown = self.pos.remove(&fid).is_none();
+		let unknown = self.pos.remove(fid).is_none();
 		self.vec = None;
 		if self.pos.is_empty() || unknown {
 			self.pos.clear();
@@ -124,5 +122,49 @@ impl<F: Debug + Copy + Eq> Touch<F> {
 	#[must_use]
 	pub fn fingers(&self) -> usize {
 		self.pos.len()
+	}
+}
+
+/// Finger positions of up to ten fingers in slots filled in order.
+#[derive(Debug, Clone, Default)]
+struct Fingers<F>([Option<(F, Vec2)>; 10]);
+
+impl<F: Copy + Eq> Fingers<F> {
+	/// Inserts or updates finger position and returns old one or `Err` if there are no free slots.
+	fn insert(&mut self, fid: F, pos: Vec2) -> Result<Option<Vec2>, (F, Vec2)> {
+		if let Some((_fid, old_pos)) = self.0.iter_mut().flatten().find(|(id, _pos)| *id == fid) {
+			return Ok(Some(core::mem::replace(old_pos, pos)));
+		}
+		let slot = self
+			.0
+			.iter_mut()
+			.find(|slot| slot.is_none())
+			.ok_or((fid, pos))?;
+		*slot = Some((fid, pos));
+		Ok(None)
+	}
+	/// Removes finger position and returns it.
+	fn remove(&mut self, fid: F) -> Option<Vec2> {
+		let slot = self
+			.0
+			.iter_mut()
+			.find(|slot| slot.is_some_and(|(id, _pos)| id == fid))?;
+		slot.take().map(|(_fid, pos)| pos)
+	}
+	/// Removes all finger positions.
+	const fn clear(&mut self) {
+		self.0 = [None; 10];
+	}
+	/// Finger positions in slot order.
+	fn values(&self) -> impl Iterator<Item = Vec2> {
+		self.0.iter().flatten().map(|&(_fid, pos)| pos)
+	}
+	/// Number of fingers.
+	fn len(&self) -> usize {
+		self.values().count()
+	}
+	/// Whether there are no fingers.
+	fn is_empty(&self) -> bool {
+		self.0.iter().all(Option::is_none)
 	}
 }

@@ -37,14 +37,16 @@ cargo-args = ["-Z", "unstable-options", "-Z", "rustdoc-scrape-examples"]
 rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
-heapless = { version = "0.9.3", default-features = false }
-glam = { version = "0.33.12", default-features = false, features = ["libm", "approx"] }
-approx = { version = "0.5.1", default-features = false }
-num-traits = { version = "0.2.19", default-features = false, features = ["libm"] }
+glam = { version = "0.33.12", default-features = false }
+libm = { version = "0.2.16", optional = true }
 serde = { version = "1.0.228", default-features = false, features = ["derive"], optional = true }
 rkyv = { version = "0.8.10", default-features = false, optional = true }
 
 [features]
+default = ["std"]
+std = ["glam/std"]
+libm = ["dep:libm", "glam/libm"]
+nostd-libm = ["dep:libm", "glam/nostd-libm"]
 serde = ["dep:serde", "glam/serde"]
 rkyv = ["dep:rkyv", "glam/rkyv"]
 

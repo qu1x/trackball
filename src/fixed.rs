@@ -1,7 +1,6 @@
+use crate::float;
 use core::f32::consts::FRAC_PI_4;
 use glam::Vec2;
-#[cfg_attr(test, allow(unused_imports))]
-use num_traits::Float;
 
 /// Fixed quantity wrt field of view.
 ///
@@ -42,8 +41,8 @@ impl Fixed {
 		let two = 2.0;
 		Self::Hor(match self {
 			Self::Hor(fov) => fov,
-			Self::Ver(fov) => (max.x / max.y * (fov / two).tan()).atan() * two,
-			Self::Upp(upp) => (max.x / two * upp).atan() * two,
+			Self::Ver(fov) => float::atan(max.x / max.y * float::tan(fov / two)) * two,
+			Self::Upp(upp) => float::atan(max.x / two * upp) * two,
 		})
 	}
 	/// Converts to fixed vertical field of view wrt maximum position in screen space.
@@ -51,9 +50,9 @@ impl Fixed {
 	pub fn to_ver(self, max: Vec2) -> Self {
 		let two = 2.0;
 		Self::Ver(match self {
-			Self::Hor(fov) => (max.y / max.x * (fov / two).tan()).atan() * two,
+			Self::Hor(fov) => float::atan(max.y / max.x * float::tan(fov / two)) * two,
 			Self::Ver(fov) => fov,
-			Self::Upp(upp) => (max.y / two * upp).atan() * two,
+			Self::Upp(upp) => float::atan(max.y / two * upp) * two,
 		})
 	}
 	/// Converts to fixed unit per pixel on focus plane at distance from eye of one wrt maximum
@@ -62,8 +61,8 @@ impl Fixed {
 	pub fn to_upp(self, max: Vec2) -> Self {
 		let two = 2.0;
 		Self::Upp(match self {
-			Self::Hor(fov) => (fov / two).tan() * two / max.x,
-			Self::Ver(fov) => (fov / two).tan() * two / max.y,
+			Self::Hor(fov) => float::tan(fov / two) * two / max.x,
+			Self::Ver(fov) => float::tan(fov / two) * two / max.y,
 			Self::Upp(upp) => upp,
 		})
 	}
@@ -74,12 +73,12 @@ impl Fixed {
 		let two = 2.0;
 		match *self {
 			Self::Hor(fov) => {
-				let x = zat * (fov / two).tan();
+				let x = zat * float::tan(fov / two);
 				let y = max.y / max.x * x;
 				(Vec2::new(x, y), x * two / max.x)
 			}
 			Self::Ver(fov) => {
-				let y = zat * (fov / two).tan();
+				let y = zat * float::tan(fov / two);
 				let x = max.x / max.y * y;
 				(Vec2::new(x, y), y * two / max.y)
 			}

@@ -8,6 +8,11 @@
   * Fix precision of `Frame::set_target()` for small and nearly opposite target movements.
   * Drop `Plane` conversions from and to `Reflection3`.
   * Bump `rkyv` to version 0.8 deriving its traits.
+  * Drop `approx` in favor of inherent `abs_diff_eq()` methods like `glam`.
+  * Drop `num-traits` in favor of `std` or `libm` math backends selected like `glam` via `std`
+    (default), `libm`, or `nostd-libm` feature. Use `default-features = false` and `nostd-libm`
+    for `no_std` environments.
+  * Drop `heapless` in favor of array-based finger positions of `Touch`.
   * Use type-generic math of `<tgmath.h>` in C implementation so that `long double` is computed
     in its own precision instead of in `double` precision.
 

@@ -1,5 +1,4 @@
 use crate::Rigid;
-use approx::{AbsDiffEq, RelativeEq, UlpsEq};
 use glam::{Quat, Vec3};
 
 /// Plane encoding position with singed bias along unit normal.
@@ -115,7 +114,7 @@ impl Plane {
 	///
 	/// ```
 	/// use core::f32::consts::FRAC_PI_2;
-	/// use trackball::{Plane, Rigid, approx::AbsDiffEq, glam::Vec3};
+	/// use trackball::{Plane, Rigid, glam::Vec3};
 	///
 	/// // Plane intersecting y-axis at `5.0`.
 	/// let plane = Plane::new(Vec3::Y, 5.0)
@@ -133,40 +132,10 @@ impl Plane {
 		self.rotate_by(rigid.rotation)
 			.translate_by(rigid.translation)
 	}
-}
-
-impl AbsDiffEq for Plane {
-	type Epsilon = f32;
-
-	fn default_epsilon() -> f32 {
-		f32::default_epsilon()
-	}
-
-	fn abs_diff_eq(&self, other: &Self, epsilon: f32) -> bool {
-		self.normal.abs_diff_eq(other.normal, epsilon)
-			&& self.bias.abs_diff_eq(&other.bias, epsilon)
-	}
-}
-
-impl RelativeEq for Plane {
-	fn default_max_relative() -> f32 {
-		f32::default_max_relative()
-	}
-
-	fn relative_eq(&self, other: &Self, epsilon: f32, max_relative: f32) -> bool {
-		self.normal
-			.relative_eq(&other.normal, epsilon, max_relative)
-			&& self.bias.relative_eq(&other.bias, epsilon, max_relative)
-	}
-}
-
-impl UlpsEq for Plane {
-	fn default_max_ulps() -> u32 {
-		f32::default_max_ulps()
-	}
-
-	fn ulps_eq(&self, other: &Self, epsilon: f32, max_ulps: u32) -> bool {
-		self.normal.ulps_eq(&other.normal, epsilon, max_ulps)
-			&& self.bias.ulps_eq(&other.bias, epsilon, max_ulps)
+	/// Whether all components are approximately equal within absolute difference `max_abs_diff`.
+	#[must_use]
+	pub fn abs_diff_eq(&self, other: &Self, max_abs_diff: f32) -> bool {
+		self.normal.abs_diff_eq(other.normal, max_abs_diff)
+			&& (self.bias - other.bias).abs() <= max_abs_diff
 	}
 }

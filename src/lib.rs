@@ -31,6 +31,16 @@
 //!   * Converting between [`Fixed`] quantities wrt to field of view, see [`Scope::set_fov()`].
 //!   * Time-free [`Touch`] gesture recognition for slide, orbit, scale, and focus operations.
 //!
+//! # Math Backend
+//!
+//! Like `glam`, this crate requires one of the following math backends, forwarded to `glam`:
+//!
+//!   * `std` (default) for using the math functions of the standard library.
+//!   * `libm` for using `libm` instead of `std`, e.g., for consistent results across platforms.
+//!   * `nostd-libm` for using `libm` only if `std` is disabled, e.g., in `no_std` environments.
+//!
+//! This crate is `no_std` with `default-features = false` and `libm` or `nostd-libm` enabled.
+//!
 //! # Optional Features
 //!
 //! Following features are disabled unless their corresponding feature gate is enabled:
@@ -77,9 +87,17 @@
 
 #![cfg_attr(any(feature = "rkyv", feature = "cc"), deny(unsafe_code))]
 #![cfg_attr(not(any(feature = "rkyv", feature = "cc")), forbid(unsafe_code))]
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 
-pub use approx;
+#[cfg(all(
+	not(feature = "std"),
+	not(feature = "libm"),
+	not(feature = "nostd-libm")
+))]
+compile_error!(
+	"You must specify a math backend. Consider enabling either `std`, `libm`, or `nostd-libm`."
+);
+
 pub use glam;
 
 mod bound;
@@ -87,6 +105,7 @@ mod clamp;
 mod delta;
 mod first;
 mod fixed;
+mod float;
 mod frame;
 mod image;
 mod orbit;

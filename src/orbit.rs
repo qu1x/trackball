@@ -1,10 +1,7 @@
 use glam::{Quat, Vec2, Vec3};
-#[cfg(not(feature = "cc"))]
-#[cfg_attr(test, allow(unused_imports))]
-use num_traits::Float;
 
 #[cfg(not(feature = "cc"))]
-use crate::Image;
+use crate::{Image, float};
 
 /// Orbit induced by displacement on screen.
 ///
@@ -64,7 +61,7 @@ impl Orbit {
 		let max = max.x.max(max.y);
 		// Map trackball's diameter onto half its circumference for start positions so that only
 		// screen corners are mapped to lower hemisphere which induces less intuitive rotations.
-		let (sin, cos) = (off / max * FRAC_PI_2).sin_cos();
+		let (sin, cos) = float::sin_cos(off / max * FRAC_PI_2);
 		// Exponential map of start position.
 		let exp = Vec3::new(sin * pos.x, sin * pos.y, cos);
 		// Tangent ray of geodesic at exponential map.

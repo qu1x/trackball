@@ -1,9 +1,6 @@
-use crate::Rigid;
-use approx::{AbsDiffEq, RelativeEq, UlpsEq};
+use crate::{Rigid, float};
 use core::f32::consts::PI;
 use glam::{Quat, Vec3, camera::rh::view::look_to_quat};
-#[cfg_attr(test, allow(unused_imports))]
-use num_traits::Float;
 
 /// Frame wrt camera eye and target.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
@@ -54,7 +51,7 @@ impl Frame {
 		let (new_dir, zat) = (pos - eye).normalize_and_length();
 		let old_dir = (self.pos - eye).normalize();
 		// Rotate about yaw axis first if nearly opposite to preserve roll attitude and precision.
-		let yaw = if old_dir.dot(new_dir) < f32::EPSILON.sqrt() - 1.0 {
+		let yaw = if old_dir.dot(new_dir) < float::sqrt(f32::EPSILON) - 1.0 {
 			Quat::from_axis_angle(self.yaw_axis(), PI)
 		} else {
 			Quat::IDENTITY
@@ -172,7 +169,7 @@ impl Frame {
 		Self {
 			pos: self.pos.lerp(other.pos, t),
 			rot: self.rot.slerp(other.rot, t),
-			zat: self.zat * (1.0 - t) + other.zat * t,
+			zat: float::mul_add(other.zat, t, self.zat * (1.0 - t)),
 		}
 	}
 	/// Renormalizes eye rotation and returns its norm.
@@ -203,42 +200,11 @@ impl Frame {
 		// Translate in such a way that the eye position with origin in world space vanishes.
 		Rigid::from_parts(-eye, rot)
 	}
-}
-
-impl AbsDiffEq for Frame {
-	type Epsilon = f32;
-
-	fn default_epsilon() -> f32 {
-		f32::default_epsilon()
-	}
-
-	fn abs_diff_eq(&self, other: &Self, epsilon: f32) -> bool {
-		self.pos.abs_diff_eq(other.pos, epsilon)
-			&& self.rot.abs_diff_eq(other.rot, epsilon)
-			&& self.zat.abs_diff_eq(&other.zat, epsilon)
-	}
-}
-
-impl RelativeEq for Frame {
-	fn default_max_relative() -> f32 {
-		f32::default_max_relative()
-	}
-
-	fn relative_eq(&self, other: &Self, epsilon: f32, max_relative: f32) -> bool {
-		self.pos.relative_eq(&other.pos, epsilon, max_relative)
-			&& self.rot.relative_eq(&other.rot, epsilon, max_relative)
-			&& self.zat.relative_eq(&other.zat, epsilon, max_relative)
-	}
-}
-
-impl UlpsEq for Frame {
-	fn default_max_ulps() -> u32 {
-		f32::default_max_ulps()
-	}
-
-	fn ulps_eq(&self, other: &Self, epsilon: f32, max_ulps: u32) -> bool {
-		self.pos.ulps_eq(&other.pos, epsilon, max_ulps)
-			&& self.rot.ulps_eq(&other.rot, epsilon, max_ulps)
-			&& self.zat.ulps_eq(&other.zat, epsilon, max_ulps)
+	/// Whether all components are approximately equal within absolute difference `max_abs_diff`.
+	#[must_use]
+	pub fn abs_diff_eq(&self, other: &Self, max_abs_diff: f32) -> bool {
+		self.pos.abs_diff_eq(other.pos, max_abs_diff)
+			&& self.rot.abs_diff_eq(other.rot, max_abs_diff)
+			&& (self.zat - other.zat).abs() <= max_abs_diff
 	}
 }

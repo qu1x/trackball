@@ -1,9 +1,6 @@
-use crate::{Delta, Frame, Plane, Scope};
-use approx::AbsDiffEq;
+use crate::{Delta, Frame, Plane, Scope, float};
 use core::fmt::Debug;
 use glam::{Quat, Vec3};
-#[cfg_attr(test, allow(unused_imports))]
-use num_traits::Float;
 
 /// Clamp wrt abstract boundary conditions of [`Frame`] and [`Scope`].
 ///
@@ -76,7 +73,7 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 						// Height of spherical cap.
 						let height = distance - (center - eye).length();
 						// Radius of spherical cap.
-						let radius = (height * (distance * 2.0 - height)).sqrt();
+						let radius = float::sqrt(height * float::mul_add(distance, 2.0, -height));
 						// New clamped target position in spherical cap space.
 						let new_target =
 							(plane.project_point(frame.target()) - center).normalize() * radius;
@@ -174,7 +171,7 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 						// Height of spherical cap.
 						let height = distance - (center - target).length();
 						// Radius of spherical cap.
-						let radius = (height * (distance * 2.0 - height)).sqrt();
+						let radius = float::sqrt(height * float::mul_add(distance, 2.0, -height));
 						// New clamped eye position in spherical cap space.
 						let new_eye =
 							(plane.project_point(frame.eye()) - center).normalize() * radius;
@@ -187,7 +184,7 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 						// identity unlike `Quat::from_rotation_arc()`.
 						let rot = match (old_eye.try_normalize(), new_eye.try_normalize()) {
 							(Some(old_ray), Some(new_ray))
-								if old_ray.dot(new_ray) >= 2.0 * f32::EPSILON - 1.0 =>
+								if 1.0 + old_ray.dot(new_ray) >= 2.0 * f32::EPSILON =>
 							{
 								let axis = old_ray.cross(new_ray);
 								let w = 1.0 + old_ray.dot(new_ray);
@@ -262,7 +259,7 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 					}
 					if scope.scale() {
 						let (znear, _zfar) = scope.clip_planes(0.0);
-						let min_zat = -znear * (1.0 + f32::default_epsilon().sqrt());
+						let min_zat = -znear * (1.0 + float::sqrt(f32::EPSILON));
 						let new_zat = old_zat * rat;
 						if new_zat < min_zat {
 							bound = true;

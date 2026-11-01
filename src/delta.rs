@@ -1,7 +1,7 @@
 // Generated `rkyv` resolver lacks docs of its variant fields.
 #![cfg_attr(feature = "rkyv", allow(missing_docs))]
 
-use crate::Frame;
+use crate::{Frame, float};
 use glam::{Quat, Vec3};
 
 /// Delta transform from initial to final [`Frame`].
@@ -134,7 +134,7 @@ impl Delta {
 			},
 			Self::Slide { vec } => Self::Slide { vec: vec * t },
 			Self::Scale { rat, pos } => Self::Scale {
-				rat: (rat - 1.0) * t + 1.0,
+				rat: float::mul_add(rat - 1.0, t, 1.0),
 				pos,
 			},
 		}
