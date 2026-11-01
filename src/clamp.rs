@@ -321,31 +321,39 @@ fn arc(from: Vec3, to: Vec3) -> Quat {
 
 /// Decomposes rotation of target around eye into pitch and yaw of [`Delta::First`].
 ///
-/// Pitch is the change of elevation in the vertical plane spanned by `yaw_axis` and the forward
-/// direction orthogonal to the pitch axis. Yaw is the remaining change of azimuth around
-/// `yaw_axis`. Returns `None` if the new target coincides with the eye.
+/// Pitch is the rotation around the pitch axis bringing the old target to the height of the new
+/// target along `yaw_axis`, which yaw preserves. Yaw is the remaining change of azimuth around
+/// `yaw_axis`. The pitch axis is not necessarily orthogonal to `yaw_axis`, e.g., when `yaw_axis` is
+/// captured from another camera of a constellation. If the height is out of reach, pitch gets as
+/// close as possible. Returns `None` if the new target coincides with the eye.
 fn look_around(frame: Frame, yaw_axis: Vec3, new_target: Vec3) -> Option<(f32, f32)> {
     let eye = frame.eye();
     let old_ray = (frame.target() - eye).try_normalize()?;
     let new_ray = (new_target - eye).try_normalize()?;
-    // Horizontal forward direction orthogonal to pitch axis, defined even when looking straight
-    // up or down.
-    let forward = yaw_axis.cross(frame.pitch_axis()).normalize();
-    // Signed elevation of old target from yaw axis within vertical plane.
-    let old_elevation = float::atan2(old_ray.dot(forward), old_ray.dot(yaw_axis));
+    let pitch_axis = frame.pitch_axis();
+    // Height of ray pitched by angle is `cos * angle.cos() + sin * angle.sin()`.
+    let cos = old_ray.dot(yaw_axis);
+    let sin = pitch_axis.cross(old_ray).dot(yaw_axis);
+    let square = float::mul_add(cos, cos, sin * sin);
+    let radius = float::sqrt(square);
+    let height = new_ray.dot(yaw_axis).clamp(-radius, radius);
+    // Signed elevation of old target from yaw axis.
+    let old_elevation = float::atan2(sin, cos);
     // Elevation of new target from yaw axis on same side as old target.
-    let horizontal = new_ray - yaw_axis * new_ray.dot(yaw_axis);
-    let new_elevation =
-        float::atan2(horizontal.length(), new_ray.dot(yaw_axis)).copysign(old_elevation);
+    let new_elevation = float::atan2(
+        float::sqrt(float::mul_add(height, -height, square).max(0.0)),
+        height,
+    )
+    .copysign(old_elevation);
     // Rotating by positive pitch around pitch axis decreases elevation.
     let pitch = old_elevation - new_elevation;
-    // Remaining azimuth from pitched forward direction to new target around yaw axis.
-    let yaw = horizontal.try_normalize().map_or(0.0, |horizontal| {
-        let forward = forward * new_elevation.signum();
-        float::atan2(
-            yaw_axis.dot(forward.cross(horizontal)),
-            forward.dot(horizontal),
-        )
-    });
+    // Remaining azimuth from pitched to new target around yaw axis.
+    let pitched = Quat::from_axis_angle(pitch_axis, pitch) * old_ray;
+    let horizontal = |ray: Vec3| (ray - yaw_axis * ray.dot(yaw_axis)).try_normalize();
+    let yaw = horizontal(pitched)
+        .zip(horizontal(new_ray))
+        .map_or(0.0, |(from, to)| {
+            float::atan2(yaw_axis.dot(from.cross(to)), from.dot(to))
+        });
     Some((pitch, yaw))
 }

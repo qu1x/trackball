@@ -87,6 +87,36 @@ fn first_glides_target_along_ground() {
 }
 
 #[test]
+fn first_glides_with_yaw_axis_of_other_camera() {
+    let bound = ground();
+    let mut frame = Frame::look_at(Vec3::new(0.0, 2.0, 8.0), Vec3::new(0.0, 1.0, 0.0), Vec3::Y);
+    let eye = frame.eye();
+    // Pitch axis is not orthogonal to yaw axis captured from another camera of a constellation.
+    let yaw_axis = Quat::from_rotation_z(0.2) * frame.yaw_axis();
+    assert!(frame.pitch_axis().dot(yaw_axis).abs() > 0.1);
+    let delta = Delta::First {
+        pitch: -0.02,
+        yaw: 0.01,
+        yaw_axis,
+    };
+    let mut targets = Vec::new();
+    for _ in 0..200 {
+        let loops;
+        (frame, loops) = step(&bound, frame, delta);
+        assert!(loops < bound.loops(), "stopped instead of gliding");
+        assert_inside(&bound, frame);
+        assert!(frame.eye().distance(eye) < TOL);
+        if frame.target().y < TOL {
+            targets.push(frame.target());
+        }
+    }
+    assert!(targets.len() > 100);
+    assert!(targets.iter().all(|target| target.y.abs() < TOL));
+    assert!(targets.first().unwrap().distance(*targets.last().unwrap()) > 1.0);
+    assert_smooth(&targets);
+}
+
+#[test]
 fn first_stops_at_vertical_with_up_bound() {
     let mut bound = Bound::default();
     bound.min_up.y = 0.0;
