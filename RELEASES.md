@@ -26,6 +26,7 @@
   * Define heading of `Bound` up axis by pitch axis which is well-defined at the poles.
   * Fix `Delta::inverse()` of `Delta::Scale` by inverting ratio and scaling point.
   * Fix `Plane::project_vector()` and `Plane::project_axis()` to disregard bias.
+  * Fix precision of `Plane::angle_between()` for small and nearly opposite angles.
   * Replace `rkyv` feature with `rkyv-08` feature forwarding to `glam/rkyv-08` as `glam/rkyv` is
     deprecated.
   * Mark `Delta` as non-exhaustive and rename its fields to `rotation`, `point`, `vector`, and

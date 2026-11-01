@@ -1,4 +1,4 @@
-use crate::Rigid;
+use crate::{Rigid, float};
 use glam::{Quat, Vec3};
 
 /// Plane encoding position with signed bias along unit normal.
@@ -85,15 +85,11 @@ impl Plane {
 		vector - self.normal * self.normal.dot(vector)
 	}
 	/// Signed angle from `a` to `b` where both vectors are in the plane.
+	///
+	/// Unlike `Vec3::angle_between()`, small and nearly opposite angles are precise.
 	#[must_use]
 	pub fn angle_between(&self, a: Vec3, b: Vec3) -> f32 {
-		let angle = a.angle_between(b);
-		let axis = a.cross(b);
-		if self.normal.dot(axis).is_sign_negative() {
-			-angle
-		} else {
-			angle
-		}
+		float::atan2(self.normal.dot(a.cross(b)), a.dot(b))
 	}
 	/// Rotates plane.
 	#[must_use]
