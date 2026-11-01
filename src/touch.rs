@@ -11,119 +11,119 @@ use glam::Vec2;
 /// graphics library of choice.
 #[derive(Debug, Clone, Default)]
 pub struct Touch<F: Debug + Eq, const N: usize = 10> {
-	/// Finger positions of up to `N` fingers.
-	pos: Fingers<F, N>,
-	/// Cached normalization of previous two-finger vector.
-	vec: Option<(Vec2, f32)>,
-	/// Number of fingers and centroid position of potential finger tap gesture.
-	tap: Option<(usize, Vec2)>,
-	/// Number of total finger moves per potential finger tap gesture.
-	mvs: usize,
+    /// Finger positions of up to `N` fingers.
+    pos: Fingers<F, N>,
+    /// Cached normalization of previous two-finger vector.
+    vec: Option<(Vec2, f32)>,
+    /// Number of fingers and centroid position of potential finger tap gesture.
+    tap: Option<(usize, Vec2)>,
+    /// Number of total finger moves per potential finger tap gesture.
+    mvs: usize,
 }
 
 impl<F: Debug + Copy + Eq, const N: usize> Touch<F, N> {
-	/// Computes centroid position, roll angle, and scale ratio from finger gestures.
-	///
-	/// Parameters are:
-	///
-	///   * `fid` as generic finger ID like `Some(id)` for touch and `None` for mouse events,
-	///   * `pos` as current cursor/finger position in screen space,
-	///   * `mvs` as number of finger moves for debouncing potential finger tap gesture with zero
-	///     resulting in no delay of non-tap gestures while tap gesture can still be recognized. Use
-	///     zero unless tap gestures are hardly recognized.
-	///
-	/// Returns number of fingers, centroid position, roll angle, and scale ratio in screen space in
-	/// the order mentioned or `None` when debouncing tap gesture with non-vanishing `mvs`. See
-	/// [`Self::discard()`] for tap gesture result.
-	///
-	/// # Panics
-	///
-	/// Panics with more than `N` fingers.
-	pub fn compute(&mut self, fid: F, pos: Vec2, mvs: usize) -> Option<(usize, Vec2, f32, f32)> {
-		// Insert or update finger position.
-		let old_pos = self.pos.insert(fid, pos).expect("Too many fingers");
-		// Ignore events of unchanged finger position.
-		if old_pos == Some(pos) {
-			return None;
-		}
-		// Current number of fingers.
-		let num = self.pos.len();
-		// Maximum number of fingers seen per potential tap.
-		let max = self.tap.map_or(1, |(tap, _pos)| tap).max(num);
-		// Centroid position.
-		#[allow(clippy::cast_precision_loss)]
-		let pos = self.pos.values().sum::<Vec2>() / num as f32;
-		// Cancel potential tap if more moves than number of finger starts plus optional number of
-		// moves per finger for debouncing tap gesture. Debouncing would delay non-tap gestures.
-		if self.mvs >= max + mvs * max {
-			// Make sure to not resume cancelled tap when fingers are discarded.
-			self.mvs = usize::MAX;
-			// Cancel potential tap.
-			self.tap = None;
-		} else {
-			// Count total moves per potential tap.
-			self.mvs += 1;
-			// Insert or update potential tap as long as fingers are not discarded.
-			if num >= max {
-				self.tap = Some((num, pos));
-			}
-		}
-		// Inhibit finger gestures for given number of moves per finger. No delay with zero `mvs`.
-		if self.mvs >= mvs * max {
-			// Identity roll angle and scale ratio.
-			let (rot, rat) = (0.0, 1.0);
-			// Roll and scale only with two-finger gesture, otherwise orbit or slide via centroid.
-			if num == 2 {
-				// Position of first and second finger.
-				let mut val = self.pos.values();
-				let one_pos = val.next().unwrap();
-				let two_pos = val.next().unwrap();
-				// Ray and its length pointing from first to second finger.
-				let new_vec = two_pos - one_pos;
-				let new_len = new_vec.length();
-				let new_ray = new_vec / new_len;
-				// Get old and replace with new vector.
-				if let Some((old_ray, old_len)) = self.vec.replace((new_ray, new_len)) {
-					// Roll angle in opposite direction at centroid.
-					let rot = float::atan2(old_ray.perp_dot(new_ray), old_ray.dot(new_ray));
-					// Scale ratio at centroid.
-					let rat = old_len / new_len;
-					// Induced two-finger slide, roll, and scale.
-					Some((num, pos, rot, rat))
-				} else {
-					// Start position of slide.
-					Some((num, pos, rot, rat))
-				}
-			} else {
-				// Induced one-finger or more than two-finger orbit or slide.
-				Some((num, pos, rot, rat))
-			}
-		} else {
-			// Gesture inhibited.
-			None
-		}
-	}
-	/// Removes finger position and returns number of fingers and centroid position of tap gesture.
-	///
-	/// Returns `None` as long as there are finger positions or no tap gesture has been recognized.
-	///
-	/// Discards finger positions and tap gesture if generic finger ID `fid` is unknown.
-	pub fn discard(&mut self, fid: F) -> Option<(usize, Vec2)> {
-		let unknown = self.pos.remove(fid).is_none();
-		self.vec = None;
-		if self.pos.is_empty() || unknown {
-			self.pos.clear();
-			self.mvs = 0;
-			self.tap.take().filter(|_tap| !unknown)
-		} else {
-			None
-		}
-	}
-	/// Number of fingers.
-	#[must_use]
-	pub fn fingers(&self) -> usize {
-		self.pos.len()
-	}
+    /// Computes centroid position, roll angle, and scale ratio from finger gestures.
+    ///
+    /// Parameters are:
+    ///
+    ///   * `fid` as generic finger ID like `Some(id)` for touch and `None` for mouse events,
+    ///   * `pos` as current cursor/finger position in screen space,
+    ///   * `mvs` as number of finger moves for debouncing potential finger tap gesture with zero
+    ///     resulting in no delay of non-tap gestures while tap gesture can still be recognized. Use
+    ///     zero unless tap gestures are hardly recognized.
+    ///
+    /// Returns number of fingers, centroid position, roll angle, and scale ratio in screen space in
+    /// the order mentioned or `None` when debouncing tap gesture with non-vanishing `mvs`. See
+    /// [`Self::discard()`] for tap gesture result.
+    ///
+    /// # Panics
+    ///
+    /// Panics with more than `N` fingers.
+    pub fn compute(&mut self, fid: F, pos: Vec2, mvs: usize) -> Option<(usize, Vec2, f32, f32)> {
+        // Insert or update finger position.
+        let old_pos = self.pos.insert(fid, pos).expect("Too many fingers");
+        // Ignore events of unchanged finger position.
+        if old_pos == Some(pos) {
+            return None;
+        }
+        // Current number of fingers.
+        let num = self.pos.len();
+        // Maximum number of fingers seen per potential tap.
+        let max = self.tap.map_or(1, |(tap, _pos)| tap).max(num);
+        // Centroid position.
+        #[allow(clippy::cast_precision_loss)]
+        let pos = self.pos.values().sum::<Vec2>() / num as f32;
+        // Cancel potential tap if more moves than number of finger starts plus optional number of
+        // moves per finger for debouncing tap gesture. Debouncing would delay non-tap gestures.
+        if self.mvs >= max + mvs * max {
+            // Make sure to not resume cancelled tap when fingers are discarded.
+            self.mvs = usize::MAX;
+            // Cancel potential tap.
+            self.tap = None;
+        } else {
+            // Count total moves per potential tap.
+            self.mvs += 1;
+            // Insert or update potential tap as long as fingers are not discarded.
+            if num >= max {
+                self.tap = Some((num, pos));
+            }
+        }
+        // Inhibit finger gestures for given number of moves per finger. No delay with zero `mvs`.
+        if self.mvs >= mvs * max {
+            // Identity roll angle and scale ratio.
+            let (rot, rat) = (0.0, 1.0);
+            // Roll and scale only with two-finger gesture, otherwise orbit or slide via centroid.
+            if num == 2 {
+                // Position of first and second finger.
+                let mut val = self.pos.values();
+                let one_pos = val.next().unwrap();
+                let two_pos = val.next().unwrap();
+                // Ray and its length pointing from first to second finger.
+                let new_vec = two_pos - one_pos;
+                let new_len = new_vec.length();
+                let new_ray = new_vec / new_len;
+                // Get old and replace with new vector.
+                if let Some((old_ray, old_len)) = self.vec.replace((new_ray, new_len)) {
+                    // Roll angle in opposite direction at centroid.
+                    let rot = float::atan2(old_ray.perp_dot(new_ray), old_ray.dot(new_ray));
+                    // Scale ratio at centroid.
+                    let rat = old_len / new_len;
+                    // Induced two-finger slide, roll, and scale.
+                    Some((num, pos, rot, rat))
+                } else {
+                    // Start position of slide.
+                    Some((num, pos, rot, rat))
+                }
+            } else {
+                // Induced one-finger or more than two-finger orbit or slide.
+                Some((num, pos, rot, rat))
+            }
+        } else {
+            // Gesture inhibited.
+            None
+        }
+    }
+    /// Removes finger position and returns number of fingers and centroid position of tap gesture.
+    ///
+    /// Returns `None` as long as there are finger positions or no tap gesture has been recognized.
+    ///
+    /// Discards finger positions and tap gesture if generic finger ID `fid` is unknown.
+    pub fn discard(&mut self, fid: F) -> Option<(usize, Vec2)> {
+        let unknown = self.pos.remove(fid).is_none();
+        self.vec = None;
+        if self.pos.is_empty() || unknown {
+            self.pos.clear();
+            self.mvs = 0;
+            self.tap.take().filter(|_tap| !unknown)
+        } else {
+            None
+        }
+    }
+    /// Number of fingers.
+    #[must_use]
+    pub fn fingers(&self) -> usize {
+        self.pos.len()
+    }
 }
 
 /// Finger positions of up to `N` fingers in slots filled in order.
@@ -131,47 +131,47 @@ impl<F: Debug + Copy + Eq, const N: usize> Touch<F, N> {
 struct Fingers<F, const N: usize>([Option<(F, Vec2)>; N]);
 
 impl<F, const N: usize> Default for Fingers<F, N> {
-	fn default() -> Self {
-		Self([const { None }; N])
-	}
+    fn default() -> Self {
+        Self([const { None }; N])
+    }
 }
 
 impl<F: Copy + Eq, const N: usize> Fingers<F, N> {
-	/// Inserts or updates finger position and returns old one or `Err` if there are no free slots.
-	fn insert(&mut self, fid: F, pos: Vec2) -> Result<Option<Vec2>, (F, Vec2)> {
-		if let Some((_fid, old_pos)) = self.0.iter_mut().flatten().find(|(id, _pos)| *id == fid) {
-			return Ok(Some(core::mem::replace(old_pos, pos)));
-		}
-		let slot = self
-			.0
-			.iter_mut()
-			.find(|slot| slot.is_none())
-			.ok_or((fid, pos))?;
-		*slot = Some((fid, pos));
-		Ok(None)
-	}
-	/// Removes finger position and returns it.
-	fn remove(&mut self, fid: F) -> Option<Vec2> {
-		let slot = self
-			.0
-			.iter_mut()
-			.find(|slot| slot.is_some_and(|(id, _pos)| id == fid))?;
-		slot.take().map(|(_fid, pos)| pos)
-	}
-	/// Removes all finger positions.
-	const fn clear(&mut self) {
-		self.0 = [None; N];
-	}
-	/// Finger positions in slot order.
-	fn values(&self) -> impl Iterator<Item = Vec2> {
-		self.0.iter().flatten().map(|&(_fid, pos)| pos)
-	}
-	/// Number of fingers.
-	fn len(&self) -> usize {
-		self.values().count()
-	}
-	/// Whether there are no fingers.
-	fn is_empty(&self) -> bool {
-		self.0.iter().all(Option::is_none)
-	}
+    /// Inserts or updates finger position and returns old one or `Err` if there are no free slots.
+    fn insert(&mut self, fid: F, pos: Vec2) -> Result<Option<Vec2>, (F, Vec2)> {
+        if let Some((_fid, old_pos)) = self.0.iter_mut().flatten().find(|(id, _pos)| *id == fid) {
+            return Ok(Some(core::mem::replace(old_pos, pos)));
+        }
+        let slot = self
+            .0
+            .iter_mut()
+            .find(|slot| slot.is_none())
+            .ok_or((fid, pos))?;
+        *slot = Some((fid, pos));
+        Ok(None)
+    }
+    /// Removes finger position and returns it.
+    fn remove(&mut self, fid: F) -> Option<Vec2> {
+        let slot = self
+            .0
+            .iter_mut()
+            .find(|slot| slot.is_some_and(|(id, _pos)| id == fid))?;
+        slot.take().map(|(_fid, pos)| pos)
+    }
+    /// Removes all finger positions.
+    const fn clear(&mut self) {
+        self.0 = [None; N];
+    }
+    /// Finger positions in slot order.
+    fn values(&self) -> impl Iterator<Item = Vec2> {
+        self.0.iter().flatten().map(|&(_fid, pos)| pos)
+    }
+    /// Number of fingers.
+    fn len(&self) -> usize {
+        self.values().count()
+    }
+    /// Whether there are no fingers.
+    fn is_empty(&self) -> bool {
+        self.0.iter().all(Option::is_none)
+    }
 }

@@ -64,29 +64,29 @@
 //!
 //! /// Trackball camera mode.
 //! pub struct Trackball {
-//! 	// Frame wrt camera eye and target.
-//! 	frame: Frame,
-//! 	// Image as projection of `Scope` wrt `Frame`.
-//! 	image: Image,
-//! 	// Orbit induced by displacement on screen.
-//! 	orbit: Orbit,
+//!     // Frame wrt camera eye and target.
+//!     frame: Frame,
+//!     // Image as projection of `Scope` wrt `Frame`.
+//!     image: Image,
+//!     // Orbit induced by displacement on screen.
+//!     orbit: Orbit,
 //! }
 //!
 //! impl Trackball {
-//! 	// Usually, a cursor position event with left mouse button being pressed.
-//! 	fn handle_left_button_displacement(&mut self, pos: Vec2) {
-//! 		// Maximum position as screen's width and height.
-//! 		let max = self.image.max();
-//! 		// Induced rotation in camera space.
-//! 		let rot = self.orbit.compute(pos, max).unwrap_or_default();
-//! 		// Apply induced rotation to local observer frame.
-//! 		self.frame.local_orbit(rot);
-//! 	}
-//! 	// Event when left mouse button is released again.
-//! 	fn handle_left_button_release(&mut self) {
-//! 		// Can also or instead be invoked on `Self::handle_left_button_press()`.
-//! 		self.orbit.discard();
-//! 	}
+//!     // Usually, a cursor position event with left mouse button being pressed.
+//!     fn handle_left_button_displacement(&mut self, pos: Vec2) {
+//!         // Maximum position as screen's width and height.
+//!         let max = self.image.max();
+//!         // Induced rotation in camera space.
+//!         let rot = self.orbit.compute(pos, max).unwrap_or_default();
+//!         // Apply induced rotation to local observer frame.
+//!         self.frame.local_orbit(rot);
+//!     }
+//!     // Event when left mouse button is released again.
+//!     fn handle_left_button_release(&mut self) {
+//!         // Can also or instead be invoked on `Self::handle_left_button_press()`.
+//!         self.orbit.discard();
+//!     }
 //! }
 //! ```
 
@@ -95,12 +95,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(all(
-	not(feature = "std"),
-	not(feature = "libm"),
-	not(feature = "nostd-libm")
+    not(feature = "std"),
+    not(feature = "libm"),
+    not(feature = "nostd-libm")
 ))]
 compile_error!(
-	"You must specify a math backend. Consider enabling either `std`, `libm`, or `nostd-libm`."
+    "You must specify a math backend. Consider enabling either `std`, `libm`, or `nostd-libm`."
 );
 
 pub use glam;
