@@ -46,7 +46,7 @@
 //! Following features are disabled unless their corresponding feature gate is enabled:
 //!
 //!   * `serde` for `serde` support of various structures of this crate and its dependencies.
-//!   * `rkyv` for `rkyv` support of various structures of this crate and its dependencies.
+//!   * `rkyv-08` for `rkyv` 0.8 support of various structures of this crate and its dependencies.
 //!   * `cc` for testing the behaviorally identical C implementation of the exponential map.
 //!
 //! # Example
@@ -85,8 +85,8 @@
 //! }
 //! ```
 
-#![cfg_attr(any(feature = "rkyv", feature = "cc"), deny(unsafe_code))]
-#![cfg_attr(not(any(feature = "rkyv", feature = "cc")), forbid(unsafe_code))]
+#![cfg_attr(any(feature = "rkyv-08", feature = "cc"), deny(unsafe_code))]
+#![cfg_attr(not(any(feature = "rkyv-08", feature = "cc")), forbid(unsafe_code))]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(all(

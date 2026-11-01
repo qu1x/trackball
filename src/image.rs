@@ -5,8 +5,9 @@ use glam::{Mat4, Vec2, Vec3};
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+	feature = "rkyv-08",
+	derive(rkyv_08::Archive, rkyv_08::Serialize, rkyv_08::Deserialize),
+	rkyv(crate = rkyv_08)
 )]
 pub struct Image {
 	/// Current position in screen space of hovering input or pointing device.
@@ -15,13 +16,13 @@ pub struct Image {
 	max: Vec2,
 	/// Cached unit per pixel on focus plane to scale/project positions/vectors onto focus plane.
 	upp: f32,
-	/// Cached previous frame.
-	frame: Frame,
-	/// Cached previous scope.
-	scope: Scope,
-	/// Cached view isometry from world to camera space coinciding with right-handed look-at space.
-	view_iso: Rigid,
-	/// Cached homogeneous view matrix computed from view isometry.
+	/// Cached previous frame or `None` to recompute view.
+	frame: Option<Frame>,
+	/// Cached previous scope or `None` to recompute projection.
+	scope: Option<Scope>,
+	/// Cached view transformation from camera to world space or inversely if passive.
+	view_rigid: Rigid,
+	/// Cached homogeneous view matrix computed from view transformation.
 	view_mat: Mat4,
 	/// Cached scale-identical orthographic or perspective projection matrix.
 	proj_mat: Mat4,
@@ -40,14 +41,14 @@ pub struct Image {
 impl Image {
 	/// Computes initial transformations from frame, scope, and screen's width and height.
 	#[must_use]
-	pub fn new(frame: &Frame, scope: &Scope, max: Vec2) -> Self {
+	pub fn new(frame: Frame, scope: Scope, max: Vec2) -> Self {
 		let mut image = Self {
 			pos: Vec2::ZERO,
 			max,
 			upp: 0.0,
-			frame: *frame,
-			scope: *scope,
-			view_iso: Rigid::IDENTITY,
+			frame: None,
+			scope: None,
+			view_rigid: Rigid::IDENTITY,
 			view_mat: Mat4::ZERO,
 			proj_mat: Mat4::ZERO,
 			proj_view_mat: Mat4::ZERO,
@@ -57,35 +58,41 @@ impl Image {
 			use_passive: false,
 		};
 		if frame.distance() != 0.0 {
-			image.compute_view(frame);
-			image.compute_projection_and_upp(frame.distance(), scope);
-			image.compute_transformation();
-			image.compute_inverse_transformation();
+			image.compute(frame, scope);
 		}
 		image
 	}
 	/// Recomputes only cached matrices whose parameters have changed, see [`Self::set_compute()`].
 	///
 	/// Returns `Some(true)` on success, `Some(false)` on failure, and `None` with no changes.
-	#[allow(clippy::useless_let_if_seq, clippy::float_cmp)]
 	pub fn compute(&mut self, frame: Frame, scope: Scope) -> Option<bool> {
-		let mut compute = false;
-		if self.frame != frame {
-			self.compute_view(&frame);
-			compute = true;
+		let new_view = self.frame != Some(frame);
+		let new_projection = self.frame.map(|frame| frame.distance()) != Some(frame.distance())
+			|| self.scope != Some(scope);
+		self.frame = Some(frame);
+		self.scope = Some(scope);
+		if new_view {
+			self.view_rigid = if self.use_passive {
+				frame.inverse_view()
+			} else {
+				frame.view()
+			};
+			self.view_mat = self.view_rigid.into();
 		}
-		if self.frame.distance() != frame.distance() || self.scope != scope {
-			self.compute_projection_and_upp(frame.distance(), &scope);
-			compute = true;
+		if new_projection {
+			(self.proj_mat, self.upp) = scope.projection_and_upp(frame.distance(), self.max);
 		}
-		self.frame = frame;
-		self.scope = scope;
-		compute.then(|| {
+		(new_view || new_projection).then(|| {
 			if self.compute_mat || self.compute_inv {
-				self.compute_transformation();
+				self.proj_view_mat = self.proj_mat * self.view_mat;
 			}
 			if self.compute_inv {
-				self.compute_inverse_transformation()
+				let det = self.proj_view_mat.determinant();
+				let inv = det != 0.0 && det.is_finite();
+				if inv {
+					self.proj_view_inv = self.proj_view_mat.inverse();
+				}
+				inv
 			} else {
 				true
 			}
@@ -93,15 +100,23 @@ impl Image {
 	}
 	/// Sets whether to compute transformation and inverse transformation with [`Self::compute()`].
 	///
-	/// Default is `(true, true)`.
+	/// Default is `(true, true)`. Takes effect with next [`Self::compute()`].
 	pub const fn set_compute(&mut self, compute_mat: bool, compute_inv: bool) {
+		// Let `Self::compute()` recompute transformations by invalidating cached previous scope.
+		if self.compute_mat != compute_mat || self.compute_inv != compute_inv {
+			self.scope = None;
+		}
 		self.compute_mat = compute_mat;
 		self.compute_inv = compute_inv;
 	}
 	/// Sets whether to use passive transformations.
 	///
-	/// Default is `false`.
+	/// Default is `false`. Takes effect with next [`Self::compute()`].
 	pub const fn set_passive(&mut self, use_passive: bool) {
+		// Let `Self::compute()` recompute view by invalidating cached previous frame.
+		if self.use_passive != use_passive {
+			self.frame = None;
+		}
 		self.use_passive = use_passive;
 	}
 	/// Current position in screen space of hovering input or pointing device.
@@ -119,10 +134,12 @@ impl Image {
 		self.max
 	}
 	/// Sets maximum position in screen space as screen's width and height.
+	///
+	/// Takes effect with next [`Self::compute()`].
 	pub fn set_max(&mut self, max: Vec2) {
-		// Let `Self::compute()` recompute projection matrix by invalidating cached previous scope.
+		// Let `Self::compute()` recompute projection by invalidating cached previous scope.
 		if self.max != max {
-			self.scope.set_fov(0.0);
+			self.scope = None;
 		}
 		self.max = max;
 	}
@@ -131,60 +148,32 @@ impl Image {
 	pub const fn upp(&self) -> f32 {
 		self.upp
 	}
-	/// Cached view isometry.
+	/// Cached view transformation from camera to world space or inversely if passive.
+	///
+	/// See [`Self::set_passive()`].
 	#[must_use]
-	pub const fn view_isometry(&self) -> &Rigid {
-		&self.view_iso
+	pub const fn view_rigid(&self) -> Rigid {
+		self.view_rigid
 	}
 	/// Cached view matrix.
 	#[must_use]
-	pub const fn view(&self) -> &Mat4 {
-		&self.view_mat
-	}
-	/// Computes view isometry and matrix from frame wrt camera eye and target.
-	pub fn compute_view(&mut self, frame: &Frame) {
-		self.view_iso = if self.use_passive {
-			frame.inverse_view()
-		} else {
-			frame.view()
-		};
-		self.view_mat = self.view_iso.to_mat4();
+	pub const fn view(&self) -> Mat4 {
+		self.view_mat
 	}
 	/// Cached projection matrix.
 	#[must_use]
-	pub const fn projection(&self) -> &Mat4 {
-		&self.proj_mat
-	}
-	/// Computes projection matrix and unit per pixel on focus plane.
-	pub fn compute_projection_and_upp(&mut self, zat: f32, scope: &Scope) {
-		let (mat, upp) = scope.projection_and_upp(zat, self.max);
-		self.upp = upp;
-		self.proj_mat = mat;
+	pub const fn projection(&self) -> Mat4 {
+		self.proj_mat
 	}
 	/// Cached projection view matrix.
 	#[must_use]
-	pub const fn transformation(&self) -> &Mat4 {
-		&self.proj_view_mat
-	}
-	/// Computes projection view matrix.
-	pub fn compute_transformation(&mut self) {
-		self.proj_view_mat = self.proj_mat * self.view_mat;
+	pub const fn transformation(&self) -> Mat4 {
+		self.proj_view_mat
 	}
 	/// Cached inverse projection view matrix.
 	#[must_use]
-	pub const fn inverse_transformation(&self) -> &Mat4 {
-		&self.proj_view_inv
-	}
-	/// Computes inverse of projection view matrix.
-	///
-	/// Returns `true` on success.
-	pub fn compute_inverse_transformation(&mut self) -> bool {
-		let det = self.proj_view_mat.determinant();
-		let inv = det != 0.0 && det.is_finite();
-		if inv {
-			self.proj_view_inv = self.proj_view_mat.inverse();
-		}
-		inv
+	pub const fn inverse_transformation(&self) -> Mat4 {
+		self.proj_view_inv
 	}
 	/// Clamps position in screen space wrt its maximum in screen space.
 	#[must_use]

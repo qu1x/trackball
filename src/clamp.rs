@@ -39,12 +39,12 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 	///
 	/// Must return `None` if target position satisfies all boundary conditions.
 	#[must_use]
-	fn target(&self, frame: &Frame) -> Option<Plane>;
+	fn target(&self, frame: Frame) -> Option<Plane>;
 	/// Exceeded boundary plane for eye position in world space.
 	///
 	/// Must return `None` if eye position satisfies all boundary conditions.
 	#[must_use]
-	fn eye(&self, frame: &Frame) -> Option<Plane>;
+	fn eye(&self, frame: Frame) -> Option<Plane>;
 	/// Exceeded boundary plane for up position in world space.
 	///
 	/// The up position is the up axis (i.e., [`Frame::yaw_axis()`]) as position on the unit
@@ -52,17 +52,17 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 	///
 	/// Must return `None` if up position satisfies all boundary conditions.
 	#[must_use]
-	fn up(&self, frame: &Frame) -> Option<Plane>;
+	fn up(&self, frame: Frame) -> Option<Plane>;
 
 	/// Computes clamped [`Delta`] wrt abstract boundary conditions of [`Frame`] and [`Scope`].
 	///
 	/// Returns `None` if [`Delta`] satisfies all boundary conditions.
 	#[allow(clippy::too_many_lines)]
 	#[must_use]
-	fn compute(&self, frame: &Frame, scope: &Scope, delta: &Delta) -> Option<(Delta, usize)> {
-		let mut min_delta = *delta;
+	fn compute(&self, frame: Frame, scope: Scope, delta: Delta) -> Option<(Delta, usize)> {
+		let mut min_delta = delta;
 		let mut loops = 0;
-		match *delta {
+		match delta {
 			Delta::Frame => return None,
 			Delta::First { yaw_axis, .. } => {
 				// Target orbits around fixed eye.
@@ -70,11 +70,11 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 				let distance = frame.distance();
 				loop {
 					let new_frame = min_delta.transform(frame);
-					let new_target = if let Some(plane) = self.target(&new_frame) {
-						cap(eye, distance, &plane, new_frame.target())
-					} else if let Some(plane) = self.up(&new_frame) {
+					let new_target = if let Some(plane) = self.target(new_frame) {
+						cap(eye, distance, plane, new_frame.target())
+					} else if let Some(plane) = self.up(new_frame) {
 						let up = new_frame.yaw_axis();
-						cap(Vec3::ZERO, 1.0, &plane, up)
+						cap(Vec3::ZERO, 1.0, plane, up)
 							.map(|new_up| eye + arc(up, new_up) * (new_frame.target() - eye))
 					} else {
 						break;
@@ -101,21 +101,21 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 				let eye_bound = self.eye(frame).is_none();
 				loop {
 					let new_frame = min_delta.transform(frame);
-					let new_target = if let Some(plane) = self.target(&new_frame) {
+					let new_target = if let Some(plane) = self.target(new_frame) {
 						Some(plane.project_point(new_frame.target()))
-					} else if let Some(plane) = self.eye(&new_frame).filter(|_| eye_bound) {
+					} else if let Some(plane) = self.eye(new_frame).filter(|_| eye_bound) {
 						// Move target inversely to projected eye, e.g., to satisfy distance.
 						let new_eye = new_frame.eye();
 						Some(new_frame.target() - (plane.project_point(new_eye) - new_eye))
-					} else if let Some(plane) = self.up(&new_frame) {
+					} else if let Some(plane) = self.up(new_frame) {
 						let up = new_frame.yaw_axis();
-						cap(Vec3::ZERO, 1.0, &plane, up)
+						cap(Vec3::ZERO, 1.0, plane, up)
 							.map(|new_up| eye + arc(up, new_up) * (new_frame.target() - eye))
 					} else {
 						break;
 					};
 					min_delta = new_target.map_or(Delta::Frame, |new_target| Delta::Track {
-						vec: new_target - old_target,
+						vector: new_target - old_target,
 					});
 					if loops == self.loops() {
 						min_delta = stop(self, frame, delta).unwrap_or(min_delta);
@@ -124,7 +124,10 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 					loops += 1;
 				}
 			}
-			Delta::Orbit { mut rot, pos } => {
+			Delta::Orbit {
+				rotation: mut rot,
+				point: pos,
+			} => {
 				// Eye and target orbit around pivot in world space.
 				let old_rot = frame.view().rotation;
 				let pivot = frame.target() + old_rot * pos;
@@ -133,26 +136,29 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 				loop {
 					let new_frame = min_delta.transform(frame);
 					let correction =
-						if let Some(plane) = self.target(&new_frame).filter(|_| target_bound) {
+						if let Some(plane) = self.target(new_frame).filter(|_| target_bound) {
 							let new_target = new_frame.target();
 							let radius = (new_target - pivot).length();
-							cap(pivot, radius, &plane, new_target)
+							cap(pivot, radius, plane, new_target)
 								.map(|target| arc(new_target - pivot, target - pivot))
-						} else if let Some(plane) = self.eye(&new_frame) {
+						} else if let Some(plane) = self.eye(new_frame) {
 							let new_eye = new_frame.eye();
 							let radius = (new_eye - pivot).length();
-							cap(pivot, radius, &plane, new_eye)
+							cap(pivot, radius, plane, new_eye)
 								.map(|eye| arc(new_eye - pivot, eye - pivot))
-						} else if let Some(plane) = self.up(&new_frame) {
+						} else if let Some(plane) = self.up(new_frame) {
 							let up = new_frame.yaw_axis();
-							cap(Vec3::ZERO, 1.0, &plane, up).map(|new_up| arc(up, new_up))
+							cap(Vec3::ZERO, 1.0, plane, up).map(|new_up| arc(up, new_up))
 						} else {
 							break;
 						};
 					// Apply world space correction after delta rotation around same pivot.
 					min_delta = correction.map_or(Delta::Frame, |correction| {
 						rot = (old_rot.inverse() * correction * old_rot * rot).normalize();
-						Delta::Orbit { rot, pos }
+						Delta::Orbit {
+							rotation: rot,
+							point: pos,
+						}
 					});
 					if loops == self.loops() {
 						min_delta = stop(self, frame, delta).unwrap_or(min_delta);
@@ -168,15 +174,15 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 				let old_eye = frame.eye();
 				loop {
 					let new_frame = min_delta.transform(frame);
-					let vec = if let Some(plane) = self.target(&new_frame) {
+					let vec = if let Some(plane) = self.target(new_frame) {
 						plane.project_point(new_frame.target()) - old_target
-					} else if let Some(plane) = self.eye(&new_frame) {
+					} else if let Some(plane) = self.eye(new_frame) {
 						plane.project_point(new_frame.eye()) - old_eye
 					} else {
 						break;
 					};
 					min_delta = Delta::Slide {
-						vec: old_rot_inverse * vec,
+						vector: old_rot_inverse * vec,
 					};
 					if loops == self.loops() {
 						min_delta = stop(self, frame, delta).unwrap_or(min_delta);
@@ -185,47 +191,56 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 					loops += 1;
 				}
 			}
-			Delta::Scale { mut rat, pos } => {
+			Delta::Scale {
+				ratio: mut rat,
+				point: pos,
+			} => {
 				// Eye and target linearly move towards pivot in world space by `1.0 - rat`.
 				let old_target = frame.target();
 				let old_eye = frame.eye();
 				let old_rot = frame.view().rotation;
-				if scope.scale() {
+				if scope.inspect() {
 					let (znear, _zfar) = scope.clip_planes(0.0);
 					let min_zat = -znear * (1.0 + float::sqrt(f32::EPSILON));
 					let old_zat = frame.distance();
 					if old_zat * rat < min_zat {
 						rat = min_zat / old_zat;
-						min_delta = Delta::Scale { rat, pos };
+						min_delta = Delta::Scale {
+							ratio: rat,
+							point: pos,
+						};
 					}
 				}
 				let scale = |pivot: Vec3, rat: f32| Delta::Scale {
-					rat,
-					pos: old_rot.inverse() * (pivot - old_target),
+					ratio: rat,
+					point: old_rot.inverse() * (pivot - old_target),
 				};
 				// Exceeded plane of moved target or eye with its new and old position.
-				let exceeded = |delta: &Delta| {
+				let exceeded = |delta: Delta| {
 					let frame = delta.transform(frame);
-					self.target(&frame)
+					self.target(frame)
 						.map(|plane| (plane, frame.target(), old_target, true))
 						.or_else(|| {
-							self.eye(&frame)
+							self.eye(frame)
 								.map(|plane| (plane, frame.eye(), old_eye, false))
 						})
 				};
 				// Keep ratio but move pivot such that exceeded position is projected onto plane.
 				let glide = |rat: f32| {
 					let fraction = 1.0 - rat;
-					let mut delta = Delta::Scale { rat, pos };
+					let mut delta = Delta::Scale {
+						ratio: rat,
+						point: pos,
+					};
 					for loops in 0..=self.loops() {
-						let Some((plane, new, old, target)) = exceeded(&delta) else {
+						let Some((plane, new, old, target)) = exceeded(delta) else {
 							return Some((delta, loops));
 						};
 						let glided = old + (plane.project_point(new) - old) / fraction;
 						delta = scale(glided, rat);
 						// Plane moving along with frame (e.g., distance bound) cannot be glided
 						// along.
-						let moving = exceeded(&delta).is_some_and(|(other, _, _, other_target)| {
+						let moving = exceeded(delta).is_some_and(|(other, _, _, other_target)| {
 							other_target == target
 								&& other.normal.dot(plane.normal) > 1.0 - float::sqrt(f32::EPSILON)
 						});
@@ -237,7 +252,7 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 				};
 				if let Some((delta, glide_loops)) = glide(rat) {
 					(min_delta, loops) = (delta, glide_loops);
-				} else if exceeded(&Delta::Frame).is_none() {
+				} else if exceeded(Delta::Frame).is_none() {
 					// Stop at largest ratio still gliding along remaining planes.
 					let fraction = 1.0 - rat;
 					let (mut min, mut max) = (0.0, 1.0);
@@ -255,23 +270,23 @@ pub trait Clamp: Send + Sync + Debug + 'static {
 				}
 			}
 		}
-		(min_delta != *delta).then_some((min_delta, loops))
+		(min_delta != delta).then_some((min_delta, loops))
 	}
 }
 
 /// Stops `delta` at largest fraction satisfying boundary conditions of `clamp` by bisection.
 ///
 /// Returns `None` if boundary conditions are not satisfied initially.
-fn stop<C: Clamp + ?Sized>(clamp: &C, frame: &Frame, delta: &Delta) -> Option<Delta> {
-	let inside = |delta: &Delta| {
+fn stop<C: Clamp + ?Sized>(clamp: &C, frame: Frame, delta: Delta) -> Option<Delta> {
+	let inside = |delta: Delta| {
 		let frame = delta.transform(frame);
-		clamp.target(&frame).is_none() && clamp.eye(&frame).is_none() && clamp.up(&frame).is_none()
+		clamp.target(frame).is_none() && clamp.eye(frame).is_none() && clamp.up(frame).is_none()
 	};
-	inside(&Delta::Frame).then(|| {
+	inside(Delta::Frame).then(|| {
 		let (mut min, mut max) = (0.0, 1.0);
 		for _ in 0..f32::MANTISSA_DIGITS {
 			let mid = f32::midpoint(min, max);
-			if inside(&delta.lerp_slerp(mid)) {
+			if inside(delta.lerp_slerp(mid)) {
 				min = mid;
 			} else {
 				max = mid;
@@ -284,7 +299,7 @@ fn stop<C: Clamp + ?Sized>(clamp: &C, frame: &Frame, delta: &Delta) -> Option<De
 /// Projects `point` onto circle where sphere at `center` with `radius` intersects with `plane`.
 ///
 /// Returns `None` if sphere and plane do not intersect or if projection is ambiguous.
-fn cap(center: Vec3, radius: f32, plane: &Plane, point: Vec3) -> Option<Vec3> {
+fn cap(center: Vec3, radius: f32, plane: Plane, point: Vec3) -> Option<Vec3> {
 	let distance = plane.normal.dot(center) + plane.bias;
 	let square = float::mul_add(radius, radius, -distance * distance);
 	let ray = (plane.project_point(point) - plane.project_point(center)).try_normalize()?;
@@ -309,7 +324,7 @@ fn arc(from: Vec3, to: Vec3) -> Quat {
 /// Pitch is the change of elevation in the vertical plane spanned by `yaw_axis` and the forward
 /// direction orthogonal to the pitch axis. Yaw is the remaining change of azimuth around
 /// `yaw_axis`. Returns `None` if the new target coincides with the eye.
-fn look_around(frame: &Frame, yaw_axis: Vec3, new_target: Vec3) -> Option<(f32, f32)> {
+fn look_around(frame: Frame, yaw_axis: Vec3, new_target: Vec3) -> Option<(f32, f32)> {
 	let eye = frame.eye();
 	let old_ray = (frame.target() - eye).try_normalize()?;
 	let new_ray = (new_target - eye).try_normalize()?;

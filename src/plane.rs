@@ -1,14 +1,15 @@
 use crate::Rigid;
 use glam::{Quat, Vec3};
 
-/// Plane encoding position with singed bias along unit normal.
+/// Plane encoding position with signed bias along unit normal.
 ///
 /// Realizes plane equation `a*x+b*y+c*z+d=0` with unit normal `[x, y, z]` and signed bias `d`.
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+	feature = "rkyv-08",
+	derive(rkyv_08::Archive, rkyv_08::Serialize, rkyv_08::Deserialize),
+	rkyv(crate = rkyv_08)
 )]
 #[repr(C)]
 pub struct Plane {
@@ -71,19 +72,19 @@ impl Plane {
 	/// Projects point onto plane.
 	#[must_use]
 	pub fn project_point(&self, point: Vec3) -> Vec3 {
-		self.project_vector(point)
+		point - self.normal * (self.normal.dot(point) + self.bias)
 	}
-	/// Projects axis onto plane.
+	/// Projects axis onto plane regardless of bias.
 	#[must_use]
 	pub fn project_axis(&self, axis: Vec3) -> Vec3 {
 		self.project_vector(axis).normalize()
 	}
-	/// Projects vector onto plane.
+	/// Projects vector onto plane regardless of bias.
 	#[must_use]
 	pub fn project_vector(&self, vector: Vec3) -> Vec3 {
-		vector - self.normal * (self.normal.dot(vector) + self.bias)
+		vector - self.normal * self.normal.dot(vector)
 	}
-	/// Singed angle from `a` to `b` where both vectors are in the plane.
+	/// Signed angle from `a` to `b` where both vectors are in the plane.
 	#[must_use]
 	pub fn angle_between(&self, a: Vec3, b: Vec3) -> f32 {
 		let angle = a.angle_between(b);
@@ -114,27 +115,30 @@ impl Plane {
 	///
 	/// ```
 	/// use core::f32::consts::FRAC_PI_2;
-	/// use trackball::{Plane, Rigid, glam::Vec3};
+	/// use trackball::{
+	///     Plane, Rigid,
+	///     glam::{Quat, Vec3},
+	/// };
 	///
 	/// // Plane intersecting y-axis at `5.0`.
 	/// let plane = Plane::new(Vec3::Y, 5.0)
-	///     .transform_by(&Rigid::new(
-	///         // Translation by after rotation.
-	///         Vec3::new(-5.0, 0.0, 0.0),
+	///     .transform_by(Rigid::from_rotation_translation(
 	///         // Rotation by 90 degrees before translation.
-	///         Vec3::new(0.0, 0.0, FRAC_PI_2),
+	///         Quat::from_rotation_z(FRAC_PI_2),
+	///         // Translation after rotation.
+	///         Vec3::new(-5.0, 0.0, 0.0),
 	///     ));
 	/// // Plane intersecting x-axis at `-10.0`.
-	/// assert!(plane.abs_diff_eq(&Plane::new(-Vec3::X, 10.0), 1e-6));
+	/// assert!(plane.abs_diff_eq(Plane::new(-Vec3::X, 10.0), 1e-6));
 	/// ```
 	#[must_use]
-	pub fn transform_by(self, rigid: &Rigid) -> Self {
+	pub fn transform_by(self, rigid: Rigid) -> Self {
 		self.rotate_by(rigid.rotation)
 			.translate_by(rigid.translation)
 	}
 	/// Whether all components are approximately equal within absolute difference `max_abs_diff`.
 	#[must_use]
-	pub fn abs_diff_eq(&self, other: &Self, max_abs_diff: f32) -> bool {
+	pub fn abs_diff_eq(&self, other: Self, max_abs_diff: f32) -> bool {
 		self.normal.abs_diff_eq(other.normal, max_abs_diff)
 			&& (self.bias - other.bias).abs() <= max_abs_diff
 	}

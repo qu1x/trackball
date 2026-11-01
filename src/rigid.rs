@@ -7,8 +7,9 @@ use glam::{Mat4, Quat, Vec3};
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+	feature = "rkyv-08",
+	derive(rkyv_08::Archive, rkyv_08::Serialize, rkyv_08::Deserialize),
+	rkyv(crate = rkyv_08)
 )]
 #[repr(C)]
 pub struct Rigid {
@@ -25,14 +26,9 @@ impl Rigid {
 		translation: Vec3::ZERO,
 	};
 
-	/// Rigid transformation from `translation` and `axisangle` as rotation axis scaled by angle.
+	/// Rigid transformation from `rotation` followed by `translation`.
 	#[must_use]
-	pub fn new(translation: Vec3, axisangle: Vec3) -> Self {
-		Self::from_parts(translation, Quat::from_scaled_axis(axisangle))
-	}
-	/// Rigid transformation from `translation` and `rotation`.
-	#[must_use]
-	pub const fn from_parts(translation: Vec3, rotation: Quat) -> Self {
+	pub const fn from_rotation_translation(rotation: Quat, translation: Vec3) -> Self {
 		Self {
 			rotation,
 			translation,
@@ -64,7 +60,7 @@ impl Rigid {
 	}
 	/// Whether all components are approximately equal within absolute difference `max_abs_diff`.
 	#[must_use]
-	pub fn abs_diff_eq(&self, other: &Self, max_abs_diff: f32) -> bool {
+	pub fn abs_diff_eq(&self, other: Self, max_abs_diff: f32) -> bool {
 		self.rotation.abs_diff_eq(other.rotation, max_abs_diff)
 			&& self
 				.translation

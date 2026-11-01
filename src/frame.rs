@@ -6,8 +6,9 @@ use glam::{Quat, Vec3, camera::rh::view::look_to_quat};
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+	feature = "rkyv-08",
+	derive(rkyv_08::Archive, rkyv_08::Serialize, rkyv_08::Deserialize),
+	rkyv(crate = rkyv_08)
 )]
 pub struct Frame {
 	/// Target position in world space.
@@ -21,7 +22,7 @@ pub struct Frame {
 impl Frame {
 	/// Sets eye position inclusive its roll attitude and target position in world space.
 	#[must_use]
-	pub fn look_at(target: Vec3, eye: Vec3, up: Vec3) -> Self {
+	pub fn look_at(eye: Vec3, target: Vec3, up: Vec3) -> Self {
 		let (dir, zat) = (target - eye).normalize_and_length();
 		Self {
 			pos: target,
@@ -36,7 +37,7 @@ impl Frame {
 	}
 	/// Sets eye position inclusive its roll attitude in world space preserving target position.
 	pub fn set_eye(&mut self, eye: Vec3, up: Vec3) {
-		*self = Self::look_at(self.pos, eye, up);
+		*self = Self::look_at(eye, self.pos, up);
 	}
 	/// Target position in world space.
 	#[must_use]
@@ -165,7 +166,7 @@ impl Frame {
 	///   * `other`: The final frame to interpolate toward.
 	///   * `t`: The interpolation parameter between 0 and 1.
 	#[must_use]
-	pub fn lerp_slerp(&self, other: &Self, t: f32) -> Self {
+	pub fn lerp_slerp(&self, other: Self, t: f32) -> Self {
 		Self {
 			pos: self.pos.lerp(other.pos, t),
 			rot: self.rot.slerp(other.rot, t),
@@ -181,11 +182,11 @@ impl Frame {
 	/// View transformation from camera to world space.
 	#[must_use]
 	pub fn view(&self) -> Rigid {
-		Rigid::from_parts(
-			// Eye position in world space with origin in camera space.
-			self.eye(),
+		Rigid::from_rotation_translation(
 			// Eye rotation from camera to world space around target.
 			self.rot,
+			// Eye position in world space with origin in camera space.
+			self.eye(),
 		)
 	}
 	/// Inverse view transformation from world to camera space.
@@ -198,11 +199,11 @@ impl Frame {
 		// Eye position in camera space with origin in world space.
 		let eye = rot * self.pos + Vec3::Z * self.zat;
 		// Translate in such a way that the eye position with origin in world space vanishes.
-		Rigid::from_parts(-eye, rot)
+		Rigid::from_rotation_translation(rot, -eye)
 	}
 	/// Whether all components are approximately equal within absolute difference `max_abs_diff`.
 	#[must_use]
-	pub fn abs_diff_eq(&self, other: &Self, max_abs_diff: f32) -> bool {
+	pub fn abs_diff_eq(&self, other: Self, max_abs_diff: f32) -> bool {
 		self.pos.abs_diff_eq(other.pos, max_abs_diff)
 			&& self.rot.abs_diff_eq(other.rot, max_abs_diff)
 			&& (self.zat - other.zat).abs() <= max_abs_diff

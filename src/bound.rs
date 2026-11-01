@@ -7,8 +7,9 @@ use glam::{Quat, Vec3};
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+	feature = "rkyv-08",
+	derive(rkyv_08::Archive, rkyv_08::Serialize, rkyv_08::Deserialize),
+	rkyv(crate = rkyv_08)
 )]
 pub struct Bound {
 	/// Isometry in world space of bound inversely transforming target and eye positions.
@@ -64,15 +65,15 @@ impl Clamp for Bound {
 		10
 	}
 	/// Find any boundary plane exceeded by target position.
-	fn target(&self, frame: &Frame) -> Option<Plane> {
+	fn target(&self, frame: Frame) -> Option<Plane> {
 		let target = self.transform.inverse() * frame.target();
 		self.exceeded(target, self.min_target, self.max_target, Quat::IDENTITY)
-			.map(|plane| plane.transform_by(&self.transform))
+			.map(|plane| plane.transform_by(self.transform))
 	}
 	/// Find any boundary plane exceeded by eye position.
 	///
 	/// Distance planes are orthogonal to the roll axis at minimum or maximum distance from target.
-	fn eye(&self, frame: &Frame) -> Option<Plane> {
+	fn eye(&self, frame: Frame) -> Option<Plane> {
 		let distance = frame.distance();
 		let (target, roll_axis) = (frame.target(), frame.roll_axis());
 		if (self.min_distance - distance) > self.hysteresis {
@@ -89,7 +90,7 @@ impl Clamp for Bound {
 		}
 		let eye = self.transform.inverse() * frame.eye();
 		self.exceeded(eye, self.min_eye, self.max_eye, Quat::IDENTITY)
-			.map(|plane| plane.transform_by(&self.transform))
+			.map(|plane| plane.transform_by(self.transform))
 	}
 	/// Find any boundary plane exceeded by up position.
 	///
@@ -98,7 +99,7 @@ impl Clamp for Bound {
 	/// `min_up.y = 0.0` prevents turning upside down but allows rolling sideways over the pole)
 	/// whereas its x-component bounds the roll (e.g., `min_up.x = max_up.x = 0.0` prevents rolling
 	/// and stops at the pole like a turntable) and its z-component bounds the forward tilt.
-	fn up(&self, frame: &Frame) -> Option<Plane> {
+	fn up(&self, frame: Frame) -> Option<Plane> {
 		let rotation = self.transform.rotation;
 		let pitch_axis = rotation.inverse() * frame.pitch_axis();
 		let heading = Quat::from_rotation_y(float::atan2(-pitch_axis.z, pitch_axis.x));

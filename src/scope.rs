@@ -7,8 +7,9 @@ use glam::{Mat4, Vec2, camera::rh::proj::opengl};
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+	feature = "rkyv-08",
+	derive(rkyv_08::Archive, rkyv_08::Serialize, rkyv_08::Deserialize),
+	rkyv(crate = rkyv_08)
 )]
 pub struct Scope {
 	/// Fixed quantity wrt field of view.
@@ -71,7 +72,7 @@ impl Scope {
 	pub fn set_fov(&mut self, fov: impl Into<Fixed>) {
 		self.fov = fov.into();
 	}
-	/// Clip plane distances from eye regardless of [`Self::scale()`] wrt to distance between eye
+	/// Clip plane distances from eye regardless of [`Self::inspect()`] wrt to distance between eye
 	/// and target.
 	///
 	/// Default is `(1e-1, 1e+3)` measured from eye.
@@ -84,7 +85,7 @@ impl Scope {
 			self.zcp
 		}
 	}
-	/// Sets clip plane distances from target or eye whether [`Self::scale()`].
+	/// Sets clip plane distances from target or eye whether [`Self::inspect()`].
 	///
 	/// Default is `(1e-1, 1e+3)` measured from eye.
 	pub const fn set_clip_planes(&mut self, znear: f32, zfar: f32) {
@@ -94,13 +95,13 @@ impl Scope {
 	///
 	/// Scales clip plane distances by measuring from target instead of eye. Default is `false`.
 	#[must_use]
-	pub const fn scale(&self) -> bool {
+	pub const fn inspect(&self) -> bool {
 		self.oim
 	}
 	/// Sets object inspection mode.
 	///
 	/// Scales clip plane distances by measuring from target instead of eye. Default is `false`.
-	pub const fn set_scale(&mut self, oim: bool) {
+	pub const fn set_inspect(&mut self, oim: bool) {
 		self.oim = oim;
 	}
 	/// Orthographic projection mode.

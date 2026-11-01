@@ -77,7 +77,7 @@ This crate is `no_std` with `default-features = false` and `libm` or `nostd-libm
 Following features are disabled unless their corresponding feature gate is enabled:
 
   * `serde` for `serde` support of various structures of this crate and its dependencies.
-  * `rkyv` for `rkyv` support of various structures of this crate and its dependencies.
+  * `rkyv-08` for `rkyv` 0.8 support of various structures of this crate and its dependencies.
   * `cc` for testing the behaviorally identical C implementation of the exponential map.
 
 See the [release history](RELEASES.md) to keep track of the development.

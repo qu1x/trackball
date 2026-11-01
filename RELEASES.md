@@ -1,9 +1,12 @@
 # Version 0.19.0 (unreleased)
 
   * Migrate from `nalgebra` to `glam` and drop `glam` conversion feature.
+  * Swap arguments of `Frame::look_at()` to `eye`, `target`, and `up` like `glam`. Existing calls
+    still compile, so check their argument order.
   * Drop generic scalar in favor of `f32` and remove `cast()` methods.
   * Pass `glam` types by value, e.g., `Vec2`, `Vec3`, and `Quat`.
-  * Add `Rigid` transformation replacing `Isometry3`.
+  * Add `Rigid` transformation replacing `Isometry3` and construct it from rotation and
+    translation via `Rigid::from_rotation_translation()` like `glam`.
   * Replace `Frame::try_lerp_slerp()` with infallible `Frame::lerp_slerp()`.
   * Fix precision of `Frame::set_target()` for small and nearly opposite target movements.
   * Drop `Plane` conversions from and to `Reflection3`.
@@ -19,6 +22,20 @@
   * Fix `Delta::Track` gliding in world space instead of camera space.
   * Return `Bound` planes in world space wrt `Bound::transform` and distance planes wrt target.
   * Define heading of `Bound` up axis by pitch axis which is well-defined at the poles.
+  * Fix `Delta::inverse()` of `Delta::Scale` by inverting ratio and scaling point.
+  * Fix `Plane::project_vector()` and `Plane::project_axis()` to disregard bias.
+  * Replace `rkyv` feature with `rkyv-08` feature forwarding to `glam/rkyv-08` as `glam/rkyv` is
+    deprecated.
+  * Mark `Delta` as non-exhaustive and rename its fields to `rotation`, `point`, `vector`, and
+    `ratio`.
+  * Rename `Scope::scale()` and `Scope::set_scale()` to `Scope::inspect()` and
+    `Scope::set_inspect()`.
+  * Make computations of `Image` private except `Image::compute()` which now considers changes
+    by `Image::set_max()`, `Image::set_passive()`, and `Image::set_compute()`.
+  * Rename `Image::view_isometry()` to `Image::view_rigid()` and return matrices by value.
+  * Add capacity parameter to `Touch` defaulting to ten fingers.
+  * Pass operands by value, e.g., `Frame`, `Scope`, `Delta`, `Plane`, and `Rigid` of `Clamp`
+    methods.
   * Use type-generic math of `<tgmath.h>` in C implementation so that `long double` is computed
     in its own precision instead of in `double` precision.
 

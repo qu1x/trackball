@@ -32,7 +32,7 @@ include = [
 ]
 
 [package.metadata.docs.rs]
-features = ["serde", "rkyv"]
+features = ["serde", "rkyv-08"]
 cargo-args = ["-Z", "unstable-options", "-Z", "rustdoc-scrape-examples"]
 rustdoc-args = ["--cfg", "docsrs"]
 
@@ -40,7 +40,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 glam = { version = "0.33.12", default-features = false }
 libm = { version = "0.2.16", optional = true }
 serde = { version = "1.0.228", default-features = false, features = ["derive"], optional = true }
-rkyv = { version = "0.8.10", default-features = false, optional = true }
+rkyv-08 = { package = "rkyv", version = "0.8.10", default-features = false, optional = true }
 
 [features]
 default = ["std"]
@@ -48,7 +48,7 @@ std = ["glam/std"]
 libm = ["dep:libm", "glam/libm"]
 nostd-libm = ["dep:libm", "glam/nostd-libm"]
 serde = ["dep:serde", "glam/serde"]
-rkyv = ["dep:rkyv", "glam/rkyv"]
+rkyv-08 = ["dep:rkyv-08", "glam/rkyv-08"]
 
 [build-dependencies]
 cc = { version = "1.2.65", optional = true }

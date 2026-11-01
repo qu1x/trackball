@@ -4,14 +4,15 @@ use glam::Vec2;
 
 /// Touch gestures inducing slide, orbit, scale, and focus.
 ///
-/// Implements [`Default`] and can be created with `Touch::default()`.
+/// Implements [`Default`] and can be created with `Touch::default()`. Recognizes up to `N` fingers,
+/// ten by default.
 ///
 /// All methods except [`Self::fingers()`] must be invoked on matching events fired by your 3D
 /// graphics library of choice.
 #[derive(Debug, Clone, Default)]
-pub struct Touch<F: Debug + Eq> {
-	/// Finger positions of up to ten fingers.
-	pos: Fingers<F>,
+pub struct Touch<F: Debug + Eq, const N: usize = 10> {
+	/// Finger positions of up to `N` fingers.
+	pos: Fingers<F, N>,
 	/// Cached normalization of previous two-finger vector.
 	vec: Option<(Vec2, f32)>,
 	/// Number of fingers and centroid position of potential finger tap gesture.
@@ -20,7 +21,7 @@ pub struct Touch<F: Debug + Eq> {
 	mvs: usize,
 }
 
-impl<F: Debug + Copy + Eq> Touch<F> {
+impl<F: Debug + Copy + Eq, const N: usize> Touch<F, N> {
 	/// Computes centroid position, roll angle, and scale ratio from finger gestures.
 	///
 	/// Parameters are:
@@ -37,7 +38,7 @@ impl<F: Debug + Copy + Eq> Touch<F> {
 	///
 	/// # Panics
 	///
-	/// Panics with more than ten fingers.
+	/// Panics with more than `N` fingers.
 	pub fn compute(&mut self, fid: F, pos: Vec2, mvs: usize) -> Option<(usize, Vec2, f32, f32)> {
 		// Insert or update finger position.
 		let old_pos = self.pos.insert(fid, pos).expect("Too many fingers");
@@ -125,11 +126,17 @@ impl<F: Debug + Copy + Eq> Touch<F> {
 	}
 }
 
-/// Finger positions of up to ten fingers in slots filled in order.
-#[derive(Debug, Clone, Default)]
-struct Fingers<F>([Option<(F, Vec2)>; 10]);
+/// Finger positions of up to `N` fingers in slots filled in order.
+#[derive(Debug, Clone)]
+struct Fingers<F, const N: usize>([Option<(F, Vec2)>; N]);
 
-impl<F: Copy + Eq> Fingers<F> {
+impl<F, const N: usize> Default for Fingers<F, N> {
+	fn default() -> Self {
+		Self([const { None }; N])
+	}
+}
+
+impl<F: Copy + Eq, const N: usize> Fingers<F, N> {
 	/// Inserts or updates finger position and returns old one or `Err` if there are no free slots.
 	fn insert(&mut self, fid: F, pos: Vec2) -> Result<Option<Vec2>, (F, Vec2)> {
 		if let Some((_fid, old_pos)) = self.0.iter_mut().flatten().find(|(id, _pos)| *id == fid) {
@@ -153,7 +160,7 @@ impl<F: Copy + Eq> Fingers<F> {
 	}
 	/// Removes all finger positions.
 	const fn clear(&mut self) {
-		self.0 = [None; 10];
+		self.0 = [None; N];
 	}
 	/// Finger positions in slot order.
 	fn values(&self) -> impl Iterator<Item = Vec2> {

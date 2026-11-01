@@ -10,8 +10,9 @@ use glam::Vec2;
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
-	feature = "rkyv",
-	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+	feature = "rkyv-08",
+	derive(rkyv_08::Archive, rkyv_08::Serialize, rkyv_08::Deserialize),
+	rkyv(crate = rkyv_08)
 )]
 pub enum Fixed {
 	/// Fixed horizontal field of view aka Vert- scaling.
@@ -69,9 +70,9 @@ impl Fixed {
 	/// Maximum position in camera space and unit per pixel on focus plane wrt distance between
 	/// eye and target and maximum position in screen space.
 	#[must_use]
-	pub fn max_and_upp(&self, zat: f32, max: Vec2) -> (Vec2, f32) {
+	pub fn max_and_upp(self, zat: f32, max: Vec2) -> (Vec2, f32) {
 		let two = 2.0;
-		match *self {
+		match self {
 			Self::Hor(fov) => {
 				let x = zat * float::tan(fov / two);
 				let y = max.y / max.x * x;
