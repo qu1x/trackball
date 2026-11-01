@@ -1,4 +1,4 @@
-# Version 0.19.0 (unreleased)
+# Version 0.19.0 (2026-11-01)
 
   * Migrate from `nalgebra` to `glam` and drop `glam` conversion feature.
   * Swap arguments of `Frame::look_at()` to `eye`, `target`, and `up` like `glam`. Existing calls
