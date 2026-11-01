@@ -5,6 +5,7 @@ fn main() {
 	{
 		use std::path::Path;
 		let src = Path::new("c11").join("src");
+		println!("cargo::rerun-if-changed={}", src.display());
 		cc::Build::new()
 			.files(&[src.join("trackball.c")])
 			.include(src)

@@ -305,6 +305,9 @@ trackball_orbit_f(
 	// No rotation with no previous position.
 	if (!pos.w)
 		return;
+	// Any unit vector on xy-plane as start position's ray at origin.
+	if (pos.z)
+		pos = (vec_f) { .x = 1.0f };
 	// Displacement vector from previous to current position.
 	vec.x = vec.x * vec.w - pos.x * pos.w;
 	vec.y = vec.y * vec.w - pos.y * pos.w;
@@ -372,6 +375,9 @@ trackball_orbit_d(
 	// No rotation with no previous position.
 	if (!pos.w)
 		return;
+	// Any unit vector on xy-plane as start position's ray at origin.
+	if (pos.z)
+		pos = (vec_d) { .x = 1.0 };
 	// Displacement vector from previous to current position.
 	vec.x = vec.x * vec.w - pos.x * pos.w;
 	vec.y = vec.y * vec.w - pos.y * pos.w;
@@ -439,6 +445,9 @@ trackball_orbit_l(
 	// No rotation with no previous position.
 	if (!pos.w)
 		return;
+	// Any unit vector on xy-plane as start position's ray at origin.
+	if (pos.z)
+		pos = (vec_l) { .x = 1.0l };
 	// Displacement vector from previous to current position.
 	vec.x = vec.x * vec.w - pos.x * pos.w;
 	vec.y = vec.y * vec.w - pos.y * pos.w;

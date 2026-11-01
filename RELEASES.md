@@ -36,8 +36,12 @@
   * Add capacity parameter to `Touch` defaulting to ten fingers.
   * Pass operands by value, e.g., `Frame`, `Scope`, `Delta`, `Plane`, and `Rigid` of `Clamp`
     methods.
+  * Compute `Orbit` as rotation of a displacement starting at the trackball's pole conjugated by
+    the parallel transport along the geodesic to its actual start position.
+  * Fix `Orbit` ignoring (Rust) or distorting (C) displacements starting at the screen's center.
   * Use type-generic math of `<tgmath.h>` in C implementation so that `long double` is computed
     in its own precision instead of in `double` precision.
+  * Rebuild C implementation of `cc` feature on source changes.
 
 # Version 0.18.0 (2026-06-22)
 

@@ -1,7 +1,7 @@
 use glam::{Quat, Vec2, Vec3};
 
 #[cfg(not(feature = "cc"))]
-use crate::{Image, float};
+use crate::Image;
 
 /// Orbit induced by displacement on screen.
 ///
@@ -16,8 +16,6 @@ pub struct Orbit {
 
 #[cfg(not(feature = "cc"))]
 use core::f32::consts::FRAC_PI_2;
-#[cfg(not(feature = "cc"))]
-use glam::Mat3;
 
 impl Orbit {
 	/// Computes rotation between previous and current cursor/finger position.
@@ -47,10 +45,11 @@ impl Orbit {
 		let pos = Image::clamp_pos_wrt_max(pos, max);
 		// Centered cursor/finger position and its maximum from left to right and bottom to top.
 		let (pos, max) = Image::transform_pos_and_max_wrt_max(pos, max);
-		// Positive z-axis pointing from far to near.
-		let (pos, pza) = (pos.extend(0.0), Vec3::Z);
-		// New position as ray and length on xy-plane or z-axis of zero length for origin position.
-		let (ray, len) = (pos.try_normalize().unwrap_or(pza), pos.length());
+		// New position as ray and length on xy-plane or any ray on xy-plane for origin position.
+		let (ray, len) = (
+			pos.try_normalize().unwrap_or(Vec2::X).extend(0.0),
+			pos.length(),
+		);
 		// Get old ray and length as start position and offset and replace with new ray and length.
 		let (pos, off) = self.vec.replace((ray, len))?;
 		// Displacement vector from old to new ray and length.
@@ -59,25 +58,15 @@ impl Orbit {
 		let (ray, len) = (vec.try_normalize()?, vec.length());
 		// Treat maximum of half the screen's width or height as trackball's radius.
 		let max = max.x.max(max.y);
-		// Map trackball's diameter onto half its circumference for start positions so that only
-		// screen corners are mapped to lower hemisphere which induces less intuitive rotations.
-		let (sin, cos) = float::sin_cos(off / max * FRAC_PI_2);
-		// Exponential map of start position.
-		let exp = Vec3::new(sin * pos.x, sin * pos.y, cos);
-		// Tangent ray of geodesic at exponential map.
-		let tan = Vec3::new(cos * pos.x, cos * pos.y, -sin);
-		// Cross product of z-axis and start position to construct orthonormal frames.
-		let zxp = Vec3::new(-pos.y, pos.x, 0.0);
-		// Orthonormal frame as argument of differential of exponential map.
-		let arg = Mat3::from_cols(pza, pos, zxp);
-		// Orthonormal frame as image of differential of exponential map.
-		let img = Mat3::from_cols(exp, tan, zxp);
-		// Compute differential of exponential map by its argument and image and apply it to
-		// displacement vector which in turn spans rotation plane together with exponential map.
-		let vec = (img * (arg.transpose() * ray)).cross(exp);
+		// Parallel transport along geodesic from trackball's pole on z-axis to exponential map of
+		// start position. Maps trackball's diameter onto half its circumference for start positions
+		// so that only screen corners are mapped to lower hemisphere which induces less intuitive
+		// rotations.
+		let transport = Quat::from_axis_angle(Vec3::Z.cross(pos), off / max * FRAC_PI_2);
+		// Rotation axis as if displacement starts at pole, then parallel transported.
+		let axis = transport * ray.cross(Vec3::Z);
 		// Angle of rotation is displacement length divided by radius.
-		vec.try_normalize()
-			.map(|ray| Quat::from_axis_angle(ray, len / max))
+		Some(Quat::from_axis_angle(axis, len / max))
 	}
 	/// Computes rotation between previous and current cursor/finger position.
 	///

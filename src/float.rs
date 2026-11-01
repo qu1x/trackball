@@ -22,12 +22,6 @@ mod libm_math {
 		libm::atan2f(f, other)
 	}
 
-	#[cfg(not(feature = "cc"))]
-	#[inline]
-	pub fn sin_cos(f: f32) -> (f32, f32) {
-		libm::sincosf(f)
-	}
-
 	#[inline]
 	pub fn mul_add(f: f32, a: f32, b: f32) -> f32 {
 		libm::fmaf(f, a, b)
@@ -54,12 +48,6 @@ mod std_math {
 	#[inline]
 	pub fn atan2(f: f32, other: f32) -> f32 {
 		f32::atan2(f, other)
-	}
-
-	#[cfg(not(feature = "cc"))]
-	#[inline]
-	pub fn sin_cos(f: f32) -> (f32, f32) {
-		f32::sin_cos(f)
 	}
 
 	#[inline]
