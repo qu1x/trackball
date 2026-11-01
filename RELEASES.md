@@ -1,3 +1,8 @@
+# Version 0.19.1 (2026-11-01)
+
+  * Fix gliding `Clamp` of `Delta::First` stopping instead of gliding when its yaw axis is not
+    orthogonal to the pitch axis, e.g., when captured from another camera of a constellation.
+
 # Version 0.19.0 (2026-11-01)
 
   * Migrate from `nalgebra` to `glam` and drop `glam` conversion feature.
