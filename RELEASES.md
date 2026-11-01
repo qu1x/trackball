@@ -9,6 +9,8 @@
     translation via `Rigid::from_rotation_translation()` like `glam`.
   * Replace `Frame::try_lerp_slerp()` with infallible `Frame::lerp_slerp()`.
   * Fix precision of `Frame::set_target()` for small and nearly opposite target movements.
+  * Fix precision of `Frame::local_scale_around()` and `Frame::scale_around()` for ratios close
+    to one.
   * Drop `Plane` conversions from and to `Reflection3`.
   * Bump `rkyv` to version 0.8 deriving its traits.
   * Drop `approx` in favor of inherent `abs_diff_eq()` methods like `glam`.

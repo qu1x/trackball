@@ -29,8 +29,15 @@ fn ground() -> Bound {
 	bound
 }
 
-/// Asserts all boundary conditions of `bound` are satisfied by `frame`.
+/// Asserts all boundary conditions of `bound` are satisfied by `frame` within tolerance.
+///
+/// Positions on boundary planes may exceed the hysteresis of `bound` by rounding, e.g., when
+/// applying a clamped delta followed by renormalization.
 fn assert_inside(bound: &Bound, frame: Frame) {
+	let bound = Bound {
+		hysteresis: TOL,
+		..*bound
+	};
 	assert!(bound.target(frame).is_none(), "target outside: {frame:?}");
 	assert!(bound.eye(frame).is_none(), "eye outside: {frame:?}");
 	assert!(bound.up(frame).is_none(), "up outside: {frame:?}");

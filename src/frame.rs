@@ -80,13 +80,13 @@ impl Frame {
 	}
 	/// Scales distance between eye and point in camera space by ratio preserving target position.
 	pub fn local_scale_around(&mut self, rat: f32, pos: Vec3) {
-		self.local_slide(pos - pos * rat);
+		self.local_slide(pos * (1.0 - rat));
 		self.scale(rat);
 	}
 	/// Scales distance between eye and point in world space by ratio preserving target position.
 	pub fn scale_around(&mut self, rat: f32, pos: Vec3) {
 		let pos = pos - self.pos;
-		self.slide(pos - pos * rat);
+		self.slide(pos * (1.0 - rat));
 		self.scale(rat);
 	}
 	/// Slides camera eye and target by vector in camera space.
