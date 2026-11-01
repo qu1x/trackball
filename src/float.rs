@@ -22,6 +22,11 @@ mod libm_math {
 		libm::atan2f(f, other)
 	}
 
+	#[inline]
+	pub fn exp(f: f32) -> f32 {
+		libm::expf(f)
+	}
+
 	#[cfg(not(feature = "cc"))]
 	#[inline]
 	pub fn sin_cos(f: f32) -> (f32, f32) {
@@ -54,6 +59,11 @@ mod std_math {
 	#[inline]
 	pub fn atan2(f: f32, other: f32) -> f32 {
 		f32::atan2(f, other)
+	}
+
+	#[inline]
+	pub fn exp(f: f32) -> f32 {
+		f32::exp(f)
 	}
 
 	#[cfg(not(feature = "cc"))]

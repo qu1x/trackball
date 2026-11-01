@@ -47,6 +47,9 @@
   * Use type-generic math of `<tgmath.h>` in C implementation so that `long double` is computed
     in its own precision instead of in `double` precision.
   * Rebuild C implementation of `cc` feature on source changes.
+  * Compute `Scale` ratio exponentially as `exp(-num / den)` instead of linearly as `1 - num / den`
+    such that scaling is reversible, independent of how input is split into events or frames, and
+    always positive.
 
 # Version 0.18.0 (2026-06-22)
 

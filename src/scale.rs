@@ -1,3 +1,5 @@
+use crate::float;
+
 /// Scale induced by relative input.
 ///
 /// Implements [`Default`] and can be created with `Scale::default()`.
@@ -15,9 +17,15 @@ impl Default for Scale {
 
 impl Scale {
 	/// Computes scale ratio from relative value.
+	///
+	/// The ratio is exponential in the relative value `num` over the denominator, that is
+	/// `exp(-num / den)`, so that a relative value equal to the denominator scales by `1 / e`.
+	/// Hence, scaling in and out by the same relative value restores the distance and the ratio of
+	/// a relative value is the product of the ratios of its parts, regardless of how the input is
+	/// split into events or frames. The ratio is always positive.
 	#[must_use]
 	pub fn compute(&self, num: f32) -> f32 {
-		1.0 - num / self.den
+		float::exp(-num / self.den)
 	}
 	/// Denominator. Default is scroll unit of `120.0`.
 	#[must_use]
