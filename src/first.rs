@@ -1,3 +1,4 @@
+use core::f32::consts::PI;
 use glam::{Vec2, Vec3};
 
 /// First person view induced by displacement on screen.
@@ -20,13 +21,13 @@ impl First {
 	/// Computes pitch and yaw from cursor/finger displacement vector in screen space.
 	///
 	/// Carries cursor/finger displacements to arcs of the same length on great circles of an
-	/// eye-centered trackball with radius of maximum of half the screen's width and height in
-	/// compliance with [`crate::Orbit`] except that its trackball is target-centered.
+	/// eye-centered trackball with radius of maximum of the screen's width and height divided by
+	/// π in compliance with [`crate::Orbit`] except that its trackball is target-centered.
 	#[must_use]
 	pub fn compute(&self, vec: Vec2, max: Vec2) -> Option<(f32, f32, Vec3)> {
 		self.ray.map(|ray| {
-			let max = max.x.max(max.y) * 0.5;
-			(vec.y / max, vec.x / max, ray)
+			let rad = max.x.max(max.y) / PI;
+			(vec.y / rad, vec.x / rad, ray)
 		})
 	}
 	/// Discards captured yaw axis when leaving first person view.

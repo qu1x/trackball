@@ -39,6 +39,9 @@
   * Compute `Orbit` as rotation of a displacement starting at the trackball's pole conjugated by
     the parallel transport along the geodesic to its actual start position.
   * Fix `Orbit` ignoring (Rust) or distorting (C) displacements starting at the screen's center.
+  * Rotate `Orbit` and `First` by displacement length over the same trackball radius that maps
+    start positions, i.e., by a factor of π/2 faster, keeping the trackball's point under the
+    cursor on radial displacements.
   * Use type-generic math of `<tgmath.h>` in C implementation so that `long double` is computed
     in its own precision instead of in `double` precision.
   * Rebuild C implementation of `cc` feature on source changes.

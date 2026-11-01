@@ -314,12 +314,12 @@ trackball_orbit_f(
 	// No rotation with zero displacement.
 	if (!normalize(&vec))
 		return;
-	// Treat maximum of half the screen's width or height as trackball's radius.
-	max.w = fmax(max.x, max.y);
-	// Map trackball's diameter onto half its circumference for start positions
-	// so that only screen corners are mapped to lower hemisphere which induces
-	// less intuitive rotations.
-	pos.w = pos.w / max.w * PI_2_f;
+	// Trackball's radius mapping maximum of half the screen's width or height
+	// onto quarter of its circumference so that only screen corners are mapped
+	// to lower hemisphere which induces less intuitive rotations.
+	max.w = fmax(max.x, max.y) / PI_2_f;
+	// Polar angle of start position.
+	pos.w = pos.w / max.w;
 	num_f s = sin(pos.w), c = cos(pos.w);
 	// Exponential map of start position.
 	vec_f exp = { .x = s * pos.x, .y = s * pos.y, .z = c };
@@ -384,12 +384,12 @@ trackball_orbit_d(
 	// No rotation with zero displacement.
 	if (!normalize(&vec))
 		return;
-	// Treat maximum of half the screen's width or height as trackball's radius.
-	max.w = fmax(max.x, max.y);
-	// Map trackball's diameter onto half its circumference for start positions
-	// so that only screen corners are mapped to lower hemisphere which induces
-	// less intuitive rotations.
-	pos.w = pos.w / max.w * PI_2_d;
+	// Trackball's radius mapping maximum of half the screen's width or height
+	// onto quarter of its circumference so that only screen corners are mapped
+	// to lower hemisphere which induces less intuitive rotations.
+	max.w = fmax(max.x, max.y) / PI_2_d;
+	// Polar angle of start position.
+	pos.w = pos.w / max.w;
 	num_d s = sin(pos.w), c = cos(pos.w);
 	// Exponential map of start position.
 	vec_d exp = { .x = s * pos.x, .y = s * pos.y, .z = c };
@@ -454,12 +454,12 @@ trackball_orbit_l(
 	// No rotation with zero displacement.
 	if (!normalize(&vec))
 		return;
-	// Treat maximum of half the screen's width or height as trackball's radius.
-	max.w = fmax(max.x, max.y);
-	// Map trackball's diameter onto half its circumference for start positions
-	// so that only screen corners are mapped to lower hemisphere which induces
-	// less intuitive rotations.
-	pos.w = pos.w / max.w * PI_2_l;
+	// Trackball's radius mapping maximum of half the screen's width or height
+	// onto quarter of its circumference so that only screen corners are mapped
+	// to lower hemisphere which induces less intuitive rotations.
+	max.w = fmax(max.x, max.y) / PI_2_l;
+	// Polar angle of start position.
+	pos.w = pos.w / max.w;
 	num_l s = sin(pos.w), c = cos(pos.w);
 	// Exponential map of start position.
 	vec_l exp = { .x = s * pos.x, .y = s * pos.y, .z = c };

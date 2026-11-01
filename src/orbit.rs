@@ -56,17 +56,17 @@ impl Orbit {
 		let vec = ray * len - pos * off;
 		// Shadow new ray and length as normalized displacement vector.
 		let (ray, len) = (vec.try_normalize()?, vec.length());
-		// Treat maximum of half the screen's width or height as trackball's radius.
-		let max = max.x.max(max.y);
+		// Trackball's radius mapping maximum of half the screen's width or height onto quarter of
+		// its circumference so that only screen corners are mapped to lower hemisphere which
+		// induces less intuitive rotations.
+		let rad = max.x.max(max.y) / FRAC_PI_2;
 		// Parallel transport along geodesic from trackball's pole on z-axis to exponential map of
-		// start position. Maps trackball's diameter onto half its circumference for start positions
-		// so that only screen corners are mapped to lower hemisphere which induces less intuitive
-		// rotations.
-		let transport = Quat::from_axis_angle(Vec3::Z.cross(pos), off / max * FRAC_PI_2);
+		// start position.
+		let transport = Quat::from_axis_angle(Vec3::Z.cross(pos), off / rad);
 		// Rotation axis as if displacement starts at pole, then parallel transported.
 		let axis = transport * ray.cross(Vec3::Z);
 		// Angle of rotation is displacement length divided by radius.
-		Some(Quat::from_axis_angle(axis, len / max))
+		Some(Quat::from_axis_angle(axis, len / rad))
 	}
 	/// Computes rotation between previous and current cursor/finger position.
 	///
