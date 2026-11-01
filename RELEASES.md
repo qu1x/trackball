@@ -8,6 +8,8 @@
   * Fix precision of `Frame::set_target()` for small and nearly opposite target movements.
   * Drop `Plane` conversions from and to `Reflection3`.
   * Bump `rkyv` to version 0.8 deriving its traits.
+  * Use type-generic math of `<tgmath.h>` in C implementation so that `long double` is computed
+    in its own precision instead of in `double` precision.
 
 # Version 0.18.0 (2026-06-22)
 

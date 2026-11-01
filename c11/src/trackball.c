@@ -5,7 +5,7 @@
 
 #include "trackball.h"
 
-#include <math.h>
+#include <tgmath.h>
 
 /// \cond
 #define PI_2_f 1.57079632679489661923f
