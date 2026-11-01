@@ -7,9 +7,9 @@ use glam::{Mat4, Vec2, camera::rh::proj::opengl};
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
-	feature = "rkyv-08",
-	derive(rkyv_08::Archive, rkyv_08::Serialize, rkyv_08::Deserialize),
-	rkyv(crate = rkyv_08)
+    feature = "rkyv-08",
+    derive(rkyv_08::Archive, rkyv_08::Serialize, rkyv_08::Deserialize),
+    rkyv(crate = rkyv_08)
 )]
 pub struct Scope {
     /// Fixed quantity wrt field of view.

@@ -75,36 +75,36 @@
 /// \param[in]     xy   Current position.
 /// \param[in]     wh   Maximum position as screen's width and height.
 #define trackball_orbit(xyzw, xyzm, xy, wh) _Generic((xyzw), \
-	float*: trackball_orbit_f, \
-	double*: trackball_orbit_d, \
-	long double*: trackball_orbit_l \
+    float*: trackball_orbit_f, \
+    double*: trackball_orbit_d, \
+    long double*: trackball_orbit_l \
 )(xyzw, xyzm, xy, wh)
 
 /// Associated implementation of generic selection macro \ref trackball_orbit.
 void
 trackball_orbit_f(
-	float xyzw[static restrict 4],
-	float xyzm[static restrict 4],
-	const float xy[static restrict 2],
-	const float wh[static restrict 2]
+    float xyzw[static restrict 4],
+    float xyzm[static restrict 4],
+    const float xy[static restrict 2],
+    const float wh[static restrict 2]
 );
 
 /// Associated implementation of generic selection macro \ref trackball_orbit.
 void
 trackball_orbit_d(
-	double xyzw[static restrict 4],
-	double xyzm[static restrict 4],
-	const double xy[static restrict 2],
-	const double wh[static restrict 2]
+    double xyzw[static restrict 4],
+    double xyzm[static restrict 4],
+    const double xy[static restrict 2],
+    const double wh[static restrict 2]
 );
 
 /// Associated implementation of generic selection macro \ref trackball_orbit.
 void
 trackball_orbit_l(
-	long double xyzw[static restrict 4],
-	long double xyzm[static restrict 4],
-	const long double xy[static restrict 2],
-	const long double wh[static restrict 2]
+    long double xyzw[static restrict 4],
+    long double xyzm[static restrict 4],
+    const long double xy[static restrict 2],
+    const long double wh[static restrict 2]
 );
 
 #endif // TRACKBALL_H

@@ -45,6 +45,7 @@ trackball's border are mapped beyond its equator, keeping radial displacements l
     [`Frame`]. When [`Delta`] between initial and final [`Frame`] is not orthogonal to a
     boundary [`Plane`], [`Delta`] is changed in such a way that the clamped movement glides
     along the plane.
+  * [`Rigid`] transformation as direct isometry of [`Frame::view()`] and [`Bound::transform`].
   * [`Bound`] implementing [`Clamp`] providing customizable orthogonal boundary conditions.
   * Object inspection mode scaling clip plane distances by measuring from target instead of eye.
   * Scale-preserving transitioning between orthographic and perspective projection mode.
@@ -54,11 +55,14 @@ trackball's border are mapped beyond its equator, keeping radial displacements l
 [`Frame::slide()`]: https://docs.rs/trackball/latest/trackball/struct.Frame.html#method.slide
 [`Frame::orbit()`]: https://docs.rs/trackball/latest/trackball/struct.Frame.html#method.orbit
 [`Frame::scale()`]: https://docs.rs/trackball/latest/trackball/struct.Frame.html#method.scale
+[`Frame::view()`]: https://docs.rs/trackball/latest/trackball/struct.Frame.html#method.view
+[`Bound::transform`]: https://docs.rs/trackball/latest/trackball/struct.Bound.html#structfield.transform
 
 [`First`]: https://docs.rs/trackball/latest/trackball/struct.First.html
 [`Frame`]: https://docs.rs/trackball/latest/trackball/struct.Frame.html
-[`Clamp`]: https://docs.rs/trackball/latest/trackball/struct.Clamp.html
-[`Delta`]: https://docs.rs/trackball/latest/trackball/struct.Delta.html
+[`Clamp`]: https://docs.rs/trackball/latest/trackball/trait.Clamp.html
+[`Delta`]: https://docs.rs/trackball/latest/trackball/enum.Delta.html
+[`Rigid`]: https://docs.rs/trackball/latest/trackball/struct.Rigid.html
 [`Bound`]: https://docs.rs/trackball/latest/trackball/struct.Bound.html
 [`Plane`]: https://docs.rs/trackball/latest/trackball/struct.Plane.html
 [`Scope`]: https://docs.rs/trackball/latest/trackball/struct.Scope.html
@@ -97,29 +101,29 @@ use trackball::{Frame, Image, Orbit, glam::Vec2};
 
 /// Trackball camera mode.
 pub struct Trackball {
-	// Frame wrt camera eye and target.
-	frame: Frame,
-	// Image as projection of `Scope` wrt `Frame`.
-	image: Image,
-	// Orbit induced by displacement on screen.
-	orbit: Orbit,
+    // Frame wrt camera eye and target.
+    frame: Frame,
+    // Image as projection of `Scope` wrt `Frame`.
+    image: Image,
+    // Orbit induced by displacement on screen.
+    orbit: Orbit,
 }
 
 impl Trackball {
-	// Usually, a cursor position event with left mouse button being pressed.
-	fn handle_left_button_displacement(&mut self, pos: Vec2) {
-		// Maximum position as screen's width and height.
-		let max = self.image.max();
-		// Induced rotation in camera space.
-		let rot = self.orbit.compute(pos, max).unwrap_or_default();
-		// Apply induced rotation to local observer frame.
-		self.frame.local_orbit(rot);
-	}
-	// Event when left mouse button is released again.
-	fn handle_left_button_release(&mut self) {
-		// Can also or instead be invoked on `Self::handle_left_button_press()`.
-		self.orbit.discard();
-	}
+    // Usually, a cursor position event with left mouse button being pressed.
+    fn handle_left_button_displacement(&mut self, pos: Vec2) {
+        // Maximum position as screen's width and height.
+        let max = self.image.max();
+        // Induced rotation in camera space.
+        let rot = self.orbit.compute(pos, max).unwrap_or_default();
+        // Apply induced rotation to local observer frame.
+        self.frame.local_orbit(rot);
+    }
+    // Event when left mouse button is released again.
+    fn handle_left_button_release(&mut self) {
+        // Can also or instead be invoked on `Self::handle_left_button_press()`.
+        self.orbit.discard();
+    }
 }
 ```
 

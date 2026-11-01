@@ -11,24 +11,25 @@ build = "build.rs"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = [
-	"virtual-trackball",
-	"exponential-map",
-	"quaternion",
-	"arcball",
-	"camera",
+    "virtual-trackball",
+    "exponential-map",
+    "quaternion",
+    "arcball",
+    "camera",
 ]
 categories = [
-	"no-std",
-	"graphics",
+    "no-std",
+    "graphics",
 ]
 include = [
-	"src/**/*.rs",
-	"c11/src/**/*.[hc]",
-	"build.rs",
-	"Cargo.toml",
-	"README.md",
-	"RELEASES.md",
-	"LICENSE-*",
+    "src/**/*.rs",
+    "tests/**/*.rs",
+    "c11/src/**/*.[hc]",
+    "build.rs",
+    "Cargo.toml",
+    "README.md",
+    "RELEASES.md",
+    "LICENSE-*",
 ]
 
 [package.metadata.docs.rs]
@@ -54,14 +55,13 @@ rkyv-08 = ["dep:rkyv-08", "glam/rkyv-08"]
 cc = { version = "1.2.65", optional = true }
 
 [lints.rust]
-missing-docs = "deny"
+missing_docs = "deny"
 
 [lints.rustdoc]
-broken-intra-doc-links = "forbid"
+broken_intra_doc_links = "forbid"
 
 [lints.clippy]
 all = { level = "deny", priority = -1 }
 pedantic = { level = "deny", priority = -1 }
 nursery = { level = "deny", priority = -1 }
-tabs-in-doc-comments = "allow"
 similar_names = "allow"

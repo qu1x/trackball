@@ -8,9 +8,9 @@ use glam::{Quat, Vec3};
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
-	feature = "rkyv-08",
-	derive(rkyv_08::Archive, rkyv_08::Serialize, rkyv_08::Deserialize),
-	rkyv(crate = rkyv_08)
+    feature = "rkyv-08",
+    derive(rkyv_08::Archive, rkyv_08::Serialize, rkyv_08::Deserialize),
+    rkyv(crate = rkyv_08)
 )]
 #[non_exhaustive]
 pub enum Delta {
