@@ -1,6 +1,9 @@
 use crate::{Delta, Frame, Plane, Scope};
+use approx::AbsDiffEq;
 use core::fmt::Debug;
-use nalgebra::{Point3, RealField, UnitQuaternion};
+use glam::{Quat, Vec3};
+#[cfg_attr(test, allow(unused_imports))]
+use num_traits::Float;
 
 /// Clamp wrt abstract boundary conditions of [`Frame`] and [`Scope`].
 ///
@@ -16,7 +19,7 @@ use nalgebra::{Point3, RealField, UnitQuaternion};
 /// edge, or corner).
 ///
 /// [`Bound`]: crate::Bound
-pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
+pub trait Clamp: Send + Sync + Debug + 'static {
 	/// Maximum loops due to maximum possible boundary plane intersections.
 	///
 	/// Measure to break out of validation loop as last resort. Default is `100`. Round boundary
@@ -31,29 +34,24 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 	///
 	/// Must return `None` if target position satisfies all boundary conditions.
 	#[must_use]
-	fn target(&self, frame: &Frame<N>) -> Option<Plane<N>>;
+	fn target(&self, frame: &Frame) -> Option<Plane>;
 	/// Exceeded boundary plane for eye position in world space.
 	///
 	/// Must return `None` if eye position satisfies all boundary conditions.
 	#[must_use]
-	fn eye(&self, frame: &Frame<N>) -> Option<Plane<N>>;
+	fn eye(&self, frame: &Frame) -> Option<Plane>;
 	/// Exceeded boundary plane for up position in world space.
 	///
 	/// Must return `None` if up position satisfies all boundary conditions.
 	#[must_use]
-	fn up(&self, frame: &Frame<N>) -> Option<Plane<N>>;
+	fn up(&self, frame: &Frame) -> Option<Plane>;
 
 	/// Computes clamped [`Delta`] wrt abstract boundary conditions of [`Frame`] and [`Scope`].
 	///
 	/// Returns `None` if [`Delta`] satisfies all boundary conditions.
 	#[allow(clippy::too_many_lines)]
 	#[must_use]
-	fn compute(
-		&self,
-		frame: &Frame<N>,
-		scope: &Scope<N>,
-		delta: &Delta<N>,
-	) -> Option<(Delta<N>, usize)> {
+	fn compute(&self, frame: &Frame, scope: &Scope, delta: &Delta) -> Option<(Delta, usize)> {
 		match delta {
 			Delta::Frame => None,
 			&Delta::First {
@@ -74,33 +72,32 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 					if let Some(plane) = self.target(&frame) {
 						bound = true;
 						// Center of spherical cap in world space.
-						let center = plane.project_point(&eye);
+						let center = plane.project_point(eye);
 						// Height of spherical cap.
-						let height = distance - (center - eye).norm();
+						let height = distance - (center - eye).length();
 						// Radius of spherical cap.
-						let radius = (height * (distance * (N::one() + N::one()) - height)).sqrt();
+						let radius = (height * (distance * 2.0 - height)).sqrt();
 						// New clamped target position in spherical cap space.
-						let new_target = (plane.project_point(frame.target()) - center)
-							.normalize()
-							.scale(radius);
+						let new_target =
+							(plane.project_point(frame.target()) - center).normalize() * radius;
 						// New clamped target position in world space.
 						let new_target = center + new_target;
 						// New clamped target position in eye space.
 						let new_target = new_target - eye;
 
 						// Extract new signed pitch.
-						let pitch_plane = Plane::with_point(pitch_axis, &eye);
-						let old_pitch_target = pitch_plane.project_vector(&old_target);
-						let new_pitch_target = pitch_plane.project_vector(&new_target);
-						let pitch = pitch_plane.angle_between(&old_pitch_target, &new_pitch_target);
+						let pitch_plane = Plane::with_point(pitch_axis, eye);
+						let old_pitch_target = pitch_plane.project_vector(old_target);
+						let new_pitch_target = pitch_plane.project_vector(new_target);
+						let pitch = pitch_plane.angle_between(old_pitch_target, new_pitch_target);
 						// Apply signed pitch to old target.
-						let pitch_rot = UnitQuaternion::from_axis_angle(&pitch_axis, pitch);
+						let pitch_rot = Quat::from_axis_angle(pitch_axis, pitch);
 						let old_target = pitch_rot * old_target;
 						// Extract left-over signed yaw.
-						let yaw_plane = Plane::with_point(yaw_axis, &eye);
-						let old_yaw_target = yaw_plane.project_vector(&old_target);
-						let new_yaw_target = yaw_plane.project_vector(&new_target);
-						let yaw = yaw_plane.angle_between(&old_yaw_target, &new_yaw_target);
+						let yaw_plane = Plane::with_point(yaw_axis, eye);
+						let old_yaw_target = yaw_plane.project_vector(old_target);
+						let new_yaw_target = yaw_plane.project_vector(new_target);
+						let yaw = yaw_plane.angle_between(old_yaw_target, new_yaw_target);
 
 						// FIXME It stutters and seems that roll attitude isn't preserved.
 						#[allow(clippy::no_effect_underscore_binding)]
@@ -155,7 +152,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 				(min_delta != *delta).then_some((min_delta, loops))
 			}
 			&Delta::Orbit { rot: _, pos } => {
-				if pos != Point3::origin() {
+				if pos != Vec3::ZERO {
 					return Some((Delta::Frame, 0));
 				}
 				let old_frame = frame;
@@ -175,20 +172,29 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 						// Center of spherical cap in world space.
 						let center = plane.project_point(target);
 						// Height of spherical cap.
-						let height = distance - (center - target).norm();
+						let height = distance - (center - target).length();
 						// Radius of spherical cap.
-						let radius = (height * (distance * (N::one() + N::one()) - height)).sqrt();
+						let radius = (height * (distance * 2.0 - height)).sqrt();
 						// New clamped eye position in spherical cap space.
-						let new_eye = (plane.project_point(&frame.eye()) - center)
-							.normalize()
-							.scale(radius);
+						let new_eye =
+							(plane.project_point(frame.eye()) - center).normalize() * radius;
 						// New clamped eye position in world space.
 						let new_eye = center + new_eye;
 						// New clamped eye position in camera space.
 						let new_eye = old_rot_inverse * (new_eye - target);
 						// New delta rotation in camera space.
-						let rot = UnitQuaternion::rotation_between(&old_eye, &new_eye)
-							.unwrap_or_default();
+						// Shortest arc or identity if opposite without snapping small angles to
+						// identity unlike `Quat::from_rotation_arc()`.
+						let rot = match (old_eye.try_normalize(), new_eye.try_normalize()) {
+							(Some(old_ray), Some(new_ray))
+								if old_ray.dot(new_ray) >= 2.0 * f32::EPSILON - 1.0 =>
+							{
+								let axis = old_ray.cross(new_ray);
+								let w = 1.0 + old_ray.dot(new_ray);
+								Quat::from_xyzw(axis.x, axis.y, axis.z, w).normalize()
+							}
+							_ => Quat::IDENTITY,
+						};
 						min_delta = Delta::Orbit { rot, pos };
 					}
 					let frame = min_delta.transform(old_frame);
@@ -227,7 +233,7 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 					let frame = min_delta.transform(old_frame);
 					if let Some(plane) = self.eye(&frame) {
 						bound = true;
-						let new_eye = plane.project_point(&frame.eye());
+						let new_eye = plane.project_point(frame.eye());
 						let vec = old_rot_inverse * (new_eye - old_eye);
 						min_delta = Delta::Slide { vec };
 					}
@@ -255,8 +261,8 @@ pub trait Clamp<N: Copy + RealField>: Send + Sync + Debug + 'static {
 						min_delta = Delta::Frame;
 					}
 					if scope.scale() {
-						let (znear, _zfar) = scope.clip_planes(N::zero());
-						let min_zat = -znear * (N::one() + N::default_epsilon().sqrt());
+						let (znear, _zfar) = scope.clip_planes(0.0);
+						let min_zat = -znear * (1.0 + f32::default_epsilon().sqrt());
 						let new_zat = old_zat * rat;
 						if new_zat < min_zat {
 							bound = true;

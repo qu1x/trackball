@@ -1,7 +1,8 @@
 use core::fmt::Debug;
+use glam::Vec2;
 use heapless::LinearMap;
-use nalgebra::{Point2, RealField, Unit, Vector2, convert};
-use simba::scalar::SubsetOf;
+#[cfg_attr(test, allow(unused_imports))]
+use num_traits::Float;
 
 /// Touch gestures inducing slide, orbit, scale, and focus.
 ///
@@ -10,18 +11,18 @@ use simba::scalar::SubsetOf;
 /// All methods except [`Self::fingers()`] must be invoked on matching events fired by your 3D
 /// graphics library of choice.
 #[derive(Debug, Clone, Default)]
-pub struct Touch<F: Debug + Eq, N: Copy + RealField> {
+pub struct Touch<F: Debug + Eq> {
 	/// Finger positions in insertion order.
-	pos: LinearMap<F, Point2<N>, 10>,
+	pos: LinearMap<F, Vec2, 10>,
 	/// Cached normalization of previous two-finger vector.
-	vec: Option<(Unit<Vector2<N>>, N)>,
+	vec: Option<(Vec2, f32)>,
 	/// Number of fingers and centroid position of potential finger tap gesture.
-	tap: Option<(usize, Point2<N>)>,
+	tap: Option<(usize, Vec2)>,
 	/// Number of total finger moves per potential finger tap gesture.
 	mvs: usize,
 }
 
-impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
+impl<F: Debug + Copy + Eq> Touch<F> {
 	/// Computes centroid position, roll angle, and scale ratio from finger gestures.
 	///
 	/// Parameters are:
@@ -39,12 +40,7 @@ impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
 	/// # Panics
 	///
 	/// Panics with more than ten fingers.
-	pub fn compute(
-		&mut self,
-		fid: F,
-		pos: Point2<N>,
-		mvs: usize,
-	) -> Option<(usize, Point2<N>, N, N)> {
+	pub fn compute(&mut self, fid: F, pos: Vec2, mvs: usize) -> Option<(usize, Vec2, f32, f32)> {
 		// Insert or update finger position.
 		let old_pos = self.pos.insert(fid, pos).expect("Too many fingers");
 		// Ignore events of unchanged finger position.
@@ -57,13 +53,7 @@ impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
 		let max = self.tap.map_or(1, |(tap, _pos)| tap).max(num);
 		// Centroid position.
 		#[allow(clippy::cast_precision_loss)]
-		let pos = self
-			.pos
-			.values()
-			.map(|pos| pos.coords)
-			.sum::<Vector2<N>>()
-			.unscale(convert(num as f64))
-			.into();
+		let pos = self.pos.values().sum::<Vec2>() / num as f32;
 		// Cancel potential tap if more moves than number of finger starts plus optional number of
 		// moves per finger for debouncing tap gesture. Debouncing would delay non-tap gestures.
 		if self.mvs >= max + mvs * max {
@@ -82,7 +72,7 @@ impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
 		// Inhibit finger gestures for given number of moves per finger. No delay with zero `mvs`.
 		if self.mvs >= mvs * max {
 			// Identity roll angle and scale ratio.
-			let (rot, rat) = (N::zero(), N::one());
+			let (rot, rat) = (0.0, 1.0);
 			// Roll and scale only with two-finger gesture, otherwise orbit or slide via centroid.
 			if num == 2 {
 				// Position of first and second finger.
@@ -90,11 +80,13 @@ impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
 				let one_pos = val.next().unwrap();
 				let two_pos = val.next().unwrap();
 				// Ray and its length pointing from first to second finger.
-				let (new_ray, new_len) = Unit::new_and_get(two_pos - one_pos);
+				let new_vec = two_pos - one_pos;
+				let new_len = new_vec.length();
+				let new_ray = new_vec / new_len;
 				// Get old and replace with new vector.
 				if let Some((old_ray, old_len)) = self.vec.replace((new_ray, new_len)) {
 					// Roll angle in opposite direction at centroid.
-					let rot = old_ray.perp(&new_ray).atan2(old_ray.dot(&new_ray));
+					let rot = old_ray.perp_dot(new_ray).atan2(old_ray.dot(new_ray));
 					// Scale ratio at centroid.
 					let rat = old_len / new_len;
 					// Induced two-finger slide, roll, and scale.
@@ -117,7 +109,7 @@ impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
 	/// Returns `None` as long as there are finger positions or no tap gesture has been recognized.
 	///
 	/// Discards finger positions and tap gesture if generic finger ID `fid` is unknown.
-	pub fn discard(&mut self, fid: F) -> Option<(usize, Point2<N>)> {
+	pub fn discard(&mut self, fid: F) -> Option<(usize, Vec2)> {
 		let unknown = self.pos.remove(&fid).is_none();
 		self.vec = None;
 		if self.pos.is_empty() || unknown {
@@ -132,22 +124,5 @@ impl<F: Debug + Copy + Eq, N: Copy + RealField> Touch<F, N> {
 	#[must_use]
 	pub fn fingers(&self) -> usize {
 		self.pos.len()
-	}
-	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
-	#[must_use]
-	pub fn cast<M: Copy + RealField>(self) -> Touch<F, M>
-	where
-		N: SubsetOf<M>,
-	{
-		Touch {
-			pos: self
-				.pos
-				.into_iter()
-				.map(|(fid, pos)| (fid, pos.cast()))
-				.collect::<LinearMap<F, Point2<M>, 10>>(),
-			vec: self.vec.map(|(ray, len)| (ray.cast(), len.to_superset())),
-			tap: self.tap.map(|(mvs, pos)| (mvs, pos.cast())),
-			mvs: self.mvs,
-		}
 	}
 }

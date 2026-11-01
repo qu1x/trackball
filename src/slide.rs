@@ -1,5 +1,4 @@
-use nalgebra::{Point2, RealField, Vector2};
-use simba::scalar::SubsetOf;
+use glam::Vec2;
 
 /// Slide induced by displacement on screen.
 ///
@@ -7,28 +6,18 @@ use simba::scalar::SubsetOf;
 ///
 /// Both its methods must be invoked on matching events fired by your 3D graphics library of choice.
 #[derive(Debug, Clone, Default)]
-pub struct Slide<N: Copy + RealField> {
+pub struct Slide {
 	/// Caches previous cursor/finger position.
-	pos: Option<Point2<N>>,
+	pos: Option<Vec2>,
 }
 
-impl<N: Copy + RealField> Slide<N> {
+impl Slide {
 	/// Computes slide between previous and current cursor/finger position in screen space.
-	pub fn compute(&mut self, pos: Point2<N>) -> Option<Vector2<N>> {
+	pub fn compute(&mut self, pos: Vec2) -> Option<Vec2> {
 		self.pos.replace(pos).map(|old| old - pos)
 	}
 	/// Discards cached previous cursor/finger position on button/finger release.
 	pub const fn discard(&mut self) {
 		self.pos = None;
-	}
-	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
-	#[must_use]
-	pub fn cast<M: Copy + RealField>(self) -> Slide<M>
-	where
-		N: SubsetOf<M>,
-	{
-		Slide {
-			pos: self.pos.map(Point2::cast),
-		}
 	}
 }

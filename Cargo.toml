@@ -32,29 +32,27 @@ include = [
 ]
 
 [package.metadata.docs.rs]
-features = ["glam", "serde", "rkyv"]
+features = ["serde", "rkyv"]
 cargo-args = ["-Z", "unstable-options", "-Z", "rustdoc-scrape-examples"]
 rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 heapless = { version = "0.9.3", default-features = false }
-glam = { version = "0.32.0", default-features = false, optional = true }
-nalgebra = { version = "0.35.0", default-features = false, features = ["libm"] }
-simba = { version = "0.10.0", default-features = false, features = ["libm"] }
+glam = { version = "0.33.12", default-features = false, features = ["libm", "approx"] }
 approx = { version = "0.5.1", default-features = false }
+num-traits = { version = "0.2.19", default-features = false, features = ["libm"] }
 serde = { version = "1.0.228", default-features = false, features = ["derive"], optional = true }
-rkyv = { version = "0.7.45", default-features = false, optional = true }
+rkyv = { version = "0.8.10", default-features = false, optional = true }
 
 [features]
-glam = ["dep:glam", "glam/libm", "nalgebra/convert-glam032"]
-serde = ["dep:serde", "nalgebra/serde-serialize-no-std", "simba/serde_serialize"]
-rkyv = ["dep:rkyv", "nalgebra/rkyv-serialize-no-std", "simba/rkyv-serialize"]
+serde = ["dep:serde", "glam/serde"]
+rkyv = ["dep:rkyv", "glam/rkyv"]
 
 [build-dependencies]
 cc = { version = "1.2.65", optional = true }
 
 [lints.rust]
-missing-docs = "forbid"
+missing-docs = "deny"
 
 [lints.rustdoc]
 broken-intra-doc-links = "forbid"

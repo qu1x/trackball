@@ -1,11 +1,17 @@
+// Generated `rkyv` resolver lacks docs of its variant fields.
+#![cfg_attr(feature = "rkyv", allow(missing_docs))]
+
 use crate::Frame;
-use nalgebra::{Point3, RealField, Unit, UnitQuaternion, Vector3};
-use simba::scalar::SubsetOf;
+use glam::{Quat, Vec3};
 
 /// Delta transform from initial to final [`Frame`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub enum Delta<N: Copy + RealField> {
+#[cfg_attr(
+	feature = "rkyv",
+	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+)]
+pub enum Delta {
 	/// Yields frame as identity transform (default).
 	#[default]
 	Frame,
@@ -14,62 +20,62 @@ pub enum Delta<N: Copy + RealField> {
 	/// See [`Frame::look_around()`].
 	First {
 		/// Pitch angle.
-		pitch: N,
+		pitch: f32,
 		/// Yaw angle.
-		yaw: N,
+		yaw: f32,
 		/// Yaw axis.
-		yaw_axis: Unit<Vector3<N>>,
+		yaw_axis: Vec3,
 	},
 	/// Tracks target which slides by vector in world space.
 	///
 	/// Preserves eye position inclusive its roll attitude.
 	Track {
 		/// Vector in world space of a sliding target to track.
-		vec: Vector3<N>,
+		vec: Vec3,
 	},
 	/// Orbits eye by rotation in camera space around point in camera space.
 	///
 	/// See [`Frame::local_orbit_around()`].
 	Orbit {
 		/// Rotation in camera space.
-		rot: UnitQuaternion<N>,
+		rot: Quat,
 		/// Point in camera space.
-		pos: Point3<N>,
+		pos: Vec3,
 	},
 	/// Slides camera eye and target by vector in camera space.
 	///
 	/// See [`Frame::local_slide()`].
 	Slide {
 		/// Vector in camera space.
-		vec: Vector3<N>,
+		vec: Vec3,
 	},
 	/// Scales distance between eye and point in camera space by ratio preserving target position.
 	///
 	/// See [`Frame::local_scale_around()`].
 	Scale {
 		/// Scale ratio.
-		rat: N,
+		rat: f32,
 		/// Point in camera space.
-		pos: Point3<N>,
+		pos: Vec3,
 	},
 }
 
-impl<N: Copy + RealField> Delta<N> {
+impl Delta {
 	/// Transforms from initial to final frame.
 	#[must_use]
-	pub fn transform(&self, frame: &Frame<N>) -> Frame<N> {
+	pub fn transform(&self, frame: &Frame) -> Frame {
 		let mut frame = *frame;
-		match self {
+		match *self {
 			Self::Frame => {}
 			Self::First {
 				pitch,
 				yaw,
 				yaw_axis,
-			} => frame.look_around(*pitch, *yaw, yaw_axis),
+			} => frame.look_around(pitch, yaw, yaw_axis),
 			Self::Track { vec } => frame.set_target(frame.target() + vec),
 			Self::Orbit { rot, pos } => frame.local_orbit_around(rot, pos),
 			Self::Slide { vec } => frame.local_slide(vec),
-			Self::Scale { rat, pos } => frame.local_scale_around(*rat, pos),
+			Self::Scale { rat, pos } => frame.local_scale_around(rat, pos),
 		}
 		frame
 	}
@@ -96,7 +102,7 @@ impl<N: Copy + RealField> Delta<N> {
 			},
 			Self::Slide { vec } => Self::Slide { vec: -vec },
 			Self::Scale { rat, pos } => Self::Scale {
-				rat: N::one() + N::one() - rat,
+				rat: 2.0 - rat,
 				pos,
 			},
 		}
@@ -109,7 +115,7 @@ impl<N: Copy + RealField> Delta<N> {
 	///   * `self`: The delta transform to interpolate from.
 	///   * `t`: The interpolation parameter between 0 and 1.
 	#[must_use]
-	pub fn lerp_slerp(&self, t: N) -> Self {
+	pub fn lerp_slerp(&self, t: f32) -> Self {
 		match *self {
 			Self::Frame => Self::Frame,
 			Self::First {
@@ -123,73 +129,14 @@ impl<N: Copy + RealField> Delta<N> {
 			},
 			Self::Track { vec } => Self::Track { vec: vec * t },
 			Self::Orbit { rot, pos } => Self::Orbit {
-				rot: rot.powf(t),
+				rot: Quat::IDENTITY.slerp(rot, t),
 				pos,
 			},
 			Self::Slide { vec } => Self::Slide { vec: vec * t },
 			Self::Scale { rat, pos } => Self::Scale {
-				rat: (rat - N::one()) * t + N::one(),
+				rat: (rat - 1.0) * t + 1.0,
 				pos,
 			},
 		}
-	}
-	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
-	#[must_use]
-	pub fn cast<M: Copy + RealField>(self) -> Delta<M>
-	where
-		N: SubsetOf<M>,
-	{
-		match self {
-			Self::Frame => Delta::Frame,
-			Self::First {
-				pitch,
-				yaw,
-				yaw_axis,
-			} => Delta::First {
-				pitch: pitch.to_superset(),
-				yaw: yaw.to_superset(),
-				yaw_axis: yaw_axis.cast(),
-			},
-			Self::Track { vec } => Delta::Track { vec: vec.cast() },
-			Self::Orbit { rot, pos } => Delta::Orbit {
-				rot: rot.cast(),
-				pos: pos.cast(),
-			},
-			Self::Slide { vec } => Delta::Slide { vec: vec.cast() },
-			Self::Scale { rat, pos } => Delta::Scale {
-				rat: rat.to_superset(),
-				pos: pos.cast(),
-			},
-		}
-	}
-}
-
-#[cfg(feature = "rkyv")]
-impl<N: Copy + RealField> rkyv::Archive for Delta<N> {
-	type Archived = Self;
-	type Resolver = ();
-
-	#[inline]
-	#[allow(unsafe_code)]
-	unsafe fn resolve(&self, _: usize, (): Self::Resolver, out: *mut Self::Archived) {
-		unsafe {
-			out.write(rkyv::to_archived!(*self as Self));
-		}
-	}
-}
-
-#[cfg(feature = "rkyv")]
-impl<Ser: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Serialize<Ser> for Delta<N> {
-	#[inline]
-	fn serialize(&self, _: &mut Ser) -> Result<Self::Resolver, Ser::Error> {
-		Ok(())
-	}
-}
-
-#[cfg(feature = "rkyv")]
-impl<De: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Deserialize<Self, De> for Delta<N> {
-	#[inline]
-	fn deserialize(&self, _: &mut De) -> Result<Self, De::Error> {
-		Ok(rkyv::from_archived!(*self))
 	}
 }

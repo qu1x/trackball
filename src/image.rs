@@ -1,31 +1,34 @@
-use crate::{Frame, Scope};
-use nalgebra::{Isometry3, Matrix4, Point2, Point3, RealField, Vector2, Vector3, convert, zero};
-use simba::scalar::SubsetOf;
+use crate::{Frame, Rigid, Scope};
+use glam::{Mat4, Vec2, Vec3};
 
 /// Image as projection of [`Scope`] wrt [`Frame`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Image<N: Copy + RealField> {
+#[cfg_attr(
+	feature = "rkyv",
+	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+)]
+pub struct Image {
 	/// Current position in screen space of hovering input or pointing device.
-	pos: Point2<N>,
+	pos: Vec2,
 	/// Maximum position in screen space as screen's width and height.
-	max: Point2<N>,
+	max: Vec2,
 	/// Cached unit per pixel on focus plane to scale/project positions/vectors onto focus plane.
-	upp: N,
+	upp: f32,
 	/// Cached previous frame.
-	frame: Frame<N>,
+	frame: Frame,
 	/// Cached previous scope.
-	scope: Scope<N>,
+	scope: Scope,
 	/// Cached view isometry from world to camera space coinciding with right-handed look-at space.
-	view_iso: Isometry3<N>,
+	view_iso: Rigid,
 	/// Cached homogeneous view matrix computed from view isometry.
-	view_mat: Matrix4<N>,
+	view_mat: Mat4,
 	/// Cached scale-identical orthographic or perspective projection matrix.
-	proj_mat: Matrix4<N>,
+	proj_mat: Mat4,
 	/// Cached transformation.
-	proj_view_mat: Matrix4<N>,
+	proj_view_mat: Mat4,
 	/// Cached inverse of transformation.
-	proj_view_inv: Matrix4<N>,
+	proj_view_inv: Mat4,
 	/// Whether to compute transformation. Default is `true`.
 	compute_mat: bool,
 	/// Whether to compute inverse transformation. Default is `true`.
@@ -34,26 +37,26 @@ pub struct Image<N: Copy + RealField> {
 	use_passive: bool,
 }
 
-impl<N: Copy + RealField> Image<N> {
+impl Image {
 	/// Computes initial transformations from frame, scope, and screen's width and height.
 	#[must_use]
-	pub fn new(frame: &Frame<N>, scope: &Scope<N>, max: Point2<N>) -> Self {
+	pub fn new(frame: &Frame, scope: &Scope, max: Vec2) -> Self {
 		let mut image = Self {
-			pos: Point2::origin(),
+			pos: Vec2::ZERO,
 			max,
-			upp: zero(),
+			upp: 0.0,
 			frame: *frame,
 			scope: *scope,
-			view_iso: Isometry3::identity(),
-			view_mat: zero(),
-			proj_mat: zero(),
-			proj_view_mat: zero(),
-			proj_view_inv: zero(),
+			view_iso: Rigid::IDENTITY,
+			view_mat: Mat4::ZERO,
+			proj_mat: Mat4::ZERO,
+			proj_view_mat: Mat4::ZERO,
+			proj_view_inv: Mat4::ZERO,
 			compute_mat: true,
 			compute_inv: true,
 			use_passive: false,
 		};
-		if frame.distance() != N::zero() {
+		if frame.distance() != 0.0 {
 			image.compute_view(frame);
 			image.compute_projection_and_upp(frame.distance(), scope);
 			image.compute_transformation();
@@ -64,8 +67,8 @@ impl<N: Copy + RealField> Image<N> {
 	/// Recomputes only cached matrices whose parameters have changed, see [`Self::set_compute()`].
 	///
 	/// Returns `Some(true)` on success, `Some(false)` on failure, and `None` with no changes.
-	#[allow(clippy::useless_let_if_seq)]
-	pub fn compute(&mut self, frame: Frame<N>, scope: Scope<N>) -> Option<bool> {
+	#[allow(clippy::useless_let_if_seq, clippy::float_cmp)]
+	pub fn compute(&mut self, frame: Frame, scope: Scope) -> Option<bool> {
 		let mut compute = false;
 		if self.frame != frame {
 			self.compute_view(&frame);
@@ -103,64 +106,64 @@ impl<N: Copy + RealField> Image<N> {
 	}
 	/// Current position in screen space of hovering input or pointing device.
 	#[must_use]
-	pub const fn pos(&self) -> &Point2<N> {
-		&self.pos
+	pub const fn pos(&self) -> Vec2 {
+		self.pos
 	}
 	/// Sets current position in screen space of hovering input or pointing device.
-	pub const fn set_pos(&mut self, pos: Point2<N>) {
+	pub const fn set_pos(&mut self, pos: Vec2) {
 		self.pos = pos;
 	}
 	/// Maximum position in screen space as screen's width and height.
 	#[must_use]
-	pub const fn max(&self) -> &Point2<N> {
-		&self.max
+	pub const fn max(&self) -> Vec2 {
+		self.max
 	}
 	/// Sets maximum position in screen space as screen's width and height.
-	pub fn set_max(&mut self, max: Point2<N>) {
+	pub fn set_max(&mut self, max: Vec2) {
 		// Let `Self::compute()` recompute projection matrix by invalidating cached previous scope.
 		if self.max != max {
-			self.scope.set_fov(N::zero());
+			self.scope.set_fov(0.0);
 		}
 		self.max = max;
 	}
 	/// Cached unit per pixel on focus plane to scale/project positions/vectors onto focus plane.
 	#[must_use]
-	pub const fn upp(&self) -> N {
+	pub const fn upp(&self) -> f32 {
 		self.upp
 	}
 	/// Cached view isometry.
 	#[must_use]
-	pub const fn view_isometry(&self) -> &Isometry3<N> {
+	pub const fn view_isometry(&self) -> &Rigid {
 		&self.view_iso
 	}
 	/// Cached view matrix.
 	#[must_use]
-	pub const fn view(&self) -> &Matrix4<N> {
+	pub const fn view(&self) -> &Mat4 {
 		&self.view_mat
 	}
 	/// Computes view isometry and matrix from frame wrt camera eye and target.
-	pub fn compute_view(&mut self, frame: &Frame<N>) {
+	pub fn compute_view(&mut self, frame: &Frame) {
 		self.view_iso = if self.use_passive {
 			frame.inverse_view()
 		} else {
 			frame.view()
 		};
-		self.view_mat = self.view_iso.to_homogeneous();
+		self.view_mat = self.view_iso.to_mat4();
 	}
 	/// Cached projection matrix.
 	#[must_use]
-	pub const fn projection(&self) -> &Matrix4<N> {
+	pub const fn projection(&self) -> &Mat4 {
 		&self.proj_mat
 	}
 	/// Computes projection matrix and unit per pixel on focus plane.
-	pub fn compute_projection_and_upp(&mut self, zat: N, scope: &Scope<N>) {
-		let (mat, upp) = scope.projection_and_upp(zat, &self.max);
+	pub fn compute_projection_and_upp(&mut self, zat: f32, scope: &Scope) {
+		let (mat, upp) = scope.projection_and_upp(zat, self.max);
 		self.upp = upp;
 		self.proj_mat = mat;
 	}
 	/// Cached projection view matrix.
 	#[must_use]
-	pub const fn transformation(&self) -> &Matrix4<N> {
+	pub const fn transformation(&self) -> &Mat4 {
 		&self.proj_view_mat
 	}
 	/// Computes projection view matrix.
@@ -169,112 +172,54 @@ impl<N: Copy + RealField> Image<N> {
 	}
 	/// Cached inverse projection view matrix.
 	#[must_use]
-	pub const fn inverse_transformation(&self) -> &Matrix4<N> {
+	pub const fn inverse_transformation(&self) -> &Mat4 {
 		&self.proj_view_inv
 	}
 	/// Computes inverse of projection view matrix.
 	///
 	/// Returns `true` on success.
 	pub fn compute_inverse_transformation(&mut self) -> bool {
-		let inv = self.proj_view_mat.try_inverse();
-		if let Some(mat) = inv {
-			self.proj_view_inv = mat;
+		let det = self.proj_view_mat.determinant();
+		let inv = det != 0.0 && det.is_finite();
+		if inv {
+			self.proj_view_inv = self.proj_view_mat.inverse();
 		}
-		inv.is_some()
+		inv
 	}
 	/// Clamps position in screen space wrt its maximum in screen space.
 	#[must_use]
-	pub fn clamp_pos_wrt_max(pos: &Point2<N>, max: &Point2<N>) -> Point2<N> {
-		Point2::new(pos.x.clamp(N::zero(), max.x), pos.y.clamp(N::zero(), max.y))
+	pub const fn clamp_pos_wrt_max(pos: Vec2, max: Vec2) -> Vec2 {
+		Vec2::new(pos.x.clamp(0.0, max.x), pos.y.clamp(0.0, max.y))
 	}
 	/// Clamps position in screen space.
 	#[must_use]
-	pub fn clamp_pos(&self, pos: &Point2<N>) -> Point2<N> {
-		Self::clamp_pos_wrt_max(pos, &self.max)
+	pub const fn clamp_pos(&self, pos: Vec2) -> Vec2 {
+		Self::clamp_pos_wrt_max(pos, self.max)
 	}
 	/// Transforms position and its maximum from screen to camera space wrt its maximum.
 	#[must_use]
-	pub fn transform_pos_and_max_wrt_max(
-		pos: &Point2<N>,
-		max: &Point2<N>,
-	) -> (Point2<N>, Point2<N>) {
-		let max = max * convert(0.5);
-		(Point2::new(pos.x - max.x, max.y - pos.y), max)
+	pub fn transform_pos_and_max_wrt_max(pos: Vec2, max: Vec2) -> (Vec2, Vec2) {
+		let max = max * 0.5;
+		(Vec2::new(pos.x - max.x, max.y - pos.y), max)
 	}
 	/// Transforms position from screen to camera space.
 	#[must_use]
-	pub fn transform_pos(&self, pos: &Point2<N>) -> Point2<N> {
-		Self::transform_pos_and_max_wrt_max(pos, &self.max).0
+	pub fn transform_pos(&self, pos: Vec2) -> Vec2 {
+		Self::transform_pos_and_max_wrt_max(pos, self.max).0
 	}
 	/// Transforms vector from screen to camera space.
 	#[must_use]
-	pub fn transform_vec(pos: &Vector2<N>) -> Vector2<N> {
-		Vector2::new(pos.x, -pos.y)
+	pub const fn transform_vec(vec: Vec2) -> Vec2 {
+		Vec2::new(vec.x, -vec.y)
 	}
 	/// Transforms position from screen to camera space and projects it onto focus plane.
 	#[must_use]
-	pub fn project_pos(&self, pos: &Point2<N>) -> Point3<N> {
-		self.transform_pos(pos)
-			.coords
-			.scale(self.upp)
-			.push(N::zero())
-			.into()
+	pub fn project_pos(&self, pos: Vec2) -> Vec3 {
+		(self.transform_pos(pos) * self.upp).extend(0.0)
 	}
 	/// Transforms vector from screen to camera space and projects it onto focus plane.
 	#[must_use]
-	pub fn project_vec(&self, vec: &Vector2<N>) -> Vector3<N> {
-		Self::transform_vec(vec).scale(self.upp).push(N::zero())
-	}
-	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
-	#[must_use]
-	pub fn cast<M: Copy + RealField>(self) -> Image<M>
-	where
-		N: SubsetOf<M>,
-	{
-		Image {
-			pos: self.pos.cast(),
-			max: self.max.cast(),
-			upp: self.upp.to_superset(),
-			frame: self.frame.cast(),
-			scope: self.scope.cast(),
-			view_iso: self.view_iso.cast(),
-			view_mat: self.view_mat.cast(),
-			proj_mat: self.proj_mat.cast(),
-			proj_view_mat: self.proj_view_mat.cast(),
-			proj_view_inv: self.proj_view_inv.cast(),
-			compute_mat: self.compute_mat,
-			compute_inv: self.compute_inv,
-			use_passive: self.use_passive,
-		}
-	}
-}
-
-#[cfg(feature = "rkyv")]
-impl<N: Copy + RealField> rkyv::Archive for Image<N> {
-	type Archived = Self;
-	type Resolver = ();
-
-	#[inline]
-	#[allow(unsafe_code)]
-	unsafe fn resolve(&self, _: usize, (): Self::Resolver, out: *mut Self::Archived) {
-		unsafe {
-			out.write(rkyv::to_archived!(*self as Self));
-		}
-	}
-}
-
-#[cfg(feature = "rkyv")]
-impl<Ser: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Serialize<Ser> for Image<N> {
-	#[inline]
-	fn serialize(&self, _: &mut Ser) -> Result<Self::Resolver, Ser::Error> {
-		Ok(())
-	}
-}
-
-#[cfg(feature = "rkyv")]
-impl<De: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Deserialize<Self, De> for Image<N> {
-	#[inline]
-	fn deserialize(&self, _: &mut De) -> Result<Self, De::Error> {
-		Ok(rkyv::from_archived!(*self))
+	pub fn project_vec(&self, vec: Vec2) -> Vec3 {
+		(Self::transform_vec(vec) * self.upp).extend(0.0)
 	}
 }

@@ -1,5 +1,7 @@
-use nalgebra::{Point2, RealField, Unit, UnitQuaternion, Vector3};
-use simba::scalar::SubsetOf;
+use glam::{Quat, Vec2, Vec3};
+#[cfg(not(feature = "cc"))]
+#[cfg_attr(test, allow(unused_imports))]
+use num_traits::Float;
 
 #[cfg(not(feature = "cc"))]
 use crate::Image;
@@ -10,16 +12,17 @@ use crate::Image;
 ///
 /// Both its methods must be invoked on matching events fired by your 3D graphics library of choice.
 #[derive(Debug, Clone, Default)]
-pub struct Orbit<N: Copy + RealField> {
+pub struct Orbit {
 	/// Caches normalization of previous cursor/finger position.
-	vec: Option<(Unit<Vector3<N>>, N)>,
+	vec: Option<(Vec3, f32)>,
 }
 
 #[cfg(not(feature = "cc"))]
-use nalgebra::Matrix3;
-
+use core::f32::consts::FRAC_PI_2;
 #[cfg(not(feature = "cc"))]
-impl<N: Copy + RealField> Orbit<N> {
+use glam::Mat3;
+
+impl Orbit {
 	/// Computes rotation between previous and current cursor/finger position.
 	///
 	/// Normalization of previous position is cached and has to be discarded on button/finger
@@ -41,63 +44,44 @@ impl<N: Copy + RealField> Orbit<N> {
 	///
 	///   * on first invocation and after [`Self::discard()`] as there is no previous position yet,
 	///   * in the unlikely case that a position event fires twice resulting in zero displacements.
-	pub fn compute(&mut self, pos: &Point2<N>, max: &Point2<N>) -> Option<UnitQuaternion<N>> {
+	#[cfg(not(feature = "cc"))]
+	pub fn compute(&mut self, pos: Vec2, max: Vec2) -> Option<Quat> {
 		// Clamped cursor/finger position from left to right and top to bottom.
 		let pos = Image::clamp_pos_wrt_max(pos, max);
 		// Centered cursor/finger position and its maximum from left to right and bottom to top.
-		let (pos, max) = Image::transform_pos_and_max_wrt_max(&pos, max);
+		let (pos, max) = Image::transform_pos_and_max_wrt_max(pos, max);
 		// Positive z-axis pointing from far to near.
-		let (pos, pza) = (pos.coords.push(N::zero()), Vector3::z_axis());
+		let (pos, pza) = (pos.extend(0.0), Vec3::Z);
 		// New position as ray and length on xy-plane or z-axis of zero length for origin position.
-		let (ray, len) = Unit::try_new_and_get(pos, N::zero()).unwrap_or_else(|| (pza, N::zero()));
+		let (ray, len) = (pos.try_normalize().unwrap_or(pza), pos.length());
 		// Get old ray and length as start position and offset and replace with new ray and length.
 		let (pos, off) = self.vec.replace((ray, len))?;
 		// Displacement vector from old to new ray and length.
-		let vec = ray.into_inner() * len - pos.into_inner() * off;
+		let vec = ray * len - pos * off;
 		// Shadow new ray and length as normalized displacement vector.
-		let (ray, len) = Unit::try_new_and_get(vec, N::zero())?;
+		let (ray, len) = (vec.try_normalize()?, vec.length());
 		// Treat maximum of half the screen's width or height as trackball's radius.
 		let max = max.x.max(max.y);
 		// Map trackball's diameter onto half its circumference for start positions so that only
 		// screen corners are mapped to lower hemisphere which induces less intuitive rotations.
-		let (sin, cos) = (off / max * N::frac_pi_2()).sin_cos();
+		let (sin, cos) = (off / max * FRAC_PI_2).sin_cos();
 		// Exponential map of start position.
-		let exp = Vector3::new(sin * pos.x, sin * pos.y, cos);
+		let exp = Vec3::new(sin * pos.x, sin * pos.y, cos);
 		// Tangent ray of geodesic at exponential map.
-		let tan = Vector3::new(cos * pos.x, cos * pos.y, -sin);
+		let tan = Vec3::new(cos * pos.x, cos * pos.y, -sin);
 		// Cross product of z-axis and start position to construct orthonormal frames.
-		let zxp = Vector3::new(-pos.y, pos.x, N::zero());
+		let zxp = Vec3::new(-pos.y, pos.x, 0.0);
 		// Orthonormal frame as argument of differential of exponential map.
-		let arg = Matrix3::from_columns(&[pza.into_inner(), pos.into_inner(), zxp]);
+		let arg = Mat3::from_cols(pza, pos, zxp);
 		// Orthonormal frame as image of differential of exponential map.
-		let img = Matrix3::from_columns(&[exp, tan, zxp]);
+		let img = Mat3::from_cols(exp, tan, zxp);
 		// Compute differential of exponential map by its argument and image and apply it to
 		// displacement vector which in turn spans rotation plane together with exponential map.
-		let vec = (img * arg.tr_mul(&ray.into_inner())).cross(&exp);
+		let vec = (img * (arg.transpose() * ray)).cross(exp);
 		// Angle of rotation is displacement length divided by radius.
-		Unit::try_new(vec, N::zero()).map(|ray| UnitQuaternion::from_axis_angle(&ray, len / max))
+		vec.try_normalize()
+			.map(|ray| Quat::from_axis_angle(ray, len / max))
 	}
-	/// Discards cached normalization of previous cursor/finger position on button/finger release.
-	pub const fn discard(&mut self) {
-		self.vec = None;
-	}
-	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
-	#[must_use]
-	pub fn cast<M: Copy + RealField>(self) -> Orbit<M>
-	where
-		N: SubsetOf<M>,
-	{
-		Orbit {
-			vec: self.vec.map(|(ray, len)| (ray.cast(), len.to_superset())),
-		}
-	}
-}
-
-#[cfg(feature = "cc")]
-use nalgebra::Quaternion;
-
-#[cfg(feature = "cc")]
-impl Orbit<f32> {
 	/// Computes rotation between previous and current cursor/finger position.
 	///
 	/// Normalization of previous position is cached and has to be discarded on button/finger
@@ -119,96 +103,31 @@ impl Orbit<f32> {
 	///
 	///   * on first invocation and after [`Self::discard()`] as there is no previous position yet,
 	///   * in the unlikely case that a position event fires twice resulting in zero displacements.
-	pub fn compute(&mut self, pos: &Point2<f32>, max: &Point2<f32>) -> Option<UnitQuaternion<f32>> {
-		let mut rot = Quaternion::identity();
+	#[cfg(feature = "cc")]
+	pub fn compute(&mut self, pos: Vec2, max: Vec2) -> Option<Quat> {
+		let mut rot = Quat::IDENTITY.to_array();
 		let mut old = self
 			.vec
-			.map(|(ray, len)| ray.into_inner().push(len))
+			.map(|(ray, len)| ray.extend(len).to_array())
 			.unwrap_or_default();
+		let (pos, max) = (pos.to_array(), max.to_array());
 		#[allow(unsafe_code)]
 		unsafe {
 			trackball_orbit_f(
-				rot.as_vector_mut().as_mut_ptr(),
+				rot.as_mut_ptr(),
 				old.as_mut_ptr(),
-				pos.coords.as_ptr(),
-				max.coords.as_ptr(),
+				pos.as_ptr(),
+				max.as_ptr(),
 			);
 		}
-		self.vec = Some((Unit::new_unchecked(old.xyz()), old.w));
+		let [x, y, z, w] = old;
+		self.vec = Some((Vec3::new(x, y, z), w));
 		#[allow(clippy::float_cmp)]
-		(rot.w != 1.0).then(|| UnitQuaternion::new_unchecked(rot))
+		(rot[3] != 1.0).then(|| Quat::from_array(rot))
 	}
 	/// Discards cached normalization of previous cursor/finger position on button/finger release.
 	pub const fn discard(&mut self) {
 		self.vec = None;
-	}
-	/// Casts components to another type, e.g., to [`f64`].
-	#[must_use]
-	pub fn cast<M: Copy + RealField>(self) -> Orbit<M>
-	where
-		f32: SubsetOf<M>,
-	{
-		Orbit {
-			vec: self.vec.map(|(ray, len)| (ray.cast(), len.to_superset())),
-		}
-	}
-}
-
-#[cfg(feature = "cc")]
-impl Orbit<f64> {
-	/// Computes rotation between previous and current cursor/finger position.
-	///
-	/// Normalization of previous position is cached and has to be discarded on button/finger
-	/// release via [`Self::discard()`]. Current position `pos` is clamped between origin and
-	/// maximum position `max` as screen's width and height.
-	///
-	/// Screen space with origin in top left corner:
-	///
-	///   * x-axis from left to right,
-	///   * y-axis from top to bottom.
-	///
-	/// Camera space with origin at its target, the trackball's center:
-	///
-	///   * x-axis from left to right,
-	///   * y-axis from bottom to top,
-	///   * z-axis from far to near.
-	///
-	/// Returns `None`:
-	///
-	///   * on first invocation and after [`Self::discard()`] as there is no previous position yet,
-	///   * in the unlikely case that a position event fires twice resulting in zero displacements.
-	pub fn compute(&mut self, pos: &Point2<f64>, max: &Point2<f64>) -> Option<UnitQuaternion<f64>> {
-		let mut rot = Quaternion::identity();
-		let mut old = self
-			.vec
-			.map(|(ray, len)| ray.into_inner().push(len))
-			.unwrap_or_default();
-		#[allow(unsafe_code)]
-		unsafe {
-			trackball_orbit_d(
-				rot.as_vector_mut().as_mut_ptr(),
-				old.as_mut_ptr(),
-				pos.coords.as_ptr(),
-				max.coords.as_ptr(),
-			);
-		}
-		self.vec = Some((Unit::new_unchecked(old.xyz()), old.w));
-		#[allow(clippy::float_cmp)]
-		(rot.w != 1.0).then(|| UnitQuaternion::new_unchecked(rot))
-	}
-	/// Discards cached normalization of previous cursor/finger position on button/finger release.
-	pub const fn discard(&mut self) {
-		self.vec = None;
-	}
-	/// Casts components to another type, e.g., to [`f32`].
-	#[must_use]
-	pub fn cast<M: Copy + RealField>(self) -> Orbit<M>
-	where
-		f64: SubsetOf<M>,
-	{
-		Orbit {
-			vec: self.vec.map(|(ray, len)| (ray.cast(), len.to_superset())),
-		}
 	}
 }
 
@@ -216,5 +135,4 @@ impl Orbit<f64> {
 #[allow(unsafe_code)]
 unsafe extern "C" {
 	fn trackball_orbit_f(xyzw: *mut f32, xyzm: *mut f32, xy: *const f32, wh: *const f32);
-	fn trackball_orbit_d(xyzw: *mut f64, xyzm: *mut f64, xy: *const f64, wh: *const f64);
 }

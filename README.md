@@ -66,7 +66,6 @@ screen's center.[^1]
 
 Following features are disabled unless their corresponding feature gate is enabled:
 
-  * `glam` for converting between `nalgebra` and `glam` types.
   * `serde` for `serde` support of various structures of this crate and its dependencies.
   * `rkyv` for `rkyv` support of various structures of this crate and its dependencies.
   * `cc` for testing the behaviorally identical C implementation of the exponential map.
@@ -79,30 +78,27 @@ A trackball camera mode implementation can be as easy as this by delegating even
 graphics library of choice to the [`Orbit`] operation handler along with other handlers.
 
 ```rust
-use trackball::{
-	nalgebra::{Point2, Vector3},
-	Frame, Image, Orbit,
-};
+use trackball::{Frame, Image, Orbit, glam::Vec2};
 
 /// Trackball camera mode.
 pub struct Trackball {
 	// Frame wrt camera eye and target.
-	frame: Frame<f32>,
+	frame: Frame,
 	// Image as projection of `Scope` wrt `Frame`.
-	image: Image<f32>,
+	image: Image,
 	// Orbit induced by displacement on screen.
-	orbit: Orbit<f32>,
+	orbit: Orbit,
 }
 
 impl Trackball {
 	// Usually, a cursor position event with left mouse button being pressed.
-	fn handle_left_button_displacement(&mut self, pos: &Point2<f32>) {
+	fn handle_left_button_displacement(&mut self, pos: Vec2) {
 		// Maximum position as screen's width and height.
 		let max = self.image.max();
 		// Induced rotation in camera space.
-		let rot = self.orbit.compute(&pos, max).unwrap_or_default();
+		let rot = self.orbit.compute(pos, max).unwrap_or_default();
 		// Apply induced rotation to local observer frame.
-		self.frame.local_orbit(&rot);
+		self.frame.local_orbit(rot);
 	}
 	// Event when left mouse button is released again.
 	fn handle_left_button_release(&mut self) {

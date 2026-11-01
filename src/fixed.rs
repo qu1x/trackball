@@ -1,39 +1,45 @@
-use nalgebra::{Point2, RealField};
-use simba::scalar::SubsetOf;
+use core::f32::consts::FRAC_PI_4;
+use glam::Vec2;
+#[cfg_attr(test, allow(unused_imports))]
+use num_traits::Float;
 
 /// Fixed quantity wrt field of view.
 ///
 ///   * Implements [`Default`] and can be created with `Fixed::default()` returning
-///     `Fixed::Ver(N::frac_pi_4())`.
-///   * Implements `From<N>` and can be created with `N::into()` returning `Fixed::Ver()`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+///     `Fixed::Ver(FRAC_PI_4)`.
+///   * Implements `From<f32>` and can be created with `f32::into()` returning `Fixed::Ver()`.
+#[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub enum Fixed<N: Copy + RealField> {
+#[cfg_attr(
+	feature = "rkyv",
+	derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+)]
+pub enum Fixed {
 	/// Fixed horizontal field of view aka Vert- scaling.
-	Hor(N),
+	Hor(f32),
 	/// Fixed vertical field of view aka Hor+ scaling.
-	Ver(N),
+	Ver(f32),
 	/// Fixed unit per pixel on focus plane at distance from eye of one aka Pixel-based scaling.
-	Upp(N),
+	Upp(f32),
 }
 
-impl<N: Copy + RealField> Default for Fixed<N> {
+impl Default for Fixed {
 	fn default() -> Self {
-		N::frac_pi_4().into()
+		FRAC_PI_4.into()
 	}
 }
 
-impl<N: Copy + RealField> From<N> for Fixed<N> {
-	fn from(fov: N) -> Self {
+impl From<f32> for Fixed {
+	fn from(fov: f32) -> Self {
 		Self::Ver(fov)
 	}
 }
 
-impl<N: Copy + RealField> Fixed<N> {
+impl Fixed {
 	/// Converts to fixed horizontal field of view wrt maximum position in screen space.
 	#[must_use]
-	pub fn to_hor(self, max: &Point2<N>) -> Self {
-		let two = N::one() + N::one();
+	pub fn to_hor(self, max: Vec2) -> Self {
+		let two = 2.0;
 		Self::Hor(match self {
 			Self::Hor(fov) => fov,
 			Self::Ver(fov) => (max.x / max.y * (fov / two).tan()).atan() * two,
@@ -42,8 +48,8 @@ impl<N: Copy + RealField> Fixed<N> {
 	}
 	/// Converts to fixed vertical field of view wrt maximum position in screen space.
 	#[must_use]
-	pub fn to_ver(self, max: &Point2<N>) -> Self {
-		let two = N::one() + N::one();
+	pub fn to_ver(self, max: Vec2) -> Self {
+		let two = 2.0;
 		Self::Ver(match self {
 			Self::Hor(fov) => (max.y / max.x * (fov / two).tan()).atan() * two,
 			Self::Ver(fov) => fov,
@@ -53,8 +59,8 @@ impl<N: Copy + RealField> Fixed<N> {
 	/// Converts to fixed unit per pixel on focus plane at distance from eye of one wrt maximum
 	/// position in screen space.
 	#[must_use]
-	pub fn to_upp(self, max: &Point2<N>) -> Self {
-		let two = N::one() + N::one();
+	pub fn to_upp(self, max: Vec2) -> Self {
+		let two = 2.0;
 		Self::Upp(match self {
 			Self::Hor(fov) => (fov / two).tan() * two / max.x,
 			Self::Ver(fov) => (fov / two).tan() * two / max.y,
@@ -64,18 +70,18 @@ impl<N: Copy + RealField> Fixed<N> {
 	/// Maximum position in camera space and unit per pixel on focus plane wrt distance between
 	/// eye and target and maximum position in screen space.
 	#[must_use]
-	pub fn max_and_upp(&self, zat: N, max: &Point2<N>) -> (Point2<N>, N) {
-		let two = N::one() + N::one();
+	pub fn max_and_upp(&self, zat: f32, max: Vec2) -> (Vec2, f32) {
+		let two = 2.0;
 		match *self {
 			Self::Hor(fov) => {
 				let x = zat * (fov / two).tan();
 				let y = max.y / max.x * x;
-				(Point2::new(x, y), x * two / max.x)
+				(Vec2::new(x, y), x * two / max.x)
 			}
 			Self::Ver(fov) => {
 				let y = zat * (fov / two).tan();
 				let x = max.x / max.y * y;
-				(Point2::new(x, y), y * two / max.y)
+				(Vec2::new(x, y), y * two / max.y)
 			}
 			Self::Upp(upp) => {
 				let upp = upp * zat;
@@ -85,52 +91,10 @@ impl<N: Copy + RealField> Fixed<N> {
 	}
 	/// Underlying quantity.
 	#[must_use]
-	pub const fn into_inner(self) -> N {
+	pub const fn into_inner(self) -> f32 {
 		match self {
 			Self::Hor(fov) | Self::Ver(fov) => fov,
 			Self::Upp(upp) => upp,
 		}
-	}
-	/// Casts components to another type, e.g., between [`f32`] and [`f64`].
-	#[must_use]
-	pub fn cast<M: Copy + RealField>(self) -> Fixed<M>
-	where
-		N: SubsetOf<M>,
-	{
-		match self {
-			Self::Hor(fov) => Fixed::Hor(fov.to_superset()),
-			Self::Ver(fov) => Fixed::Ver(fov.to_superset()),
-			Self::Upp(fov) => Fixed::Upp(fov.to_superset()),
-		}
-	}
-}
-
-#[cfg(feature = "rkyv")]
-impl<N: Copy + RealField> rkyv::Archive for Fixed<N> {
-	type Archived = Self;
-	type Resolver = ();
-
-	#[inline]
-	#[allow(unsafe_code)]
-	unsafe fn resolve(&self, _: usize, (): Self::Resolver, out: *mut Self::Archived) {
-		unsafe {
-			out.write(rkyv::to_archived!(*self as Self));
-		}
-	}
-}
-
-#[cfg(feature = "rkyv")]
-impl<Ser: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Serialize<Ser> for Fixed<N> {
-	#[inline]
-	fn serialize(&self, _: &mut Ser) -> Result<Self::Resolver, Ser::Error> {
-		Ok(())
-	}
-}
-
-#[cfg(feature = "rkyv")]
-impl<De: rkyv::Fallible + ?Sized, N: Copy + RealField> rkyv::Deserialize<Self, De> for Fixed<N> {
-	#[inline]
-	fn deserialize(&self, _: &mut De) -> Result<Self, De::Error> {
-		Ok(rkyv::from_archived!(*self))
 	}
 }

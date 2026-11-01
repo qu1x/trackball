@@ -1,3 +1,14 @@
+# Version 0.19.0 (unreleased)
+
+  * Migrate from `nalgebra` to `glam` and drop `glam` conversion feature.
+  * Drop generic scalar in favor of `f32` and remove `cast()` methods.
+  * Pass `glam` types by value, e.g., `Vec2`, `Vec3`, and `Quat`.
+  * Add `Rigid` transformation replacing `Isometry3`.
+  * Replace `Frame::try_lerp_slerp()` with infallible `Frame::lerp_slerp()`.
+  * Fix precision of `Frame::set_target()` for small and nearly opposite target movements.
+  * Drop `Plane` conversions from and to `Reflection3`.
+  * Bump `rkyv` to version 0.8 deriving its traits.
+
 # Version 0.18.0 (2026-06-22)
 
   * Bump MSRV.
